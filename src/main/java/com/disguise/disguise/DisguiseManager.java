@@ -1,7 +1,5 @@
 package com.disguise.disguise;
 
-import com.disguise.disguise.types.CowDisguise;
-import com.disguise.disguise.types.PigDisguise;
 import com.disguise.disguise.types.SheepDisguise;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.Player;
@@ -29,8 +27,6 @@ public class DisguiseManager {
         removeDisguise(player);
         Disguise d = switch (type) {
             case SHEEP -> new SheepDisguise(DyeColor.WHITE);
-            case PIG -> new PigDisguise();
-            case COW -> new CowDisguise();
         };
         d.apply(player);
         active.put(player.getUniqueId(), d);

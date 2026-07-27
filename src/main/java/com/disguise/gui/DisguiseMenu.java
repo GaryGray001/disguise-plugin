@@ -1,8 +1,6 @@
 package com.disguise.gui;
 
 import com.disguise.disguise.DisguiseManager;
-import com.disguise.disguise.DisguiseType;
-import com.disguise.packet.PacketUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -18,13 +16,16 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 
+/**
+ * 变身主菜单 GUI (54格 - 双箱子)
+ */
 public class DisguiseMenu implements Listener {
 
     private static final Component TITLE = Component.text("✧ 变身主菜单 ✧")
             .color(NamedTextColor.DARK_GRAY)
             .decoration(TextDecoration.BOLD, false);
 
-    private static final int MENU_SIZE = 54;
+    private static final int MENU_SIZE = 54; // 6行
 
     private final ColorSelectMenu colorSelectMenu;
     private final DisguiseManager disguiseManager;
@@ -34,55 +35,77 @@ public class DisguiseMenu implements Listener {
         this.disguiseManager = disguiseManager;
     }
 
+    /**
+     * 打开主菜单
+     */
     public void open(Player player) {
         Inventory inv = Bukkit.createInventory(null, MENU_SIZE, TITLE);
 
-        // 装饰边框
+        // === 装饰边框 ===
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
         borderMeta.displayName(Component.empty());
         border.setItemMeta(borderMeta);
+
+        // 第一行 (0-8)
         for (int i = 0; i < 9; i++) inv.setItem(i, border);
+        // 最后一行 (45-53)
         for (int i = 45; i < 54; i++) inv.setItem(i, border);
+        // 左右边框
         for (int i = 9; i < 45; i += 9) {
             inv.setItem(i, border);
             inv.setItem(i + 8, border);
         }
 
-        // Slot 4: 顶部提示
-        inv.setItem(4, createIconItem(Material.BOOK,
-                "§e💡 提示",
-                List.of("§7点击生物图标选择变身", "§7再次打开菜单点「取消变身」恢复", "§7按 Ctrl 即可切换模式")));
+        // === 标题文字 (slots 4) ===
+        inv.setItem(4, createIconItem(Material.NAME_TAG,
+                "§6✧ 变身主菜单 ✧",
+                "§7选择一个生物开始变身"
+        ));
 
-        // Slot 10: 羊刷怪蛋（第一个空格子）
-        inv.setItem(10, createIconItem(
-                Material.SHEEP_SPAWN_EGG,
+        // === Slot 20: 羊 - 打开颜色选择 ===
+        inv.setItem(20, createIconItem(
+                Material.WHITE_WOOL,
                 "§e🐑 羊",
-                List.of("§7点击选择颜色后变身为羊", "§8→ 有16种颜色可选", "§7按 F 键即可吃草")));
+                List.of(
+                        "§7点击选择颜色后变身为羊",
+                        "§8→ 有16种颜色可选"
+                )
+        ));
 
-        // Slot 11: 猪刷怪蛋
-        inv.setItem(11, createIconItem(
-                Material.PIG_SPAWN_EGG,
-                "§e🐷 猪",
-                List.of("§7点击变身为猪", "§8→ 两个模式可用")));
-
-        // Slot 12: 牛刷怪蛋
-        inv.setItem(12, createIconItem(
-                Material.COW_SPAWN_EGG,
-                "§e🐮 牛",
-                List.of("§7点击变身为牛", "§8→ 其他玩家可挤奶")));
-        // Slot 49: 取消变身（最底部正中）
-        if (PacketUtils.isDisguised(player)) {
-            inv.setItem(49, createIconItem(
+        // === Slot 22: 取消变身 ===
+        if (disguiseManager.isDisguised(player)) {
+            inv.setItem(22, createIconItem(
                     Material.BARRIER,
                     "§c❌ 取消变身",
-                    List.of("§7点击恢复原形", "§a▸ 当前已变身")));
+                    List.of(
+                            "§7点击恢复原形",
+                            "§a▸ 当前已变身"
+                    )
+            ));
         } else {
-            inv.setItem(49, createIconItem(
+            inv.setItem(22, createIconItem(
                     Material.BARRIER,
                     "§8❌ 取消变身",
-                    List.of("§7你还未变身", "§8选择一个生物开始变身")));
+                    List.of(
+                            "§7你还未变身",
+                            "§8选择一个生物开始变身"
+                    )
+            ));
         }
+
+        // === 装饰: 生物类别标签 ===
+        inv.setItem(19, createIconItem(Material.LIME_DYE, "§a▶ 可用的生物", (String) null));
+        inv.setItem(21, createIconItem(Material.RED_DYE, "§c◀ 操作", (String) null));
+
+        // === 底部功能提示 ===
+        inv.setItem(49, createIconItem(Material.BOOK,
+                "§e💡 提示",
+                List.of(
+                        "§7点击生物图标选择变身",
+                        "§7再次打开菜单点「取消变身」恢复"
+                )
+        ));
 
         player.openInventory(inv);
     }
@@ -90,10 +113,12 @@ public class DisguiseMenu implements Listener {
     private ItemStack createIconItem(Material material, String name, List<String> lore) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text(name).decoration(TextDecoration.ITALIC, false));
+        meta.displayName(Component.text(name)
+                .decoration(TextDecoration.ITALIC, false));
         if (lore != null) {
             meta.lore(lore.stream()
-                    .map(line -> Component.text(line).decoration(TextDecoration.ITALIC, false))
+                    .map(line -> Component.text(line)
+                            .decoration(TextDecoration.ITALIC, false))
                     .toList());
         }
         item.setItemMeta(meta);
@@ -112,20 +137,15 @@ public class DisguiseMenu implements Listener {
 
         if (!(event.getWhoClicked() instanceof Player player)) return;
         if (event.getCurrentItem() == null) return;
+
         Material clicked = event.getCurrentItem().getType();
 
-        if (clicked == Material.SHEEP_SPAWN_EGG) {
+        if (clicked == Material.WHITE_WOOL) {
+            // 打开羊的颜色选择菜单
             colorSelectMenu.open(player);
-        } else if (clicked == Material.PIG_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.PIG);
-            player.sendMessage("§a你已变身为猪！");
-            player.closeInventory();
-        } else if (clicked == Material.COW_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.COW);
-            player.sendMessage("§a你已变身为牛！");
-            player.closeInventory();
         } else if (clicked == Material.BARRIER) {
-            if (PacketUtils.isDisguised(player)) {
+            // 取消变身
+            if (disguiseManager.isDisguised(player)) {
                 disguiseManager.removeDisguise(player);
                 player.sendMessage("§a你已恢复原形！");
             } else {

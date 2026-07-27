@@ -2,7 +2,6 @@ package com.disguise.gui;
 
 import com.disguise.disguise.DisguiseManager;
 import com.disguise.disguise.DisguiseType;
-import com.disguise.packet.PacketUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -21,10 +20,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 羊颜色选择子菜单
+ * 玩家选择变身后的羊的颜色
+ */
 public class ColorSelectMenu implements Listener {
 
-    private static final String TITLE_STR = "选择羊的颜色";
+    private static final Component TITLE = Component.text("选择羊的颜色")
+            .color(NamedTextColor.DARK_GRAY);
 
+    /** 颜色 -> 中文名映射 */
     private static final Map<DyeColor, String> COLOR_NAMES = new LinkedHashMap<>();
     static {
         COLOR_NAMES.put(DyeColor.WHITE, "白色");
@@ -50,31 +55,46 @@ public class ColorSelectMenu implements Listener {
 
     public ColorSelectMenu(DisguiseManager disguiseManager) {
         this.disguiseManager = disguiseManager;
+        this.parentMenu = null;
     }
 
+    /**
+     * 设置父菜单引用（用于返回按钮）
+     */
     public void setParentMenu(DisguiseMenu parentMenu) {
         this.parentMenu = parentMenu;
     }
 
+    /**
+     * 打开颜色选择菜单给玩家
+     */
     public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27,
-                Component.text(TITLE_STR).color(NamedTextColor.DARK_GRAY));
+        Inventory inv = Bukkit.createInventory(null, 27, TITLE);
 
         int slot = 0;
         for (Map.Entry<DyeColor, String> entry : COLOR_NAMES.entrySet()) {
             DyeColor color = entry.getKey();
             String chineseName = entry.getValue();
 
-            ItemStack item = new ItemStack(getWoolMaterial(color));
+            // 羊毛图标
+            Material woolMaterial = getWoolMaterial(color);
+            ItemStack item = new ItemStack(woolMaterial);
             ItemMeta meta = item.getItemMeta();
             meta.displayName(Component.text(chineseName + "羊")
-                    .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(Component.text("§7点击变身为 " + chineseName + "羊")));
+                    .color(NamedTextColor.WHITE)
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(
+                    Component.text("§7点击变身为 " + chineseName + "羊")
+            ));
+
+            // 存储颜色信息在 ItemStack 中
             item.setItemMeta(meta);
+
             inv.setItem(slot, item);
             slot++;
         }
 
+        // 返回按钮 (Slot 26)
         ItemStack backItem = new ItemStack(Material.ARROW);
         ItemMeta backMeta = backItem.getItemMeta();
         backMeta.displayName(Component.text("§c← 返回主菜单"));
@@ -84,6 +104,9 @@ public class ColorSelectMenu implements Listener {
         player.openInventory(inv);
     }
 
+    /**
+     * 根据 DyeColor 获取对应的羊毛材料
+     */
     private Material getWoolMaterial(DyeColor color) {
         return switch (color) {
             case WHITE -> Material.WHITE_WOOL;
@@ -107,37 +130,35 @@ public class ColorSelectMenu implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        try {
-            String t = event.getView().getTitle();
-            if (t == null || !t.contains(TITLE_STR)) return;
-            event.setCancelled(true);
+        if (!event.getView().title().equals(TITLE)) return;
+        event.setCancelled(true);
 
-            if (!(event.getWhoClicked() instanceof Player player)) return;
-            if (event.getCurrentItem() == null) return;
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        if (event.getCurrentItem() == null) return;
 
-            Material clicked = event.getCurrentItem().getType();
+        Material clicked = event.getCurrentItem().getType();
 
-            if (clicked == Material.ARROW) {
-                if (parentMenu != null) parentMenu.open(player);
-                return;
+        // 返回按钮
+        if (clicked == Material.ARROW) {
+            if (parentMenu != null) {
+                parentMenu.open(player);
             }
+            return;
+        }
 
-            DyeColor selectedColor = getDyeColorFromWool(clicked);
-            if (selectedColor != null) {
-                String colorName = COLOR_NAMES.getOrDefault(selectedColor, "未知颜色");
-                player.sendMessage("§a正在变身...");
-                disguiseManager.applyDisguise(player, DisguiseType.SHEEP, selectedColor);
-                if (PacketUtils.isDisguised(player)) {
-                    player.sendMessage("§a你已变身为 §e" + colorName + "羊§a！");
-                }
-                player.closeInventory();
-            }
-        } catch (Exception e) {
-            event.getWhoClicked().sendMessage("§c变身出错: " + e.getMessage());
-            e.printStackTrace();
+        // 检查点击的是否是羊毛
+        DyeColor selectedColor = getDyeColorFromWool(clicked);
+        if (selectedColor != null) {
+            String colorName = COLOR_NAMES.getOrDefault(selectedColor, "未知颜色");
+            disguiseManager.applyDisguise(player, DisguiseType.SHEEP, selectedColor);
+            player.sendMessage("§a你已变身为 §e" + colorName + "羊§a！");
+            player.closeInventory();
         }
     }
 
+    /**
+     * 从羊毛材料获取对应的 DyeColor
+     */
     private DyeColor getDyeColorFromWool(Material wool) {
         return switch (wool) {
             case WHITE_WOOL -> DyeColor.WHITE;

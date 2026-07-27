@@ -1,6 +1,0 @@
-# 变身插件配置文件
-
-# 是否关闭 locatorBar（MC 1.21.6+ 的经验条玩家位置显示）
-# true  = 关闭（显示经验条）
-# false = 开启（经验条位置显示其他玩家的方位）
-disable-locator-bar: true
