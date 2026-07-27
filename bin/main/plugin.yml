@@ -1,0 +1,16 @@
+name: DisguisePlugin
+version: '${version}'
+main: com.disguise.DisguisePlugin
+api-version: '1.21'
+description: 变身插件 - 让玩家变身为各种生物
+
+commands:
+  bs:
+    description: 打开变身主菜单
+    usage: /bs
+    permission: disguise.use
+
+permissions:
+  disguise.use:
+    description: 允许使用变身功能
+    default: true
