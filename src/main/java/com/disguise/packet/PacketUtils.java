@@ -29,6 +29,8 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
@@ -48,6 +50,7 @@ public class PacketUtils implements Listener {
     private static final Map<UUID, Boolean> lastSprintState = new ConcurrentHashMap<>();
     private static final Set<UUID> recentlyDamaged = ConcurrentHashMap.newKeySet();
     private static final NamespacedKey DISGUISE_KEY = new NamespacedKey("disguise_plugin", "disguise_owner");
+    private static final long CHICKEN_EGG_COOLDOWN = 30000L; // 30 秒（毫秒）
 
     public static void init(JavaPlugin p) { plugin = p; }
 
@@ -89,11 +92,27 @@ public class PacketUtils implements Listener {
             if (!si.aiMode) {
                 if (!si.isEating) {
                     Location loc = target.getLocation().clone();
-                    si.mob.teleport(loc); si.mob.setRotation(loc.getYaw(), loc.getPitch());
+                    // 鸡稳定期：仅跟旋转；稳定后：地面 teleport，离地 velocity
+                    if (si.mob instanceof Chicken && si.mob.hasAI()) {
+                        si.mob.setRotation(loc.getYaw(), loc.getPitch());
+                    } else if (si.mob instanceof Chicken) {
+                        // 保持 AI=true→物理引擎完整运行，翅膀行为跟 AI 模式一致
+                        if (!si.mob.hasAI()) si.mob.setAI(true);
+                        // 轻柔拉力把鸡拉向玩家位置，不干预 Y（物理引擎自然处理着地/下落）
+                        Vector diff = loc.toVector().subtract(si.mob.getLocation().toVector()).multiply(0.12);
+                        if (target.isOnGround()) diff.setY(0);
+                        si.mob.setVelocity(diff);
+                        si.mob.setRotation(loc.getYaw(), loc.getPitch());
+                    } else {
+                        si.mob.teleport(loc); si.mob.setRotation(loc.getYaw(), loc.getPitch());
+                    }
                     Boolean m = playerMoving.get(uid);
                     if (m != null && !m && !recentlyDamaged.contains(uid)) target.setVelocity(new Vector(0, target.getVelocity().getY(), 0));
                 }
             } else { if (!si.mob.hasAI()) si.mob.setAI(true); }
+            if (si.mob instanceof Chicken && !target.hasPotionEffect(PotionEffectType.SLOW_FALLING)) {
+                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 0, false, false));
+            }
             double hp = target.getHealth();
             if (Math.abs(si.mob.getHealth() - hp) > 0.01) si.mob.setHealth(hp);
         }, 0L, 1L);
@@ -120,7 +139,12 @@ public class PacketUtils implements Listener {
 
     public static void disguiseAsChicken(Player target) {
         Chicken chicken = target.getWorld().spawn(target.getLocation(), Chicken.class);
-        chicken.setAgeLock(true); saveData(chicken, target); applyDisguise(target, chicken);
+        chicken.setAgeLock(true);
+        saveData(chicken, target); applyDisguise(target, chicken);
+        target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 0, false, false));
+        // 全程保持 AI=true → 物理引擎完整运行 → 翅膀行为自然
+        chicken.setAI(true);
+        target.sendActionBar(Component.text("§e🐔 变身鸡就绪！"));
     }
 
     public static void undisguise(Player target) {
@@ -138,6 +162,7 @@ public class PacketUtils implements Listener {
         target.setInvisible(info != null && info.originalInvisible);
         for (Player o : Bukkit.getOnlinePlayers()) if (!o.equals(target)) o.showPlayer(plugin, target);
         showTag(target); playerMoving.remove(uid); recentlyDamaged.remove(uid);
+        target.removePotionEffect(PotionEffectType.SLOW_FALLING);
     }
 
     // ===== 模式切换 =====
@@ -145,8 +170,14 @@ public class PacketUtils implements Listener {
         DisguiseInfo info = disguises.get(player.getUniqueId());
         if (info == null) return null;
         info.aiMode = !info.aiMode;
-        if (info.aiMode) { info.mob.setAI(true); player.sendMessage("§e[变身] 切换为 §aAI 自主模式"); }
-        else { info.mob.setAI(false); player.teleport(info.mob.getLocation()); player.sendMessage("§e[变身] 切换为 §b玩家控制模式"); }
+        if (info.aiMode) {
+            if (!(info.mob instanceof Chicken)) info.mob.setAI(true);
+            player.sendMessage("§e[变身] 切换为 §aAI 自主模式");
+        } else {
+            if (!(info.mob instanceof Chicken)) info.mob.setAI(false);
+            player.teleport(info.mob.getLocation());
+            player.sendMessage("§e[变身] 切换为 §b玩家控制模式");
+        }
         return info.aiMode ? "AI 自主" : "玩家控制";
     }
 
@@ -241,7 +272,15 @@ public class PacketUtils implements Listener {
 
     private static void chickenLayEgg(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
         event.setCancelled(true);
-        info.mob.getWorld().dropItemNaturally(info.mob.getLocation(), new ItemStack(Material.EGG));
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastEggLayTime;
+        if (elapsed < CHICKEN_EGG_COOLDOWN) {
+            long remaining = (CHICKEN_EGG_COOLDOWN - elapsed + 999) / 1000;
+            event.getPlayer().sendActionBar(Component.text("§e下蛋冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastEggLayTime = now;
+        info.mob.getWorld().dropItem(info.mob.getLocation().add(0, 0.5, 0), new ItemStack(Material.EGG));
         info.mob.getWorld().playEffect(info.mob.getLocation(), org.bukkit.Effect.CLICK1, 0);
         event.getPlayer().sendMessage("§e你下了一个蛋！");
     }
@@ -320,9 +359,11 @@ public class PacketUtils implements Listener {
         final Creature mob; final Player owner; final boolean originalInvisible; final double originalMaxHealth;
         boolean aiMode, isEating; BukkitTask task;
         ItemStack[] savedInv, savedArmor; ItemStack savedOffHand;
+        long lastEggLayTime;
         DisguiseInfo(Creature m, Player o, boolean origInv, double origMaxHp) {
             mob = m; owner = o; originalInvisible = origInv; originalMaxHealth = origMaxHp;
             aiMode = false; isEating = false;
+            lastEggLayTime = 0L;
         }
     }
 }
