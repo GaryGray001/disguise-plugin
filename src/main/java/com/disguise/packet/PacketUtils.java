@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Creature;
+import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
@@ -115,6 +116,11 @@ public class PacketUtils implements Listener {
     public static void disguiseAsCow(Player target) {
         org.bukkit.entity.Cow cow = target.getWorld().spawn(target.getLocation(), org.bukkit.entity.Cow.class);
         cow.setAgeLock(true); saveData(cow, target); applyDisguise(target, cow);
+    }
+
+    public static void disguiseAsChicken(Player target) {
+        Chicken chicken = target.getWorld().spawn(target.getLocation(), Chicken.class);
+        chicken.setAgeLock(true); saveData(chicken, target); applyDisguise(target, chicken);
     }
 
     public static void undisguise(Player target) {
@@ -230,6 +236,14 @@ public class PacketUtils implements Listener {
         DisguiseInfo info = disguises.get(event.getPlayer().getUniqueId());
         if (info == null || info.aiMode) return;
         if (info.mob instanceof Sheep) { sheepEat(event, info); return; }
+        if (info.mob instanceof Chicken) { chickenLayEgg(event, info); return; }
+    }
+
+    private static void chickenLayEgg(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        info.mob.getWorld().dropItemNaturally(info.mob.getLocation(), new ItemStack(Material.EGG));
+        info.mob.getWorld().playEffect(info.mob.getLocation(), org.bukkit.Effect.CLICK1, 0);
+        event.getPlayer().sendMessage("§e你下了一个蛋！");
     }
 
     @EventHandler public void onEntityTarget(EntityTargetEvent event) {
