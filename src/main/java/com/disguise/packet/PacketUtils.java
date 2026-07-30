@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Creature;
+import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
@@ -28,6 +29,8 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
@@ -47,6 +50,7 @@ public class PacketUtils implements Listener {
     private static final Map<UUID, Boolean> lastSprintState = new ConcurrentHashMap<>();
     private static final Set<UUID> recentlyDamaged = ConcurrentHashMap.newKeySet();
     private static final NamespacedKey DISGUISE_KEY = new NamespacedKey("disguise_plugin", "disguise_owner");
+    private static final long CHICKEN_EGG_COOLDOWN = 30000L; // 30 秒（毫秒）
 
     public static void init(JavaPlugin p) { plugin = p; }
 
@@ -88,11 +92,33 @@ public class PacketUtils implements Listener {
             if (!si.aiMode) {
                 if (!si.isEating) {
                     Location loc = target.getLocation().clone();
-                    si.mob.teleport(loc); si.mob.setRotation(loc.getYaw(), loc.getPitch());
+                    Vector playerVelocity = target.getVelocity();
+                    // 离地判定：玩家不在地面，或存在明显竖直速度（上跳/下落）
+                    boolean airborne =
+                            !target.isOnGround() || Math.abs(playerVelocity.getY()) > 0.04;
+                    if (si.mob instanceof Chicken chicken) {
+                        // 鸡的位置统一由 ticker 控制（唯一权威路径）
+                        chicken.teleport(loc);
+                        chicken.setRotation(loc.getYaw(), loc.getPitch());
+                        if (airborne) {
+                            // 空中：开 AI → 物理引擎驱动翅膀扇动；跟随玩家速度
+                            if (!chicken.hasAI()) chicken.setAI(true);
+                            chicken.setVelocity(playerVelocity);
+                        } else {
+                            // 地面/静止/走路：关 AI + 清零速度 → 翅膀静止、不漂移
+                            if (chicken.hasAI()) chicken.setAI(false);
+                            chicken.setVelocity(new Vector(0, 0, 0));
+                        }
+                    } else {
+                        si.mob.teleport(loc); si.mob.setRotation(loc.getYaw(), loc.getPitch());
+                    }
                     Boolean m = playerMoving.get(uid);
                     if (m != null && !m && !recentlyDamaged.contains(uid)) target.setVelocity(new Vector(0, target.getVelocity().getY(), 0));
                 }
             } else { if (!si.mob.hasAI()) si.mob.setAI(true); }
+            if (si.mob instanceof Chicken && !target.hasPotionEffect(PotionEffectType.SLOW_FALLING)) {
+                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 0, false, false));
+            }
             double hp = target.getHealth();
             if (Math.abs(si.mob.getHealth() - hp) > 0.01) si.mob.setHealth(hp);
         }, 0L, 1L);
@@ -117,6 +143,16 @@ public class PacketUtils implements Listener {
         cow.setAgeLock(true); saveData(cow, target); applyDisguise(target, cow);
     }
 
+    public static void disguiseAsChicken(Player target) {
+        Chicken chicken = target.getWorld().spawn(target.getLocation(), Chicken.class);
+        chicken.setAgeLock(true);
+        saveData(chicken, target); applyDisguise(target, chicken);
+        // 初始即玩家控制模式：AI=false → 翅膀静止、不漂移；只在玩家起跳/下落/空中时由 ticker 临时开 AI
+        chicken.setAI(false);
+        target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 0, false, false));
+        target.sendActionBar(Component.text("§e🐔 变身鸡就绪！"));
+    }
+
     public static void undisguise(Player target) {
         UUID uid = target.getUniqueId();
         DisguiseInfo info = disguises.remove(uid);
@@ -132,6 +168,7 @@ public class PacketUtils implements Listener {
         target.setInvisible(info != null && info.originalInvisible);
         for (Player o : Bukkit.getOnlinePlayers()) if (!o.equals(target)) o.showPlayer(plugin, target);
         showTag(target); playerMoving.remove(uid); recentlyDamaged.remove(uid);
+        target.removePotionEffect(PotionEffectType.SLOW_FALLING);
     }
 
     // ===== 模式切换 =====
@@ -202,6 +239,7 @@ public class PacketUtils implements Listener {
         DisguiseInfo info = disguises.get(player.getUniqueId());
         if (info == null || info.mob.isDead() || !info.mob.isValid()) return;
         if (info.aiMode || info.isEating) return;
+        if (info.mob instanceof Chicken) return; // 鸡的位置完全由 ticker 统一控制，避免 ticker / PlayerMove / AI 三路冲突
         Location to = event.getTo(), from = event.getFrom();
         if (to.getX() == from.getX() && to.getY() == from.getY() && to.getZ() == from.getZ()) return;
         info.mob.teleport(to.clone()); info.mob.setRotation(to.getYaw(), to.getPitch());
@@ -230,6 +268,30 @@ public class PacketUtils implements Listener {
         DisguiseInfo info = disguises.get(event.getPlayer().getUniqueId());
         if (info == null || info.aiMode) return;
         if (info.mob instanceof Sheep) { sheepEat(event, info); return; }
+        if (info.mob instanceof Chicken) { chickenLayEgg(event, info); return; }
+    }
+
+    private static void chickenLayEgg(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastEggLayTime;
+        if (elapsed < CHICKEN_EGG_COOLDOWN) {
+            long remaining = (CHICKEN_EGG_COOLDOWN - elapsed + 999) / 1000;
+            event.getPlayer().sendActionBar(Component.text("§e下蛋冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastEggLayTime = now;
+        Location eggLocation = info.mob.getLocation().clone().add(0, 0.1, 0);
+        info.mob.getWorld().dropItem(
+                eggLocation,
+                new ItemStack(Material.EGG),
+                egg -> {
+                    egg.setVelocity(new Vector(0, 0, 0)); // 原地下蛋：清零速度，不向前抛射
+                    egg.setPickupDelay(10);
+                }
+        );
+        info.mob.getWorld().playEffect(info.mob.getLocation(), org.bukkit.Effect.CLICK1, 0);
+        event.getPlayer().sendMessage("§e你下了一个蛋！");
     }
 
     @EventHandler public void onEntityTarget(EntityTargetEvent event) {
@@ -306,9 +368,11 @@ public class PacketUtils implements Listener {
         final Creature mob; final Player owner; final boolean originalInvisible; final double originalMaxHealth;
         boolean aiMode, isEating; BukkitTask task;
         ItemStack[] savedInv, savedArmor; ItemStack savedOffHand;
+        long lastEggLayTime;
         DisguiseInfo(Creature m, Player o, boolean origInv, double origMaxHp) {
             mob = m; owner = o; originalInvisible = origInv; originalMaxHealth = origMaxHp;
             aiMode = false; isEating = false;
+            lastEggLayTime = 0L;
         }
     }
 }

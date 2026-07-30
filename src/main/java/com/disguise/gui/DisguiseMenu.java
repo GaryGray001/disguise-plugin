@@ -71,6 +71,12 @@ public class DisguiseMenu implements Listener {
                 Material.COW_SPAWN_EGG,
                 "§e🐮 牛",
                 List.of("§7点击变身为牛", "§8→ 其他玩家可挤奶")));
+
+        // Slot 13: 鸡刷怪蛋
+        inv.setItem(13, createIconItem(
+                Material.CHICKEN_SPAWN_EGG,
+                "§e🐔 鸡",
+                List.of("§7点击变身为鸡", "§7按 F 键下蛋", "§8→ 可喂种子繁殖")));
         // Slot 49: 取消变身（最底部正中）
         if (PacketUtils.isDisguised(player)) {
             inv.setItem(49, createIconItem(
@@ -123,6 +129,10 @@ public class DisguiseMenu implements Listener {
         } else if (clicked == Material.COW_SPAWN_EGG) {
             disguiseManager.applyDisguise(player, DisguiseType.COW);
             player.sendMessage("§a你已变身为牛！");
+            player.closeInventory();
+        } else if (clicked == Material.CHICKEN_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.CHICKEN);
+            player.sendMessage("§a你已变身为鸡！按 F 键可下蛋！");
             player.closeInventory();
         } else if (clicked == Material.BARRIER) {
             if (PacketUtils.isDisguised(player)) {

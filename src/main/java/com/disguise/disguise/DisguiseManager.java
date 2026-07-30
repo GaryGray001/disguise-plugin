@@ -1,5 +1,6 @@
 package com.disguise.disguise;
 
+import com.disguise.disguise.types.ChickenDisguise;
 import com.disguise.disguise.types.CowDisguise;
 import com.disguise.disguise.types.PigDisguise;
 import com.disguise.disguise.types.SheepDisguise;
@@ -31,6 +32,7 @@ public class DisguiseManager {
             case SHEEP -> new SheepDisguise(DyeColor.WHITE);
             case PIG -> new PigDisguise();
             case COW -> new CowDisguise();
+            case CHICKEN -> new ChickenDisguise();
         };
         d.apply(player);
         active.put(player.getUniqueId(), d);

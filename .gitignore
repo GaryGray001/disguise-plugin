@@ -1,8 +1,21 @@
+# Gradle
 .gradle/
+build/classes/
+build/generated/
+build/reports/
+build/resources/
+build/tmp/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
 .idea/
-*.class
-
 .vscode/
+*.iml
 
+# Java
+*.class
+bin/
+
+# OS
 .DS_Store
 Thumbs.db
