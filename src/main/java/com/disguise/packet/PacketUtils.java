@@ -92,17 +92,23 @@ public class PacketUtils implements Listener {
             if (!si.aiMode) {
                 if (!si.isEating) {
                     Location loc = target.getLocation().clone();
-                    // 鸡稳定期：仅跟旋转；稳定后：地面 teleport，离地 velocity
-                    if (si.mob instanceof Chicken && si.mob.hasAI()) {
-                        si.mob.setRotation(loc.getYaw(), loc.getPitch());
-                    } else if (si.mob instanceof Chicken) {
-                        // 保持 AI=true→物理引擎完整运行，翅膀行为跟 AI 模式一致
-                        if (!si.mob.hasAI()) si.mob.setAI(true);
-                        // 轻柔拉力把鸡拉向玩家位置，不干预 Y（物理引擎自然处理着地/下落）
-                        Vector diff = loc.toVector().subtract(si.mob.getLocation().toVector()).multiply(0.12);
-                        if (target.isOnGround()) diff.setY(0);
-                        si.mob.setVelocity(diff);
-                        si.mob.setRotation(loc.getYaw(), loc.getPitch());
+                    Vector playerVelocity = target.getVelocity();
+                    // 离地判定：玩家不在地面，或存在明显竖直速度（上跳/下落）
+                    boolean airborne =
+                            !target.isOnGround() || Math.abs(playerVelocity.getY()) > 0.04;
+                    if (si.mob instanceof Chicken chicken) {
+                        // 鸡的位置统一由 ticker 控制（唯一权威路径）
+                        chicken.teleport(loc);
+                        chicken.setRotation(loc.getYaw(), loc.getPitch());
+                        if (airborne) {
+                            // 空中：开 AI → 物理引擎驱动翅膀扇动；跟随玩家速度
+                            if (!chicken.hasAI()) chicken.setAI(true);
+                            chicken.setVelocity(playerVelocity);
+                        } else {
+                            // 地面/静止/走路：关 AI + 清零速度 → 翅膀静止、不漂移
+                            if (chicken.hasAI()) chicken.setAI(false);
+                            chicken.setVelocity(new Vector(0, 0, 0));
+                        }
                     } else {
                         si.mob.teleport(loc); si.mob.setRotation(loc.getYaw(), loc.getPitch());
                     }
@@ -141,9 +147,9 @@ public class PacketUtils implements Listener {
         Chicken chicken = target.getWorld().spawn(target.getLocation(), Chicken.class);
         chicken.setAgeLock(true);
         saveData(chicken, target); applyDisguise(target, chicken);
+        // 初始即玩家控制模式：AI=false → 翅膀静止、不漂移；只在玩家起跳/下落/空中时由 ticker 临时开 AI
+        chicken.setAI(false);
         target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 0, false, false));
-        // 全程保持 AI=true → 物理引擎完整运行 → 翅膀行为自然
-        chicken.setAI(true);
         target.sendActionBar(Component.text("§e🐔 变身鸡就绪！"));
     }
 
@@ -170,14 +176,8 @@ public class PacketUtils implements Listener {
         DisguiseInfo info = disguises.get(player.getUniqueId());
         if (info == null) return null;
         info.aiMode = !info.aiMode;
-        if (info.aiMode) {
-            if (!(info.mob instanceof Chicken)) info.mob.setAI(true);
-            player.sendMessage("§e[变身] 切换为 §aAI 自主模式");
-        } else {
-            if (!(info.mob instanceof Chicken)) info.mob.setAI(false);
-            player.teleport(info.mob.getLocation());
-            player.sendMessage("§e[变身] 切换为 §b玩家控制模式");
-        }
+        if (info.aiMode) { info.mob.setAI(true); player.sendMessage("§e[变身] 切换为 §aAI 自主模式"); }
+        else { info.mob.setAI(false); player.teleport(info.mob.getLocation()); player.sendMessage("§e[变身] 切换为 §b玩家控制模式"); }
         return info.aiMode ? "AI 自主" : "玩家控制";
     }
 
@@ -239,6 +239,7 @@ public class PacketUtils implements Listener {
         DisguiseInfo info = disguises.get(player.getUniqueId());
         if (info == null || info.mob.isDead() || !info.mob.isValid()) return;
         if (info.aiMode || info.isEating) return;
+        if (info.mob instanceof Chicken) return; // 鸡的位置完全由 ticker 统一控制，避免 ticker / PlayerMove / AI 三路冲突
         Location to = event.getTo(), from = event.getFrom();
         if (to.getX() == from.getX() && to.getY() == from.getY() && to.getZ() == from.getZ()) return;
         info.mob.teleport(to.clone()); info.mob.setRotation(to.getYaw(), to.getPitch());
@@ -280,7 +281,15 @@ public class PacketUtils implements Listener {
             return;
         }
         info.lastEggLayTime = now;
-        info.mob.getWorld().dropItem(info.mob.getLocation().add(0, 0.5, 0), new ItemStack(Material.EGG));
+        Location eggLocation = info.mob.getLocation().clone().add(0, 0.1, 0);
+        info.mob.getWorld().dropItem(
+                eggLocation,
+                new ItemStack(Material.EGG),
+                egg -> {
+                    egg.setVelocity(new Vector(0, 0, 0)); // 原地下蛋：清零速度，不向前抛射
+                    egg.setPickupDelay(10);
+                }
+        );
         info.mob.getWorld().playEffect(info.mob.getLocation(), org.bukkit.Effect.CLICK1, 0);
         event.getPlayer().sendMessage("§e你下了一个蛋！");
     }
