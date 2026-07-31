@@ -113,6 +113,48 @@ public class DisguiseMenu implements Listener {
                 Material.WOLF_SPAWN_EGG,
                 "§e🐺 狼",
                 List.of("§7点击变身为狼", "§8→ 无法被驯服")));
+
+        // Slot 22: 犰狳刷怪蛋
+        inv.setItem(22, createIconItem(
+                Material.ARMADILLO_SPAWN_EGG,
+                "§e🦔 犰狳",
+                List.of("§7点击变身为犰狳", "§7按 F 键掉壳")));
+
+        // Slot 23: 狐狸刷怪蛋
+        inv.setItem(23, createIconItem(
+                Material.FOX_SPAWN_EGG,
+                "§e🦊 狐狸",
+                List.of("§7点击变身为狐狸", "§7按 F 键卧下睡觉", "§8→ 卧下时不跟随")));
+
+        // Slot 24: 山羊刷怪蛋
+        inv.setItem(24, createIconItem(
+                Material.GOAT_SPAWN_EGG,
+                "§e🐐 山羊",
+                List.of("§7点击变身为山羊")));
+
+        // Slot 25: 羊驼刷怪蛋
+        inv.setItem(25, createIconItem(
+                Material.LLAMA_SPAWN_EGG,
+                "§e🦙 羊驼",
+                List.of("§7点击变身为羊驼", "§7按 F 键吐口水")));
+
+        // Slot 28: 豹猫刷怪蛋（第四行第一个空格子）
+        inv.setItem(28, createIconItem(
+                Material.OCELOT_SPAWN_EGG,
+                "§e🐆 豹猫",
+                List.of("§7点击变身为豹猫")));
+
+        // Slot 29: 熊猫刷怪蛋
+        inv.setItem(29, createIconItem(
+                Material.PANDA_SPAWN_EGG,
+                "§e🐼 熊猫",
+                List.of("§7点击变身为熊猫")));
+
+        // Slot 30: 北极熊刷怪蛋
+        inv.setItem(30, createIconItem(
+                Material.POLAR_BEAR_SPAWN_EGG,
+                "§e🐻 北极熊",
+                List.of("§7点击变身为北极熊", "§7按 F 键攻击动画")));
         // Slot 49: 取消变身（最底部正中）
         if (PacketUtils.isDisguised(player)) {
             inv.setItem(49, createIconItem(
@@ -193,6 +235,34 @@ public class DisguiseMenu implements Listener {
         } else if (clicked == Material.WOLF_SPAWN_EGG) {
             disguiseManager.applyDisguise(player, DisguiseType.WOLF);
             player.sendMessage("§a你已变身为狼！");
+            player.closeInventory();
+        } else if (clicked == Material.ARMADILLO_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.ARMADILLO);
+            player.sendMessage("§a你已变身为犰狳！");
+            player.closeInventory();
+        } else if (clicked == Material.FOX_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.FOX);
+            player.sendMessage("§a你已变身为狐狸！");
+            player.closeInventory();
+        } else if (clicked == Material.GOAT_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.GOAT);
+            player.sendMessage("§a你已变身为山羊！");
+            player.closeInventory();
+        } else if (clicked == Material.LLAMA_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.LLAMA);
+            player.sendMessage("§a你已变身为羊驼！");
+            player.closeInventory();
+        } else if (clicked == Material.OCELOT_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.OCELOT);
+            player.sendMessage("§a你已变身为豹猫！");
+            player.closeInventory();
+        } else if (clicked == Material.PANDA_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.PANDA);
+            player.sendMessage("§a你已变身为熊猫！");
+            player.closeInventory();
+        } else if (clicked == Material.POLAR_BEAR_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.POLAR_BEAR);
+            player.sendMessage("§a你已变身为北极熊！");
             player.closeInventory();
         } else if (clicked == Material.BARRIER) {
             if (PacketUtils.isDisguised(player)) {
