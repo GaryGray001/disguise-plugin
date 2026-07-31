@@ -8,8 +8,11 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Creature;
+import org.bukkit.entity.Camel;
 import org.bukkit.entity.Chicken;
+import org.bukkit.entity.Donkey;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Mule;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 import org.bukkit.event.EventHandler;
@@ -18,6 +21,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityEnterLoveModeEvent;
+import org.bukkit.event.entity.EntityMountEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -109,6 +113,9 @@ public class PacketUtils implements Listener {
                             if (chicken.hasAI()) chicken.setAI(false);
                             chicken.setVelocity(new Vector(0, 0, 0));
                         }
+                    } else if (si.mob instanceof Camel camel && camel.isSitting()) {
+                        // 骆驼趴下：不跟随玩家，仅同步旋转
+                        si.mob.setRotation(loc.getYaw(), loc.getPitch());
                     } else {
                         si.mob.teleport(loc); si.mob.setRotation(loc.getYaw(), loc.getPitch());
                     }
@@ -153,6 +160,53 @@ public class PacketUtils implements Listener {
         target.sendActionBar(Component.text("§e🐔 变身鸡就绪！"));
     }
 
+    // ===== 骑乘动物（骆驼/马/驴/骡）=====
+    // 可被其他玩家乘骑，但乘骑者无法控制方向（AI=false + ticker 传送位置，方向由变身玩家控制）
+
+    public static void disguiseAsCamel(Player target) {
+        Camel camel = target.getWorld().spawn(target.getLocation(), Camel.class);
+        camel.setAgeLock(true);
+        double originalMaxHp = camel.getMaxHealth(); // 原版骆驼血量（32）
+        saveData(camel, target); applyDisguise(target, camel);
+        // 恢复原版血量（applyDisguise 会强制 8HP）
+        camel.setMaxHealth(originalMaxHp); camel.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        target.sendActionBar(Component.text("§e🐫 变身骆驼！可被其他玩家乘骑"));
+    }
+
+    public static void disguiseAsHorse(Player target) {
+        org.bukkit.entity.Horse horse = target.getWorld().spawn(target.getLocation(), org.bukkit.entity.Horse.class);
+        horse.setAgeLock(true);
+        double originalMaxHp = horse.getMaxHealth(); // 原版马血量（15-30 随机）
+        saveData(horse, target); applyDisguise(target, horse);
+        horse.setMaxHealth(originalMaxHp); horse.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        horse.setTamed(true); // 驯服后才能被乘骑（无鞍 → 乘骑者无法控制方向）
+        target.sendActionBar(Component.text("§e🐴 变身马！可被其他玩家乘骑"));
+    }
+
+    public static void disguiseAsDonkey(Player target) {
+        Donkey donkey = target.getWorld().spawn(target.getLocation(), Donkey.class);
+        donkey.setAgeLock(true);
+        double originalMaxHp = donkey.getMaxHealth(); // 原版驴血量（15-30 随机）
+        saveData(donkey, target); applyDisguise(target, donkey);
+        donkey.setMaxHealth(originalMaxHp); donkey.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        donkey.setTamed(true);
+        target.sendActionBar(Component.text("§e🐴 变身驴！可被其他玩家乘骑"));
+    }
+
+    public static void disguiseAsMule(Player target) {
+        Mule mule = target.getWorld().spawn(target.getLocation(), Mule.class);
+        mule.setAgeLock(true);
+        double originalMaxHp = mule.getMaxHealth(); // 原版骡血量（15-30 随机）
+        saveData(mule, target); applyDisguise(target, mule);
+        mule.setMaxHealth(originalMaxHp); mule.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        mule.setTamed(true);
+        target.sendActionBar(Component.text("§e🐴 变身骡子！可被其他玩家乘骑"));
+    }
+
     public static void undisguise(Player target) {
         UUID uid = target.getUniqueId();
         DisguiseInfo info = disguises.remove(uid);
@@ -177,7 +231,11 @@ public class PacketUtils implements Listener {
         if (info == null) return null;
         info.aiMode = !info.aiMode;
         if (info.aiMode) { info.mob.setAI(true); player.sendMessage("§e[变身] 切换为 §aAI 自主模式"); }
-        else { info.mob.setAI(false); player.teleport(info.mob.getLocation()); player.sendMessage("§e[变身] 切换为 §b玩家控制模式"); }
+        else {
+            // 切回玩家控制：骆驼强制站起（AI 模式下可能趴下），再瞬移玩家到骆驼
+            if (info.mob instanceof Camel) ((Camel) info.mob).setSitting(false);
+            info.mob.setAI(false); player.teleport(info.mob.getLocation()); player.sendMessage("§e[变身] 切换为 §b玩家控制模式");
+        }
         return info.aiMode ? "AI 自主" : "玩家控制";
     }
 
@@ -240,6 +298,7 @@ public class PacketUtils implements Listener {
         if (info == null || info.mob.isDead() || !info.mob.isValid()) return;
         if (info.aiMode || info.isEating) return;
         if (info.mob instanceof Chicken) return; // 鸡的位置完全由 ticker 统一控制，避免 ticker / PlayerMove / AI 三路冲突
+        if (info.mob instanceof Camel camel && camel.isSitting()) return; // 骆驼趴下时不跟随
         Location to = event.getTo(), from = event.getFrom();
         if (to.getX() == from.getX() && to.getY() == from.getY() && to.getZ() == from.getZ()) return;
         info.mob.teleport(to.clone()); info.mob.setRotation(to.getYaw(), to.getPitch());
@@ -269,6 +328,21 @@ public class PacketUtils implements Listener {
         if (info == null || info.aiMode) return;
         if (info.mob instanceof Sheep) { sheepEat(event, info); return; }
         if (info.mob instanceof Chicken) { chickenLayEgg(event, info); return; }
+        if (info.mob instanceof Camel) { camelSitToggle(event, info); return; }
+    }
+
+    // 骆驼：F 键趴下/站起（趴下时不跟随玩家）
+    private static void camelSitToggle(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Camel camel = (Camel) info.mob;
+        if (camel.isSitting()) {
+            camel.setSitting(false);
+            event.getPlayer().teleport(camel.getLocation());
+            event.getPlayer().sendMessage("§e骆驼站起来了！");
+        } else {
+            camel.setSitting(true);
+            event.getPlayer().sendMessage("§e骆驼趴下了！(不再跟随)");
+        }
     }
 
     private static void chickenLayEgg(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
@@ -298,6 +372,17 @@ public class PacketUtils implements Listener {
         if (event.getTarget() instanceof Player player) {
             DisguiseInfo info = disguises.get(player.getUniqueId());
             if (info != null) event.setCancelled(true);
+        }
+    }
+
+    @EventHandler public void onEntityMount(EntityMountEvent event) {
+        // 变身玩家不能乘骑自己变身的生物（防止玩家自己骑自己的马/骆驼飞天）
+        if (event.getEntity() instanceof Player player) {
+            DisguiseInfo info = disguises.get(player.getUniqueId());
+            if (info != null && info.mob.equals(event.getMount())) {
+                event.setCancelled(true);
+                player.sendMessage("§c你不能乘骑自己变身的生物！");
+            }
         }
     }
 

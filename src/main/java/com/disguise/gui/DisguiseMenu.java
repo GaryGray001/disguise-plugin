@@ -77,6 +77,30 @@ public class DisguiseMenu implements Listener {
                 Material.CHICKEN_SPAWN_EGG,
                 "§e🐔 鸡",
                 List.of("§7点击变身为鸡", "§7按 F 键下蛋", "§8→ 可喂种子繁殖")));
+
+        // Slot 14: 骆驼刷怪蛋
+        inv.setItem(14, createIconItem(
+                Material.CAMEL_SPAWN_EGG,
+                "§e🐫 骆驼",
+                List.of("§7点击变身为骆驼", "§7可被其他玩家乘骑", "§8→ 乘骑者无法控制方向")));
+
+        // Slot 15: 马刷怪蛋
+        inv.setItem(15, createIconItem(
+                Material.HORSE_SPAWN_EGG,
+                "§e🐴 马",
+                List.of("§7点击变身为马", "§7可被其他玩家乘骑", "§8→ 乘骑者无法控制方向")));
+
+        // Slot 16: 驴刷怪蛋
+        inv.setItem(16, createIconItem(
+                Material.DONKEY_SPAWN_EGG,
+                "§e🐴 驴",
+                List.of("§7点击变身为驴", "§7可被其他玩家乘骑", "§8→ 乘骑者无法控制方向")));
+
+        // Slot 19: 骡子刷怪蛋（第二行已满，放第三行第一个空格子）
+        inv.setItem(19, createIconItem(
+                Material.MULE_SPAWN_EGG,
+                "§e🐴 骡子",
+                List.of("§7点击变身为骡子", "§7可被其他玩家乘骑", "§8→ 乘骑者无法控制方向")));
         // Slot 49: 取消变身（最底部正中）
         if (PacketUtils.isDisguised(player)) {
             inv.setItem(49, createIconItem(
@@ -133,6 +157,22 @@ public class DisguiseMenu implements Listener {
         } else if (clicked == Material.CHICKEN_SPAWN_EGG) {
             disguiseManager.applyDisguise(player, DisguiseType.CHICKEN);
             player.sendMessage("§a你已变身为鸡！按 F 键可下蛋！");
+            player.closeInventory();
+        } else if (clicked == Material.CAMEL_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.CAMEL);
+            player.sendMessage("§a你已变身为骆驼！可被其他玩家乘骑！");
+            player.closeInventory();
+        } else if (clicked == Material.HORSE_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.HORSE);
+            player.sendMessage("§a你已变身为马！可被其他玩家乘骑！");
+            player.closeInventory();
+        } else if (clicked == Material.DONKEY_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.DONKEY);
+            player.sendMessage("§a你已变身为驴！可被其他玩家乘骑！");
+            player.closeInventory();
+        } else if (clicked == Material.MULE_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.MULE);
+            player.sendMessage("§a你已变身为骡子！可被其他玩家乘骑！");
             player.closeInventory();
         } else if (clicked == Material.BARRIER) {
             if (PacketUtils.isDisguised(player)) {

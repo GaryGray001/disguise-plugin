@@ -1,7 +1,11 @@
 package com.disguise.disguise;
 
+import com.disguise.disguise.types.CamelDisguise;
 import com.disguise.disguise.types.ChickenDisguise;
 import com.disguise.disguise.types.CowDisguise;
+import com.disguise.disguise.types.DonkeyDisguise;
+import com.disguise.disguise.types.HorseDisguise;
+import com.disguise.disguise.types.MuleDisguise;
 import com.disguise.disguise.types.PigDisguise;
 import com.disguise.disguise.types.SheepDisguise;
 import org.bukkit.DyeColor;
@@ -33,6 +37,10 @@ public class DisguiseManager {
             case PIG -> new PigDisguise();
             case COW -> new CowDisguise();
             case CHICKEN -> new ChickenDisguise();
+            case CAMEL -> new CamelDisguise();
+            case HORSE -> new HorseDisguise();
+            case DONKEY -> new DonkeyDisguise();
+            case MULE -> new MuleDisguise();
         };
         d.apply(player);
         active.put(player.getUniqueId(), d);
