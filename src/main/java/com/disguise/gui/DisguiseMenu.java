@@ -101,6 +101,18 @@ public class DisguiseMenu implements Listener {
                 Material.MULE_SPAWN_EGG,
                 "§e🐴 骡子",
                 List.of("§7点击变身为骡子", "§7可被其他玩家乘骑", "§8→ 乘骑者无法控制方向")));
+
+        // Slot 20: 猫刷怪蛋
+        inv.setItem(20, createIconItem(
+                Material.CAT_SPAWN_EGG,
+                "§e🐱 猫",
+                List.of("§7点击变身为猫", "§8→ 无法被驯服")));
+
+        // Slot 21: 狼刷怪蛋
+        inv.setItem(21, createIconItem(
+                Material.WOLF_SPAWN_EGG,
+                "§e🐺 狼",
+                List.of("§7点击变身为狼", "§8→ 无法被驯服")));
         // Slot 49: 取消变身（最底部正中）
         if (PacketUtils.isDisguised(player)) {
             inv.setItem(49, createIconItem(
@@ -173,6 +185,14 @@ public class DisguiseMenu implements Listener {
         } else if (clicked == Material.MULE_SPAWN_EGG) {
             disguiseManager.applyDisguise(player, DisguiseType.MULE);
             player.sendMessage("§a你已变身为骡子！可被其他玩家乘骑！");
+            player.closeInventory();
+        } else if (clicked == Material.CAT_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.CAT);
+            player.sendMessage("§a你已变身为猫！");
+            player.closeInventory();
+        } else if (clicked == Material.WOLF_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.WOLF);
+            player.sendMessage("§a你已变身为狼！");
             player.closeInventory();
         } else if (clicked == Material.BARRIER) {
             if (PacketUtils.isDisguised(player)) {

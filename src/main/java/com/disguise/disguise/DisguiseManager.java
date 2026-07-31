@@ -1,6 +1,7 @@
 package com.disguise.disguise;
 
 import com.disguise.disguise.types.CamelDisguise;
+import com.disguise.disguise.types.CatDisguise;
 import com.disguise.disguise.types.ChickenDisguise;
 import com.disguise.disguise.types.CowDisguise;
 import com.disguise.disguise.types.DonkeyDisguise;
@@ -8,6 +9,7 @@ import com.disguise.disguise.types.HorseDisguise;
 import com.disguise.disguise.types.MuleDisguise;
 import com.disguise.disguise.types.PigDisguise;
 import com.disguise.disguise.types.SheepDisguise;
+import com.disguise.disguise.types.WolfDisguise;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -41,6 +43,8 @@ public class DisguiseManager {
             case HORSE -> new HorseDisguise();
             case DONKEY -> new DonkeyDisguise();
             case MULE -> new MuleDisguise();
+            case CAT -> new CatDisguise();
+            case WOLF -> new WolfDisguise();
         };
         d.apply(player);
         active.put(player.getUniqueId(), d);

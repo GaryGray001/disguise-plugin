@@ -9,10 +9,12 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Camel;
+import org.bukkit.entity.Cat;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Donkey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mule;
+import org.bukkit.entity.Wolf;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 import org.bukkit.event.EventHandler;
@@ -23,6 +25,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityEnterLoveModeEvent;
 import org.bukkit.event.entity.EntityMountEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInputEvent;
@@ -207,6 +210,30 @@ public class PacketUtils implements Listener {
         target.sendActionBar(Component.text("§e🐴 变身骡子！可被其他玩家乘骑"));
     }
 
+    // ===== 猫/狼（不可驯服）=====
+
+    public static void disguiseAsCat(Player target) {
+        Cat cat = target.getWorld().spawn(target.getLocation(), Cat.class);
+        cat.setAgeLock(true);
+        double originalMaxHp = cat.getMaxHealth(); // 原版猫血量（10）
+        saveData(cat, target); applyDisguise(target, cat);
+        cat.setMaxHealth(originalMaxHp); cat.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        // 保持野生，不 setTamed
+        target.sendActionBar(Component.text("§e🐱 变身猫！无法被驯服"));
+    }
+
+    public static void disguiseAsWolf(Player target) {
+        Wolf wolf = target.getWorld().spawn(target.getLocation(), Wolf.class);
+        wolf.setAgeLock(true);
+        double originalMaxHp = wolf.getMaxHealth(); // 原版狼血量
+        saveData(wolf, target); applyDisguise(target, wolf);
+        wolf.setMaxHealth(originalMaxHp); wolf.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        // 保持野生，不 setTamed
+        target.sendActionBar(Component.text("§e🐺 变身狼！无法被驯服"));
+    }
+
     public static void undisguise(Player target) {
         UUID uid = target.getUniqueId();
         DisguiseInfo info = disguises.remove(uid);
@@ -382,6 +409,19 @@ public class PacketUtils implements Listener {
             if (info != null && info.mob.equals(event.getMount())) {
                 event.setCancelled(true);
                 player.sendMessage("§c你不能乘骑自己变身的生物！");
+            }
+        }
+    }
+
+    @EventHandler public void onEntityTame(EntityTameEvent event) {
+        // 猫/狼变身生物不可被其他玩家驯服
+        for (DisguiseInfo info : disguises.values()) {
+            if (info.mob.equals(event.getEntity())) {
+                event.setCancelled(true);
+                if (info.owner != null && info.owner.isOnline()) {
+                    info.owner.sendMessage("§c你的变身生物无法被驯服！");
+                }
+                return;
             }
         }
     }
