@@ -1,5 +1,13 @@
+import org.gradle.api.attributes.java.TargetJvmVersion
+
 plugins {
     id 'java'
+}
+
+// 依赖（paper-api 1.21.9）本身是 Java 21 构建的，按 21 解析；
+// 但编译产物用 options.release=17 输出 Java 17 字节码，兼容 1.17+ 服务器
+configurations.all {
+    attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 21)
 }
 
 group = 'com.disguise'
@@ -11,16 +19,13 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT'
-}
-
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    compileOnly 'io.papermc.paper:paper-api:1.21.9-R0.1-SNAPSHOT'
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.release.set(21)
+    // Java 17 字节码：兼容 1.17+ 服务器（1.17/1.18 用 Java 17，1.19+ 用 Java 17+）
+    options.release.set(17)
 }
 
 processResources {

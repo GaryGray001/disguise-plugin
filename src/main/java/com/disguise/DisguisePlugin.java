@@ -43,6 +43,16 @@ public class DisguisePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(PacketUtils.getListener(), this);
         getServer().getPluginManager().registerEvents(possessionTestManager, this);
 
+        // 输入监听器：PlayerInputEvent 是 1.21.4+ 的 API，低版本用兼容监听器（Ctrl 切模式用 PlayerToggleSprintEvent）
+        try {
+            Class.forName("org.bukkit.event.player.PlayerInputEvent");
+            getServer().getPluginManager().registerEvents(new com.disguise.packet.PlayerInputListener(this), this);
+            getLogger().info("检测到 PlayerInputEvent（1.21.4+），已注册新版输入监听器");
+        } catch (ClassNotFoundException e) {
+            getServer().getPluginManager().registerEvents(new com.disguise.packet.PlayerInputCompat(), this);
+            getLogger().info("未检测到 PlayerInputEvent（旧版服务器），已注册兼容输入监听器");
+        }
+
         // 自动关闭 locatorBar（MC 1.21.6+ 的经验条玩家位置显示）
         if (getConfig().getBoolean("disable-locator-bar")) {
             disableLocatorBar();
