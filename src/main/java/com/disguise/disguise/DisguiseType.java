@@ -34,7 +34,8 @@ public enum DisguiseType {
     PUFFERFISH("河豚", null, "PUFFERFISH"), SQUID("鱿鱼", null, "SQUID"), GLOW_SQUID("发光鱿鱼", null, "GLOW_SQUID"), TROPICAL_FISH("热带鱼", null, "TROPICAL_FISH"),
     DOLPHIN("海豚", null, "DOLPHIN"), TADPOLE("蝌蚪", null, "TADPOLE"), NAUTILUS("鹦鹉螺", "1.21.11", "NAUTILUS"), ZOMBIFIED_NAUTILUS("僵尸鹦鹉螺", "1.21.11", "ZOMBIFIED_NAUTILUS"),
     GUARDIAN("守卫者", null, "GUARDIAN"), ELDER_GUARDIAN("远古守卫者", null, "ELDER_GUARDIAN"),
-    HOGLIN("疣猪兽", null, "HOGLIN"), VEX("恼鬼", null, "VEX"), ENDERMITE("末影螨", null, "ENDERMITE");
+    HOGLIN("疣猪兽", null, "HOGLIN"), VEX("恼鬼", null, "VEX"), ENDERMITE("末影螨", null, "ENDERMITE"),
+    ENDER_DRAGON("末影龙", null, "ENDER_DRAGON"), WITHER("凋零", null, "WITHER"), SHULKER("潜影贝", null, "SHULKER");
 
     private final String displayName;
     private final String[] entityTypeNames;

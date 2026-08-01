@@ -72,7 +72,7 @@ public class DisguiseMenu implements Listener {
             // 🕷️ 其他怪物
             DisguiseType.SPIDER, DisguiseType.CAVE_SPIDER, DisguiseType.CREEPER, DisguiseType.SILVERFISH, DisguiseType.ENDERMITE,
             DisguiseType.ENDERMAN, DisguiseType.BLAZE, DisguiseType.STRIDER, DisguiseType.RAVAGER,
-            DisguiseType.GUARDIAN, DisguiseType.ELDER_GUARDIAN, DisguiseType.BREEZE, DisguiseType.WARDEN, DisguiseType.VEX,
+            DisguiseType.GUARDIAN, DisguiseType.ELDER_GUARDIAN, DisguiseType.BREEZE, DisguiseType.WARDEN, DisguiseType.VEX, DisguiseType.SHULKER,
             // 🟢 特殊（体型选择）
             DisguiseType.SLIME, DisguiseType.MAGMA_CUBE,
             // 🤖 傀儡
@@ -82,7 +82,9 @@ public class DisguiseMenu implements Listener {
             DisguiseType.GHAST, DisguiseType.HAPPY_GHAST,
             // 🌊 水下
             DisguiseType.COD, DisguiseType.SALMON, DisguiseType.PUFFERFISH, DisguiseType.TROPICAL_FISH,
-            DisguiseType.SQUID, DisguiseType.GLOW_SQUID, DisguiseType.DOLPHIN, DisguiseType.NAUTILUS, DisguiseType.ZOMBIFIED_NAUTILUS);
+            DisguiseType.SQUID, DisguiseType.GLOW_SQUID, DisguiseType.DOLPHIN, DisguiseType.NAUTILUS, DisguiseType.ZOMBIFIED_NAUTILUS,
+            // 👑 终极 Boss
+            DisguiseType.WITHER, DisguiseType.ENDER_DRAGON);
 
     // 有幼年变体的生物（点击时弹出小型/正常选择）
     private static final java.util.Set<DisguiseType> BABY_TYPES = java.util.Set.of(
@@ -289,7 +291,10 @@ public class DisguiseMenu implements Listener {
             case ELDER_GUARDIAN -> createIconItem(Material.ELDER_GUARDIAN_SPAWN_EGG, "§e👁️ 远古守卫者", List.of("§7点击变身为远古守卫者", "§8→ 离水会跳"));
             case HOGLIN -> createIconItem(Material.HOGLIN_SPAWN_EGG, "§e🐗 疣猪兽", List.of("§7点击变身为疣猪兽"));
             case VEX -> createIconItem(Material.VEX_SPAWN_EGG, "§e👻 恼鬼", List.of("§7点击变身为恼鬼", "§7可自由飞行", "§8→ 永不消失"));
+            case SHULKER -> createIconItem(Material.SHULKER_SPAWN_EGG, "§e🦐 潜影贝", List.of("§7点击变身为潜影贝", "§7WASD 随机瞬移", "§7F 键发射子弹", "§7Shift 开壳/关壳", "§8→ 固定原地"));
             case ENDERMITE -> createIconItem(Material.ENDERMITE_SPAWN_EGG, "§e🪳 末影螨", List.of("§7点击变身为末影螨", "§8→ 永不消失"));
+            case WITHER -> createIconItem(Material.WITHER_SPAWN_EGG, "§e☠️ 凋零", List.of("§7点击变身为凋零", "§7按 F 键发射凋零头颅", "§7可自由飞行", "§8→ 终极 Boss"));
+            case ENDER_DRAGON -> createIconItem(Material.ENDER_DRAGON_SPAWN_EGG, "§e🐲 末影龙", List.of("§7点击变身为末影龙", "§7按 F 键发射龙息弹", "§7可自由飞行", "§8→ 终极 Boss"));
             case BAT -> createIconItem(Material.BAT_SPAWN_EGG, "§e🦇 蝙蝠", List.of("§7点击变身为蝙蝠", "§7可自由飞行"));
             case BEE -> createIconItem(Material.BEE_SPAWN_EGG, "§e🐝 蜜蜂", List.of("§7点击变身为蜜蜂", "§7可自由飞行"));
             case ALLAY -> createIconItem(Material.ALLAY_SPAWN_EGG, "§e🧚 悦灵", List.of("§7点击变身为悦灵", "§7可自由飞行"));
@@ -642,9 +647,21 @@ public class DisguiseMenu implements Listener {
             disguiseManager.applyDisguise(player, DisguiseType.VEX);
             player.sendMessage("§a你已变身为恼鬼！永不消失！");
             player.closeInventory();
+        } else if (clicked == Material.SHULKER_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.SHULKER);
+            player.sendMessage("§a你已变身为潜影贝！固定原地，WASD 瞬移！");
+            player.closeInventory();
         } else if (clicked == Material.ENDERMITE_SPAWN_EGG) {
             disguiseManager.applyDisguise(player, DisguiseType.ENDERMITE);
             player.sendMessage("§a你已变身为末影螨！永不消失！");
+            player.closeInventory();
+        } else if (clicked == Material.WITHER_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.WITHER);
+            player.sendMessage("§a你已变身为凋零！终极 Boss！");
+            player.closeInventory();
+        } else if (clicked == Material.ENDER_DRAGON_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.ENDER_DRAGON);
+            player.sendMessage("§a你已变身为末影龙！终极 Boss！");
             player.closeInventory();
         } else if (clicked == Material.BAT_SPAWN_EGG) {
             disguiseManager.applyDisguise(player, DisguiseType.BAT);

@@ -26,10 +26,12 @@ import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Dolphin;
 import org.bukkit.entity.Donkey;
+import org.bukkit.entity.DragonFireball;
 import org.bukkit.entity.Drowned;
 import org.bukkit.entity.ElderGuardian;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Endermite;
 import org.bukkit.entity.Evoker;
 import org.bukkit.entity.Fox;
@@ -60,6 +62,8 @@ import org.bukkit.entity.Pillager;
 import org.bukkit.entity.PolarBear;
 import org.bukkit.entity.Ravager;
 import org.bukkit.entity.Salmon;
+import org.bukkit.entity.Shulker;
+import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.Silverfish;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.SmallFireball;
@@ -83,6 +87,8 @@ import org.bukkit.entity.Vindicator;
 import org.bukkit.entity.WanderingTrader;
 import org.bukkit.entity.Warden;
 import org.bukkit.entity.Witch;
+import org.bukkit.entity.Wither;
+import org.bukkit.entity.WitherSkull;
 import org.bukkit.entity.WitherSkeleton;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Zoglin;
@@ -139,6 +145,7 @@ public class PacketUtils implements Listener {
     private static final Set<UUID> recentlyDamaged = ConcurrentHashMap.newKeySet();
     private static final NamespacedKey DISGUISE_KEY = new NamespacedKey("disguise_plugin", "disguise_owner");
     private static final long CHICKEN_EGG_COOLDOWN = 30000L; // 30 秒（毫秒）
+    private static final float MAX_PITCH = 60f; // 末影龙俯仰角限制（仰/低头不超过 60°）
 
     public static void init(JavaPlugin p) { plugin = p; }
 
@@ -208,7 +215,7 @@ public class PacketUtils implements Listener {
                         Location mobLoc = loc.clone();
                         double off = flyingOffset(si.mob);
                         if (off > 0) mobLoc.add(0, off, 0);
-                        si.mob.teleport(mobLoc); si.mob.setRotation(loc.getYaw(), loc.getPitch());
+                        si.mob.teleport(mobLoc); si.mob.setRotation(mobYaw(si.mob, loc.getYaw()), loc.getPitch());
                     }
                     Boolean m = playerMoving.get(uid);
                     // 飞行模式（蝙蝠）下不强制停止水平移动
@@ -236,6 +243,18 @@ public class PacketUtils implements Listener {
             if (isFlyingMob(si.mob)) {
                 if (si.mob instanceof Bat bat && !bat.isAwake()) bat.setAwake(true); // 蝙蝠保持醒着不倒立
                 if (!target.isFlying()) target.setFlying(true);
+            }
+            // 潜影贝：固定原地（玩家不能走，只能瞬移移动）
+            if (si.mob instanceof Shulker && si.anchoredLoc != null) {
+                Location pl = target.getLocation();
+                if (Math.abs(pl.getX() - si.anchoredLoc.getX()) > 0.01
+                        || Math.abs(pl.getY() - si.anchoredLoc.getY()) > 0.01
+                        || Math.abs(pl.getZ() - si.anchoredLoc.getZ()) > 0.01) {
+                    Location fix = si.anchoredLoc.clone();
+                    fix.setYaw(pl.getYaw());
+                    fix.setPitch(pl.getPitch());
+                    target.teleport(fix);
+                }
             }
             // 水下生物（会跳的）：离水时强制蹦跳（模拟鱼上岸跳个不停）
             if (!si.aiMode && isFishHopMob(si.mob) && !target.isInWater() && target.isOnGround()) {
@@ -971,6 +990,121 @@ public class PacketUtils implements Listener {
         target.sendActionBar(Component.text("§e🪳 变身末影螨！永不消失"));
     }
 
+    // ===== 终极 Boss（末影龙/凋零）=====
+
+    public static void disguiseAsEnderDragon(Player target) {
+        EnderDragon dragon = target.getWorld().spawn(target.getLocation(), EnderDragon.class);
+        // 末影龙不是标准 Mob 接口，但实体实现是 Mob → 接口间 cast 运行时成功
+        applyMobDisguise(target, (Mob) dragon);
+        dragon.setCollidable(false); // 巨型 Boss：玩家在体内，关闭碰撞防推挤
+        dragon.setAI(true); // 保持 AI=true → 龙有飞行动画（位置由 ticker 拉回头顶）
+        enableFlight(target);
+        target.sendActionBar(Component.text("§e🐲 变身末影龙！可自由飞行"));
+    }
+
+    public static void disguiseAsWither(Player target) {
+        Wither wither = target.getWorld().spawn(target.getLocation(), Wither.class);
+        applyMobDisguise(target, wither);
+        wither.setCollidable(false); // 巨型 Boss：玩家在体内，关闭碰撞防推挤
+        enableFlight(target);
+        target.sendActionBar(Component.text("§e☠️ 变身凋零！可自由飞行"));
+    }
+
+    // ===== 潜影贝（固定原地 + 瞬移）=====
+
+    public static void disguiseAsShulker(Player target) {
+        Shulker shulker = target.getWorld().spawn(target.getLocation(), Shulker.class);
+        applyMobDisguise(target, shulker);
+        // 固定玩家在变身位置（只能瞬移移动）+ 关闭重力（漂浮悬停）
+        DisguiseInfo info = disguises.get(target.getUniqueId());
+        if (info != null) {
+            info.anchoredLoc = target.getLocation().clone();
+            info.originalGravity = target.hasGravity();
+            target.setGravity(false);
+        }
+        target.sendActionBar(Component.text("§e🦐 变身潜影贝！固定原地，WASD 瞬移"));
+    }
+
+    // 潜影贝 WASD 任意键随机瞬移（完全随机位置，2 秒冷却）
+    public static void shulkerTeleport(Player player, String direction) {
+        DisguiseInfo info = disguises.get(player.getUniqueId());
+        if (info == null || info.mob.isDead() || !(info.mob instanceof Shulker)) return;
+        long now = System.currentTimeMillis();
+        if (now - info.lastShulkerTeleportTime < 2000L) return;
+        // 尝试 15 次随机瞬移（方向 360° 随机 + 距离 2-6 格 + 高度偏移 ±2）
+        for (int attempt = 0; attempt < 15; attempt++) {
+            double angle = Math.random() * Math.PI * 2; // 随机方向
+            double dist = 2 + Math.random() * 4;        // 2 ~ 6 格
+            double dy = (Math.random() * 4) - 2;        // -2 ~ +2
+            Vector offset = new Vector(Math.cos(angle) * dist, dy, Math.sin(angle) * dist);
+            Location target = player.getLocation().clone().add(offset);
+            org.bukkit.block.BlockFace face = findAttachFace(target);
+            if (face != null) {
+                // 瞬移成功
+                info.lastShulkerTeleportTime = now;
+                Location dest = target.clone();
+                dest.setX(target.getBlockX() + 0.5);
+                dest.setY(target.getBlockY());
+                dest.setZ(target.getBlockZ() + 0.5);
+                dest.setYaw(player.getLocation().getYaw());
+                dest.setPitch(player.getLocation().getPitch());
+                player.teleport(dest);
+                // 设置潜影贝附着面（站立/倒立/侧立）
+                Shulker shulker = (Shulker) info.mob;
+                try {
+                    shulker.setAttachedFace(face);
+                } catch (Exception ignored) {}
+                // 更新固定位置
+                info.anchoredLoc = dest.clone();
+                return;
+            }
+        }
+        player.sendMessage("§c这里没有可瞬移的位置！");
+    }
+
+    // 检测目标位置 6 面哪个可附着（返回贝口朝向；无可附着面返回 null）
+    private static org.bukkit.block.BlockFace findAttachFace(Location loc) {
+        org.bukkit.World w = loc.getWorld();
+        int x = loc.getBlockX(), y = loc.getBlockY(), z = loc.getBlockZ();
+        // 潜影贝占据的位置必须可站立（无方块）
+        if (!w.getBlockAt(x, y, z).getType().isAir() && w.getBlockAt(x, y, z).getType().isSolid()) return null;
+        java.util.List<org.bukkit.block.BlockFace> faces = new java.util.ArrayList<>();
+        if (w.getBlockAt(x, y - 1, z).getType().isSolid()) faces.add(org.bukkit.block.BlockFace.UP);
+        if (w.getBlockAt(x, y + 1, z).getType().isSolid()) faces.add(org.bukkit.block.BlockFace.DOWN);
+        if (w.getBlockAt(x - 1, y, z).getType().isSolid()) faces.add(org.bukkit.block.BlockFace.WEST);
+        if (w.getBlockAt(x + 1, y, z).getType().isSolid()) faces.add(org.bukkit.block.BlockFace.EAST);
+        if (w.getBlockAt(x, y, z - 1).getType().isSolid()) faces.add(org.bukkit.block.BlockFace.NORTH);
+        if (w.getBlockAt(x, y, z + 1).getType().isSolid()) faces.add(org.bukkit.block.BlockFace.SOUTH);
+        if (faces.isEmpty()) return null;
+        return faces.get(new java.util.Random().nextInt(faces.size()));
+    }
+
+    // 潜影贝 F 键：发射潜影贝子弹（需开壳状态，自动跟踪目标，5 秒冷却）
+    private static void shulkerShootBullet(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        // 必须开壳才能发射（原版机制）
+        if (!info.shulkerOpen) {
+            p.sendActionBar(Component.text("§c需要开壳才能发射子弹！（按住 Shift 开壳）"));
+            return;
+        }
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastShulkerBulletTime;
+        if (elapsed < 5000L) {
+            long remaining = (5000L - elapsed + 999) / 1000;
+            p.sendActionBar(Component.text("§e子弹冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastShulkerBulletTime = now;
+        LivingEntity target = findNearestMonster(info.mob);
+        Vector dir = p.getLocation().getDirection().multiply(1.0);
+        info.mob.getWorld().spawn(info.mob.getLocation().add(0, 1, 0), ShulkerBullet.class, bullet -> {
+            bullet.setShooter(p);
+            if (target != null) bullet.setTarget(target); // 原版自动跟踪
+            bullet.setVelocity(dir);
+        });
+    }
+
     public static void disguiseAsGhast(Player target) {
         Ghast ghast = target.getWorld().spawn(target.getLocation(), Ghast.class);
         applyMobDisguise(target, ghast);
@@ -1013,7 +1147,13 @@ public class PacketUtils implements Listener {
     private static boolean isFlyingMob(Mob mob) {
         return mob instanceof Bat || mob instanceof Bee || mob instanceof Allay
                 || mob instanceof Ghast || isHappyGhast(mob) || mob instanceof Phantom
-                || mob instanceof Parrot || mob instanceof Vex;
+                || mob instanceof Parrot || mob instanceof Vex
+                || mob instanceof EnderDragon || mob instanceof Wither;
+    }
+
+    // 末影龙身体朝向与玩家 yaw 相反 → 反转 180°（用于 setRotation）
+    private static float mobYaw(Mob mob, float yaw) {
+        return mob instanceof EnderDragon ? yaw + 180 : yaw;
     }
 
     // 飞行生物头顶偏移量（0 = 不偏移）：按碰撞箱高度计算，保证与玩家碰撞箱（0~1.8）完全错开
@@ -1022,6 +1162,8 @@ public class PacketUtils implements Listener {
         if (mob instanceof Phantom) return 2.2; // 幻翼（高 0.5，宽 0.9 > 玩家）
         if (mob instanceof Ghast) return 4.2; // 恶魂（高 4，中心需在 1.8+2 以上）
         if (isHappyGhast(mob)) return 3.4; // 快乐恶魂（高约 3）
+        if (mob instanceof Wither) return 2.2; // 凋零（紧贴头顶）
+        if (mob instanceof EnderDragon) return 3.0; // 末影龙（贴近头顶，避免高空卡地形）
         return 0;
     }
 
@@ -1066,10 +1208,12 @@ public class PacketUtils implements Listener {
         }
         // 恢复蝙蝠的飞行模式
         if (info != null && info.originalAllowFlight != null) {
-            plugin.getLogger().info("[变身] 恢复飞行 origAllow=" + info.originalAllowFlight + " origFlying=" + info.originalFlying);
             target.setAllowFlight(info.originalAllowFlight);
             target.setFlying(info.originalFlying != null && info.originalFlying);
-            plugin.getLogger().info("[变身] 恢复后 allowFlight=" + target.getAllowFlight() + " flying=" + target.isFlying());
+        }
+        // 恢复潜影贝的重力
+        if (info != null && info.originalGravity != null) {
+            target.setGravity(info.originalGravity);
         }
     }
 
@@ -1083,7 +1227,8 @@ public class PacketUtils implements Listener {
             // 切回玩家控制：骆驼强制站起、狐狸强制站起（AI 模式下可能趴/睡），再瞬移玩家
             if (info.mob instanceof Camel) ((Camel) info.mob).setSitting(false);
             if (info.mob instanceof Fox) ((Fox) info.mob).setSleeping(false);
-            info.mob.setAI(false); player.teleport(info.mob.getLocation()); player.sendMessage("§e[变身] 切换为 §b玩家控制模式");
+            if (!(info.mob instanceof EnderDragon)) info.mob.setAI(false); // 末影龙保持 AI=true 维持飞行动画
+            player.teleport(info.mob.getLocation()); player.sendMessage("§e[变身] 切换为 §b玩家控制模式");
         }
         return info.aiMode ? "AI 自主" : "玩家控制";
     }
@@ -1160,12 +1305,21 @@ public class PacketUtils implements Listener {
         if (info.mob instanceof Camel camel && camel.isSitting()) return; // 骆驼趴下时不跟随
         if (info.mob instanceof Fox fox && fox.isSleeping()) return; // 狐狸卧睡时不跟随
         Location to = event.getTo(), from = event.getFrom();
+        // 末影龙：限制俯仰角（不能仰太高/低太低）
+        if (info.mob instanceof EnderDragon) {
+            float pitch = to.getPitch();
+            if (pitch > MAX_PITCH || pitch < -MAX_PITCH) {
+                to = to.clone();
+                to.setPitch(Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitch)));
+                event.setTo(to);
+            }
+        }
         if (to.getX() == from.getX() && to.getY() == from.getY() && to.getZ() == from.getZ()) return;
         // 飞行生物偏移到玩家头顶（碰撞箱与玩家完全错开，避免重叠推挤）
         Location mobLoc = to.clone();
         double off = flyingOffset(info.mob);
         if (off > 0) mobLoc.add(0, off, 0);
-        info.mob.teleport(mobLoc); info.mob.setRotation(to.getYaw(), to.getPitch());
+        info.mob.teleport(mobLoc); info.mob.setRotation(mobYaw(info.mob, to.getYaw()), to.getPitch());
     }
 
     @EventHandler public void onPlayerQuit(PlayerQuitEvent event) { undisguise(event.getPlayer()); }
@@ -1190,6 +1344,56 @@ public class PacketUtils implements Listener {
         if (info.mob instanceof Enderman) { endermanTeleport(event, info); return; }
         if (info.mob instanceof Ghast) { ghastShootFireball(event, info); return; }
         if (info.mob instanceof PufferFish) { pufferfishPuff(event, info); return; }
+        if (info.mob instanceof Wither) { witherShootSkull(event, info); return; }
+        if (info.mob instanceof EnderDragon) { dragonShootFireball(event, info); return; }
+        if (info.mob instanceof Shulker) { shulkerShootBullet(event, info); return; }
+    }
+
+    // 凋零：F 键发射凋零头颅（黑色头，3 秒冷却）
+    private static void witherShootSkull(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastWitherSkullTime;
+        if (elapsed < 3000L) {
+            long remaining = (3000L - elapsed + 999) / 1000;
+            p.sendActionBar(Component.text("§e头颅冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastWitherSkullTime = now;
+        Vector dir = p.getLocation().getDirection().multiply(1.0);
+        // 从凋零位置（玩家头顶）发射
+        info.mob.getWorld().spawn(info.mob.getLocation().add(0, 1, 0), WitherSkull.class, ws -> {
+            ws.setShooter(p);
+            ws.setVelocity(dir);
+        });
+    }
+
+    // 末影龙：F 键发射龙息弹（5 秒冷却）
+    private static void dragonShootFireball(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastDragonBreathTime;
+        if (elapsed < 5000L) {
+            long remaining = (5000L - elapsed + 999) / 1000;
+            p.sendActionBar(Component.text("§e龙息冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastDragonBreathTime = now;
+        // 发射方向用限制后的俯仰角（不能仰太高/低太低）
+        float yaw = p.getLocation().getYaw();
+        float pitch = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, p.getLocation().getPitch()));
+        Vector dir = new Vector(
+                -Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)),
+                -Math.sin(Math.toRadians(pitch)),
+                Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch))).normalize();
+        // 龙头在 yaw 方向约 8 格（龙身体前后），生成在龙头正前方 9 格（刚出龙身体，视觉上从龙嘴喷出又不撞龙）
+        Location mouthLoc = info.mob.getLocation().clone().add(dir.clone().multiply(9));
+        info.mob.getWorld().spawn(mouthLoc, DragonFireball.class, fb -> {
+            fb.setShooter(p);
+            fb.setVelocity(dir);
+        });
     }
 
     // 河豚：按住 F 膨胀（松开 1 秒后恢复原样，setPuffState 用 int：0=未膨胀 2=完全膨胀）
@@ -1421,11 +1625,32 @@ public class PacketUtils implements Listener {
         });
     }
 
-    // 苦力怕：按住 Shift 蓄力（每 tick +1，30 tick 自爆），松开每 tick -1 消退
-    // 完全自控膨胀计数，不依赖原版 ignite 逻辑；1.21.4+ 由 PlayerInputListener 调用，旧版由 PlayerToggleSneakEvent 调用
-    public static void handleCreeperSneak(Player player, boolean sneaking) {
+    // 潜影贝：Shift 按住开壳（攻击姿态），松开关壳（防御减伤 50%）
+    private static void handleShulkerSneak(Player player, DisguiseInfo info, boolean sneaking) {
+        Shulker shulker = (Shulker) info.mob;
+        if (shulker.isDead() || !shulker.isValid()) return;
+        if (sneaking) {
+            info.shulkerOpen = true;
+            try {
+                shulker.setPeek(1);
+            } catch (Exception ignored) {}
+            player.sendActionBar(Component.text("§e🦐 开壳！攻击姿态"));
+        } else {
+            info.shulkerOpen = false;
+            try {
+                shulker.setPeek(0);
+            } catch (Exception ignored) {}
+            player.sendActionBar(Component.text("§7关壳！防御姿态（减伤 50%）"));
+        }
+    }
+
+    // 通用潜行处理：按变身生物分派（苦力怕自爆 / 潜影贝开壳）
+    // 1.21.4+ 由 PlayerInputListener（input.isSneak）调用，旧版由 PlayerToggleSneakEvent 调用
+    public static void handleSneak(Player player, boolean sneaking) {
         DisguiseInfo info = disguises.get(player.getUniqueId());
-        if (info == null || info.mob.isDead() || !(info.mob instanceof Creeper creeper)) return;
+        if (info == null || info.mob.isDead()) return;
+        if (info.mob instanceof Shulker) { handleShulkerSneak(player, info, sneaking); return; }
+        if (!(info.mob instanceof Creeper creeper)) return;
         if (sneaking) {
             if (info.creeperFuseTask != null) return; // 已蓄力中
             info.creeperFusing = true;
@@ -1507,7 +1732,7 @@ public class PacketUtils implements Listener {
 
     @EventHandler public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
         // 旧版路径（1.21.3 及以下）；1.21.4+ 该事件可能不触发，由 PlayerInputListener 兜底
-        handleCreeperSneak(event.getPlayer(), event.isSneaking());
+        handleSneak(event.getPlayer(), event.isSneaking());
     }
 
     // 铁傀儡：按住 F 持续举花（按住时 PlayerSwapHandItemsEvent 重复触发→刷新 lastRoseTime；松开 1.5 秒后 ticker 自动放下）
@@ -1712,6 +1937,13 @@ public class PacketUtils implements Listener {
 
     @EventHandler public void onEntityDamage(EntityDamageEvent event) {
         Entity e = event.getEntity();
+        // 潜影贝关壳：玩家本体伤害减半（防御姿态）
+        if (e instanceof Player player && disguises.containsKey(player.getUniqueId())) {
+            DisguiseInfo si = disguises.get(player.getUniqueId());
+            if (si != null && si.mob instanceof Shulker && !si.shulkerOpen) {
+                event.setDamage(event.getDamage() * 0.5);
+            }
+        }
         // 猫/豹猫/铜傀儡变身：玩家本体免疫摔落伤害
         if (e instanceof Player player && disguises.containsKey(player.getUniqueId())) {
             DisguiseInfo info = disguises.get(player.getUniqueId());
@@ -1801,10 +2033,17 @@ public class PacketUtils implements Listener {
         long lastBlazeShotTime; // 烈焰人火球冷却
         long lastEndermanTeleportTime; // 末影人传送冷却
         long lastGhastFireballTime; // 恶魂火球冷却
+        long lastWitherSkullTime; // 凋零头颅冷却
+        long lastDragonBreathTime; // 末影龙龙息冷却
         long lastPuffTime; // 河豚膨胀最后时间（0 = 未膨胀）
+        Location anchoredLoc; // 潜影贝固定位置（瞬移时更新）
+        long lastShulkerTeleportTime; // 潜影贝瞬移冷却
+        long lastShulkerBulletTime; // 潜影贝子弹冷却
+        boolean shulkerOpen; // 潜影贝开壳状态（Shift 控制）
         Double originalKnockbackResistance; // 铁傀儡：玩家原击退抗性
         Boolean originalAllowFlight; // 蝙蝠：玩家原飞行许可
         Boolean originalFlying; // 蝙蝠：玩家原飞行状态
+        Boolean originalGravity; // 潜影贝：玩家原重力状态
         boolean creeperFusing; // 苦力怕蓄力中
         int creeperFuseTicks; // 苦力怕蓄力计数（30 = 爆炸）
         BukkitTask creeperFuseTask; // 苦力怕蓄力/消退任务
@@ -1815,8 +2054,10 @@ public class PacketUtils implements Listener {
             lastSnowballTime = 0L; lastRoseTime = 0L; lastBreezeShotTime = 0L;
             lastWardenBoomTime = 0L; lastWitchThrowTime = 0L; lastEvokerSummonTime = 0L; lastBlazeShotTime = 0L;
             lastEndermanTeleportTime = 0L; lastGhastFireballTime = 0L; lastPuffTime = 0L;
+            lastWitherSkullTime = 0L; lastDragonBreathTime = 0L;
+            anchoredLoc = null; lastShulkerTeleportTime = 0L; lastShulkerBulletTime = 0L; shulkerOpen = false;
             originalKnockbackResistance = null;
-            originalAllowFlight = null; originalFlying = null;
+            originalAllowFlight = null; originalFlying = null; originalGravity = null;
             creeperFusing = false; creeperFuseTicks = 0; creeperFuseTask = null;
         }
     }
