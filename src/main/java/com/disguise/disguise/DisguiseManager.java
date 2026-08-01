@@ -55,9 +55,17 @@ import com.disguise.disguise.types.StriderDisguise;
 import com.disguise.disguise.types.ZoglinDisguise;
 import com.disguise.disguise.types.ZombifiedPiglinDisguise;
 import com.disguise.disguise.types.WitherSkeletonDisguise;
+import com.disguise.disguise.types.AllayDisguise;
+import com.disguise.disguise.types.AxolotlDisguise;
+import com.disguise.disguise.types.BatDisguise;
+import com.disguise.disguise.types.BeeDisguise;
+import com.disguise.disguise.types.GhastDisguise;
+import com.disguise.disguise.types.HappyGhastDisguise;
+import com.disguise.disguise.types.PhantomDisguise;
 import com.disguise.disguise.types.EndermanDisguise;
 import com.disguise.disguise.types.FrogDisguise;
 import com.disguise.disguise.types.MagmaCubeDisguise;
+import com.disguise.disguise.types.RabbitDisguise;
 import com.disguise.disguise.types.SlimeDisguise;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.Player;
@@ -143,6 +151,14 @@ public class DisguiseManager {
             case SLIME -> new SlimeDisguise();
             case MAGMA_CUBE -> new MagmaCubeDisguise();
             case FROG -> new FrogDisguise();
+            case RABBIT -> new RabbitDisguise();
+            case AXOLOTL -> new AxolotlDisguise();
+            case BAT -> new BatDisguise();
+            case BEE -> new BeeDisguise();
+            case ALLAY -> new AllayDisguise();
+            case GHAST -> new GhastDisguise();
+            case HAPPY_GHAST -> new HappyGhastDisguise();
+            case PHANTOM -> new PhantomDisguise();
         };
         d.apply(player);
         active.put(player.getUniqueId(), d);
@@ -165,6 +181,15 @@ public class DisguiseManager {
             case MAGMA_CUBE -> new MagmaCubeDisguise(size);
             default -> throw new IllegalArgumentException("该生物不支持体型选择");
         };
+        d.apply(player);
+        active.put(player.getUniqueId(), d);
+        startSync(player, d);
+    }
+
+    /** 颜色变体变身（美西螈） */
+    public void applyDisguise(Player player, DisguiseType type, org.bukkit.entity.Axolotl.Variant variant) {
+        removeDisguise(player);
+        AxolotlDisguise d = new AxolotlDisguise(variant);
         d.apply(player);
         active.put(player.getUniqueId(), d);
         startSync(player, d);

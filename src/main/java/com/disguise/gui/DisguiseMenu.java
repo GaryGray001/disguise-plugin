@@ -39,12 +39,14 @@ public class DisguiseMenu implements Listener {
 
     private final ColorSelectMenu colorSelectMenu;
     private final SizeSelectMenu sizeSelectMenu;
+    private final AxolotlColorMenu axolotlColorMenu;
     private final DisguiseManager disguiseManager;
     private final Map<UUID, Integer> playerPages = new HashMap<>();
 
-    public DisguiseMenu(ColorSelectMenu colorSelectMenu, SizeSelectMenu sizeSelectMenu, DisguiseManager disguiseManager) {
+    public DisguiseMenu(ColorSelectMenu colorSelectMenu, SizeSelectMenu sizeSelectMenu, AxolotlColorMenu axolotlColorMenu, DisguiseManager disguiseManager) {
         this.colorSelectMenu = colorSelectMenu;
         this.sizeSelectMenu = sizeSelectMenu;
+        this.axolotlColorMenu = axolotlColorMenu;
         this.disguiseManager = disguiseManager;
     }
 
@@ -173,7 +175,7 @@ public class DisguiseMenu implements Listener {
             case PILLAGER -> createIconItem(Material.PILLAGER_SPAWN_EGG, "§e🏹 掠夺者", List.of("§7点击变身为掠夺者"));
             case VINDICATOR -> createIconItem(Material.VINDICATOR_SPAWN_EGG, "§e🪓 卫道士", List.of("§7点击变身为卫道士"));
             case RAVAGER -> createIconItem(Material.RAVAGER_SPAWN_EGG, "§e🐗 劫掠兽", List.of("§7点击变身为劫掠兽"));
-            case BLAZE -> createIconItem(Material.BLAZE_SPAWN_EGG, "§e🔥 烈焰人", List.of("§7点击变身为烈焰人", "§7按 F 键连发 3 火球"));
+            case BLAZE -> createIconItem(Material.BLAZE_SPAWN_EGG, "§e🔥 烈焰人", List.of("§7点击变身为烈焰人", "§7按 F 键连发 3 火球", "§8→ 可走路可飞行"));
             case PIGLIN -> createIconItem(Material.PIGLIN_SPAWN_EGG, "§e🐷 猪灵", List.of("§7点击变身为猪灵"));
             case PIGLIN_BRUTE -> createIconItem(Material.PIGLIN_BRUTE_SPAWN_EGG, "§e🗡️ 猪灵蛮兵", List.of("§7点击变身为猪灵蛮兵"));
             case STRIDER -> createIconItem(Material.STRIDER_SPAWN_EGG, "§e🕷️ 炽足兽", List.of("§7点击变身为炽足兽"));
@@ -184,6 +186,14 @@ public class DisguiseMenu implements Listener {
             case SLIME -> createIconItem(Material.SLIME_SPAWN_EGG, "§e🟢 史莱姆", List.of("§7点击变身为史莱姆", "§7行走时自动蹦跳"));
             case MAGMA_CUBE -> createIconItem(Material.MAGMA_CUBE_SPAWN_EGG, "§e🟠 岩浆怪", List.of("§7点击变身为岩浆怪", "§7行走时自动蹦跳", "§8→ 蹦跳带岩浆粒子"));
             case FROG -> createIconItem(Material.FROG_SPAWN_EGG, "§e🐸 青蛙", List.of("§7点击变身为青蛙"));
+            case RABBIT -> createIconItem(Material.RABBIT_SPAWN_EGG, "§e🐰 兔子", List.of("§7点击变身为兔子", "§7行走时自动蹦跳"));
+            case AXOLOTL -> createIconItem(Material.AXOLOTL_SPAWN_EGG, "§e🦎 美西螈", List.of("§7点击选择颜色后变身为美西螈", "§8→ 有 5 种颜色可选", "§8→ 水陆两栖"));
+            case BAT -> createIconItem(Material.BAT_SPAWN_EGG, "§e🦇 蝙蝠", List.of("§7点击变身为蝙蝠", "§7可自由飞行"));
+            case BEE -> createIconItem(Material.BEE_SPAWN_EGG, "§e🐝 蜜蜂", List.of("§7点击变身为蜜蜂", "§7可自由飞行"));
+            case ALLAY -> createIconItem(Material.ALLAY_SPAWN_EGG, "§e🧚 悦灵", List.of("§7点击变身为悦灵", "§7可自由飞行"));
+            case GHAST -> createIconItem(Material.GHAST_SPAWN_EGG, "§e👻 恶魂", List.of("§7点击变身为恶魂", "§7按 F 键发射火球", "§7可自由飞行"));
+            case HAPPY_GHAST -> createIconItem(safeMaterial("HAPPY_GHAST_SPAWN_EGG"), "§e😊 快乐恶魂", List.of("§7点击变身为快乐恶魂", "§7可被其他玩家乘骑", "§7可自由飞行"));
+            case PHANTOM -> createIconItem(Material.PHANTOM_SPAWN_EGG, "§e👾 幻翼", List.of("§7点击变身为幻翼", "§7可自由飞行"));
         };
     }
 
@@ -226,6 +236,7 @@ public class DisguiseMenu implements Listener {
         Material parchedEgg = Material.matchMaterial("PARCHED_SPAWN_EGG");
         Material zombifiedCamelEgg = Material.matchMaterial("ZOMBIFIED_CAMEL_SPAWN_EGG");
         Material copperGolemEgg = Material.matchMaterial("COPPER_GOLEM_SPAWN_EGG");
+        Material happyGhastEgg = Material.matchMaterial("HAPPY_GHAST_SPAWN_EGG");
 
         if (clicked == Material.SHEEP_SPAWN_EGG) {
             colorSelectMenu.open(player);
@@ -456,6 +467,36 @@ public class DisguiseMenu implements Listener {
         } else if (clicked == Material.FROG_SPAWN_EGG) {
             disguiseManager.applyDisguise(player, DisguiseType.FROG);
             player.sendMessage("§a你已变身为青蛙！");
+            player.closeInventory();
+        } else if (clicked == Material.RABBIT_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.RABBIT);
+            player.sendMessage("§a你已变身为兔子！行走时自动蹦跳！");
+            player.closeInventory();
+        } else if (clicked == Material.AXOLOTL_SPAWN_EGG) {
+            axolotlColorMenu.open(player);
+        } else if (clicked == Material.BAT_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.BAT);
+            player.sendMessage("§a你已变身为蝙蝠！可以自由飞行！");
+            player.closeInventory();
+        } else if (clicked == Material.BEE_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.BEE);
+            player.sendMessage("§a你已变身为蜜蜂！可以自由飞行！");
+            player.closeInventory();
+        } else if (clicked == Material.ALLAY_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.ALLAY);
+            player.sendMessage("§a你已变身为悦灵！可以自由飞行！");
+            player.closeInventory();
+        } else if (clicked == Material.GHAST_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.GHAST);
+            player.sendMessage("§a你已变身为恶魂！可以自由飞行！");
+            player.closeInventory();
+        } else if (clicked == Material.PHANTOM_SPAWN_EGG) {
+            disguiseManager.applyDisguise(player, DisguiseType.PHANTOM);
+            player.sendMessage("§a你已变身为幻翼！可以自由飞行！");
+            player.closeInventory();
+        } else if (happyGhastEgg != null && clicked == happyGhastEgg) {
+            disguiseManager.applyDisguise(player, DisguiseType.HAPPY_GHAST);
+            player.sendMessage("§a你已变身为快乐恶魂！可以自由飞行！");
             player.closeInventory();
         } else if (clicked == Material.BARRIER) {
             if (PacketUtils.isDisguised(player)) {

@@ -10,6 +10,10 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Armadillo;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Allay;
+import org.bukkit.entity.Axolotl;
+import org.bukkit.entity.Bat;
+import org.bukkit.entity.Bee;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Bogged;
 import org.bukkit.entity.Breeze;
@@ -25,10 +29,12 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Evoker;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.Frog;
+import org.bukkit.entity.Ghast;
 import org.bukkit.entity.Goat;
 import org.bukkit.entity.Husk;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.LargeFireball;
 import org.bukkit.entity.Llama;
 import org.bukkit.entity.LlamaSpit;
 import org.bukkit.entity.MagmaCube;
@@ -37,7 +43,9 @@ import org.bukkit.entity.MushroomCow;
 import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Panda;
 import org.bukkit.entity.Piglin;
+import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.PiglinBrute;
+import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Pillager;
 import org.bukkit.entity.PolarBear;
 import org.bukkit.entity.Ravager;
@@ -182,10 +190,15 @@ public class PacketUtils implements Listener {
                         // 狐狸卧睡：不跟随玩家，仅同步旋转
                         si.mob.setRotation(loc.getYaw(), loc.getPitch());
                     } else {
-                        si.mob.teleport(loc); si.mob.setRotation(loc.getYaw(), loc.getPitch());
+                        // 飞行生物偏移到玩家头顶（碰撞箱与玩家完全错开，避免重叠推挤）
+                        Location mobLoc = loc.clone();
+                        double off = flyingOffset(si.mob);
+                        if (off > 0) mobLoc.add(0, off, 0);
+                        si.mob.teleport(mobLoc); si.mob.setRotation(loc.getYaw(), loc.getPitch());
                     }
                     Boolean m = playerMoving.get(uid);
-                    if (m != null && !m && !recentlyDamaged.contains(uid)) target.setVelocity(new Vector(0, target.getVelocity().getY(), 0));
+                    // 飞行模式（蝙蝠）下不强制停止水平移动
+                    if (m != null && !m && !recentlyDamaged.contains(uid) && !target.isFlying()) target.setVelocity(new Vector(0, target.getVelocity().getY(), 0));
                 }
             } else { if (!si.mob.hasAI()) si.mob.setAI(true); }
             if (si.mob instanceof Chicken && !target.hasPotionEffect(PotionEffectType.SLOW_FALLING)) {
@@ -198,8 +211,13 @@ public class PacketUtils implements Listener {
                 }
                 si.lastRoseTime = 0L;
             }
-            // 史莱姆/岩浆怪特殊机制：行走时强制蹦跳（落地瞬间再跳 → 连续蹦跳节奏）
-            if (!si.aiMode && (si.mob instanceof Slime || si.mob instanceof MagmaCube) && target.isOnGround()) {
+            // 飞行生物（蝙蝠/蜜蜂/悦灵/恶魂/快乐恶魂）：时刻保持飞行（生存模式落地会自动取消飞行，这里每 tick 恢复）
+            if (isFlyingMob(si.mob)) {
+                if (si.mob instanceof Bat bat && !bat.isAwake()) bat.setAwake(true); // 蝙蝠保持醒着不倒立
+                if (!target.isFlying()) target.setFlying(true);
+            }
+            // 蹦跳生物（史莱姆/岩浆怪/兔子）：行走时强制蹦跳（落地瞬间再跳 → 连续蹦跳节奏）
+            if (!si.aiMode && (si.mob instanceof Slime || si.mob instanceof MagmaCube || si.mob instanceof Rabbit) && target.isOnGround()) {
                 Boolean moving = playerMoving.get(uid);
                 if (moving != null && moving) {
                     Vector v = target.getVelocity();
@@ -649,7 +667,14 @@ public class PacketUtils implements Listener {
     public static void disguiseAsBlaze(Player target) {
         Blaze b = target.getWorld().spawn(target.getLocation(), Blaze.class);
         applyMobDisguise(target, b);
-        target.sendActionBar(Component.text("§e🔥 变身烈焰人！"));
+        // 开启飞行权限（可走路可飞行，不强制飞）：按空格可起飞，落地可继续走
+        DisguiseInfo info = disguises.get(target.getUniqueId());
+        if (info != null) {
+            info.originalAllowFlight = target.getAllowFlight();
+            info.originalFlying = target.isFlying();
+            target.setAllowFlight(true);
+        }
+        target.sendActionBar(Component.text("§e🔥 变身烈焰人！可走路可飞行"));
     }
 
     public static void disguiseAsPiglin(Player target) {
@@ -724,6 +749,121 @@ public class PacketUtils implements Listener {
         target.sendActionBar(Component.text("§e🐸 变身青蛙！"));
     }
 
+    public static void disguiseAsRabbit(Player target) {
+        Rabbit r = target.getWorld().spawn(target.getLocation(), Rabbit.class);
+        applyMobDisguise(target, r);
+        target.sendActionBar(Component.text("§e🐰 变身兔子！行走时自动蹦跳"));
+    }
+
+    public static void disguiseAsAxolotl(Player target) {
+        disguiseAsAxolotl(target, org.bukkit.entity.Axolotl.Variant.WILD);
+    }
+
+    public static void disguiseAsAxolotl(Player target, org.bukkit.entity.Axolotl.Variant variant) {
+        Axolotl a = target.getWorld().spawn(target.getLocation(), Axolotl.class);
+        a.setVariant(variant);
+        applyMobDisguise(target, a);
+        target.sendActionBar(Component.text("§e🦎 变身美西螈！水陆两栖"));
+    }
+
+    // ===== 空中生物（蝙蝠）=====
+
+    public static void disguiseAsBat(Player target) {
+        Bat bat = target.getWorld().spawn(target.getLocation(), Bat.class);
+        bat.setAwake(true); // 醒着：不悬挂，保持正常飞行姿态（不倒立）
+        applyMobDisguise(target, bat);
+        // 飞行模式：像创造模式一样自由飞行（空格上升 / Shift 下降）
+        DisguiseInfo info = disguises.get(target.getUniqueId());
+        if (info != null) {
+            info.originalAllowFlight = target.getAllowFlight();
+            info.originalFlying = target.isFlying();
+            target.setAllowFlight(true);
+            target.setFlying(true);
+        }
+        target.sendActionBar(Component.text("§e🦇 变身蝙蝠！可自由飞行"));
+    }
+
+    public static void disguiseAsBee(Player target) {
+        Bee bee = target.getWorld().spawn(target.getLocation(), Bee.class);
+        applyMobDisguise(target, bee);
+        // 飞行模式：与蝙蝠一致（空格上升 / Shift 下降）
+        DisguiseInfo info = disguises.get(target.getUniqueId());
+        if (info != null) {
+            info.originalAllowFlight = target.getAllowFlight();
+            info.originalFlying = target.isFlying();
+            target.setAllowFlight(true);
+            target.setFlying(true);
+        }
+        target.sendActionBar(Component.text("§e🐝 变身蜜蜂！可自由飞行"));
+    }
+
+    public static void disguiseAsAllay(Player target) {
+        Allay allay = target.getWorld().spawn(target.getLocation(), Allay.class);
+        applyMobDisguise(target, allay);
+        enableFlight(target);
+        target.sendActionBar(Component.text("§e🧚 变身悦灵！可自由飞行"));
+    }
+
+    public static void disguiseAsPhantom(Player target) {
+        Phantom phantom = target.getWorld().spawn(target.getLocation(), Phantom.class);
+        applyMobDisguise(target, phantom);
+        enableFlight(target);
+        target.sendActionBar(Component.text("§e👾 变身幻翼！可自由飞行"));
+    }
+
+    public static void disguiseAsGhast(Player target) {
+        Ghast ghast = target.getWorld().spawn(target.getLocation(), Ghast.class);
+        applyMobDisguise(target, ghast);
+        ghast.setCollidable(false); // 巨型实体：玩家在体内，关闭碰撞防推挤
+        enableFlight(target);
+        target.sendActionBar(Component.text("§e👻 变身恶魂！可自由飞行"));
+    }
+
+    public static void disguiseAsHappyGhast(Player target) {
+        // 快乐恶魂是 1.21.11+ 生物：低版本不会调用（菜单已过滤）
+        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf("HAPPY_GHAST");
+        Mob ghast = (Mob) target.getWorld().spawn(target.getLocation(), type.getEntityClass());
+        applyMobDisguise(target, ghast);
+        ghast.setCollidable(false); // 巨型实体：玩家在体内，关闭碰撞防推挤
+        enableFlight(target);
+        target.sendActionBar(Component.text("§e😊 变身快乐恶魂！可自由飞行"));
+    }
+
+    // 开启玩家飞行模式（蝙蝠/蜜蜂/悦灵/恶魂/快乐恶魂通用）
+    private static void enableFlight(Player target) {
+        DisguiseInfo info = disguises.get(target.getUniqueId());
+        if (info != null) {
+            info.originalAllowFlight = target.getAllowFlight();
+            info.originalFlying = target.isFlying();
+            target.setAllowFlight(true);
+            target.setFlying(true);
+        }
+    }
+
+    // 快乐恶魂反射检测（1.21.11+ 才有该类，低版本返回 false）
+    private static boolean isHappyGhast(Mob mob) {
+        try {
+            return Class.forName("org.bukkit.entity.HappyGhast").isInstance(mob);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    // 是否飞行生物（时刻保持飞行模式）
+    private static boolean isFlyingMob(Mob mob) {
+        return mob instanceof Bat || mob instanceof Bee || mob instanceof Allay
+                || mob instanceof Ghast || isHappyGhast(mob) || mob instanceof Phantom;
+    }
+
+    // 飞行生物头顶偏移量（0 = 不偏移）：按碰撞箱高度计算，保证与玩家碰撞箱（0~1.8）完全错开
+    private static double flyingOffset(Mob mob) {
+        if (mob instanceof Bee || mob instanceof Allay) return 2.2; // 小体型（高 0.6）
+        if (mob instanceof Phantom) return 2.2; // 幻翼（高 0.5，宽 0.9 > 玩家）
+        if (mob instanceof Ghast) return 4.2; // 恶魂（高 4，中心需在 1.8+2 以上）
+        if (isHappyGhast(mob)) return 3.4; // 快乐恶魂（高约 3）
+        return 0;
+    }
+
 
     // 铜傀儡反射检测（1.21.9+ 才有该类，低版本返回 false）
     private static boolean isCopperGolem(Entity e) {
@@ -761,6 +901,13 @@ public class PacketUtils implements Listener {
         if (info != null && info.originalKnockbackResistance != null) {
             var attr = target.getAttribute(org.bukkit.attribute.Attribute.KNOCKBACK_RESISTANCE);
             if (attr != null) attr.setBaseValue(info.originalKnockbackResistance);
+        }
+        // 恢复蝙蝠的飞行模式
+        if (info != null && info.originalAllowFlight != null) {
+            plugin.getLogger().info("[变身] 恢复飞行 origAllow=" + info.originalAllowFlight + " origFlying=" + info.originalFlying);
+            target.setAllowFlight(info.originalAllowFlight);
+            target.setFlying(info.originalFlying != null && info.originalFlying);
+            plugin.getLogger().info("[变身] 恢复后 allowFlight=" + target.getAllowFlight() + " flying=" + target.isFlying());
         }
     }
 
@@ -844,7 +991,11 @@ public class PacketUtils implements Listener {
         if (info.mob instanceof Fox fox && fox.isSleeping()) return; // 狐狸卧睡时不跟随
         Location to = event.getTo(), from = event.getFrom();
         if (to.getX() == from.getX() && to.getY() == from.getY() && to.getZ() == from.getZ()) return;
-        info.mob.teleport(to.clone()); info.mob.setRotation(to.getYaw(), to.getPitch());
+        // 飞行生物偏移到玩家头顶（碰撞箱与玩家完全错开，避免重叠推挤）
+        Location mobLoc = to.clone();
+        double off = flyingOffset(info.mob);
+        if (off > 0) mobLoc.add(0, off, 0);
+        info.mob.teleport(mobLoc); info.mob.setRotation(to.getYaw(), to.getPitch());
     }
 
     @EventHandler public void onPlayerQuit(PlayerQuitEvent event) { undisguise(event.getPlayer()); }
@@ -867,6 +1018,37 @@ public class PacketUtils implements Listener {
         if (info.mob instanceof Evoker) { evokerSummonVex(event, info); return; }
         if (info.mob instanceof Blaze) { blazeShootFireballs(event, info); return; }
         if (info.mob instanceof Enderman) { endermanTeleport(event, info); return; }
+        if (info.mob instanceof Ghast) { ghastShootFireball(event, info); return; }
+    }
+
+    // 恶魂：F 键朝面朝方向发射大火球（原版恶魂弹射物，5 秒冷却）
+    private static void ghastShootFireball(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastGhastFireballTime;
+        if (elapsed < 5000L) {
+            long remaining = (5000L - elapsed + 999) / 1000;
+            p.sendActionBar(Component.text("§e火球冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastGhastFireballTime = now;
+        Ghast ghast = (Ghast) info.mob;
+        Vector dir = p.getLocation().getDirection().multiply(1.0);
+        // 顺序：张嘴（1 秒）→ 喷火球 → 闭嘴（0.5 秒后）
+        ghast.setCharging(true);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (ghast.isDead() || !ghast.isValid()) return;
+            // 火球从恶魂位置（玩家头顶）喷出
+            ghast.getWorld().spawn(ghast.getLocation().add(0, 1, 0), LargeFireball.class, fb -> {
+                fb.setShooter(p);
+                fb.setVelocity(dir);
+            });
+            // 0.5 秒后闭嘴
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (!ghast.isDead() && ghast.isValid()) ghast.setCharging(false);
+            }, 10L);
+        }, 20L);
     }
 
     // 末影人：F 键随机传送到附近（原版末影人瞬移机制：紫色粒子+音效，5 秒冷却）
@@ -1439,7 +1621,10 @@ public class PacketUtils implements Listener {
         long lastEvokerSummonTime; // 唤魔者召唤冷却
         long lastBlazeShotTime; // 烈焰人火球冷却
         long lastEndermanTeleportTime; // 末影人传送冷却
+        long lastGhastFireballTime; // 恶魂火球冷却
         Double originalKnockbackResistance; // 铁傀儡：玩家原击退抗性
+        Boolean originalAllowFlight; // 蝙蝠：玩家原飞行许可
+        Boolean originalFlying; // 蝙蝠：玩家原飞行状态
         boolean creeperFusing; // 苦力怕蓄力中
         int creeperFuseTicks; // 苦力怕蓄力计数（30 = 爆炸）
         BukkitTask creeperFuseTask; // 苦力怕蓄力/消退任务
@@ -1449,8 +1634,9 @@ public class PacketUtils implements Listener {
             lastEggLayTime = 0L; lastArmadilloDropTime = 0L; lastLlamaSpitTime = 0L;
             lastSnowballTime = 0L; lastRoseTime = 0L; lastBreezeShotTime = 0L;
             lastWardenBoomTime = 0L; lastWitchThrowTime = 0L; lastEvokerSummonTime = 0L; lastBlazeShotTime = 0L;
-            lastEndermanTeleportTime = 0L;
+            lastEndermanTeleportTime = 0L; lastGhastFireballTime = 0L;
             originalKnockbackResistance = null;
+            originalAllowFlight = null; originalFlying = null;
             creeperFusing = false; creeperFuseTicks = 0; creeperFuseTask = null;
         }
     }

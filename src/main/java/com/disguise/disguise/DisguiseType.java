@@ -27,7 +27,9 @@ public enum DisguiseType {
     PIGLIN_BRUTE("猪灵蛮兵", null, "PIGLIN_BRUTE"),
     STRIDER("炽足兽", null, "STRIDER"), ZOGLIN("僵尸猪灵兽", null, "ZOGLIN"), ZOMBIFIED_PIGLIN("僵尸猪灵", null, "ZOMBIFIED_PIGLIN"), WITHER_SKELETON("凋零骷髅", null, "WITHER_SKELETON"),
     ENDERMAN("末影人", null, "ENDERMAN"),
-    SLIME("史莱姆", null, "SLIME"), MAGMA_CUBE("岩浆怪", null, "MAGMA_CUBE"), FROG("青蛙", null, "FROG");
+    SLIME("史莱姆", null, "SLIME"), MAGMA_CUBE("岩浆怪", null, "MAGMA_CUBE"), FROG("青蛙", null, "FROG"), RABBIT("兔子", null, "RABBIT"), AXOLOTL("美西螈", null, "AXOLOTL"),
+    BAT("蝙蝠", null, "BAT"), BEE("蜜蜂", null, "BEE"), ALLAY("悦灵", null, "ALLAY"), GHAST("恶魂", null, "GHAST"), HAPPY_GHAST("快乐恶魂", "1.21.11", "HAPPY_GHAST"),
+    PHANTOM("幻翼", null, "PHANTOM");
 
     private final String displayName;
     private final String[] entityTypeNames;
