@@ -1,31 +1,87 @@
 package com.disguise.disguise;
 
-import org.bukkit.Material;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.EntityType;
 
 /**
  * 变身类型枚举 - 后续添加新生物只需在此添加
+ * 每个类型关联 EntityType 常量名（低版本枚举不存在自动隐藏），可选用 minVersion 设置最低版本门槛
+ * 注意：不要在此引用任何 Material 常量（类初始化会因低版本缺少新材料而崩溃）
  */
 public enum DisguiseType {
-    SHEEP("羊", Material.WHITE_WOOL), PIG("猪", Material.PORKCHOP), COW("牛", Material.BEEF), CHICKEN("鸡", Material.EGG),
-    CAMEL("骆驼", Material.CAMEL_SPAWN_EGG), HORSE("马", Material.HORSE_SPAWN_EGG), DONKEY("驴", Material.DONKEY_SPAWN_EGG), MULE("骡子", Material.MULE_SPAWN_EGG),
-    CAT("猫", Material.CAT_SPAWN_EGG), WOLF("狼", Material.WOLF_SPAWN_EGG),
-    ARMADILLO("犰狳", Material.ARMADILLO_SPAWN_EGG), FOX("狐狸", Material.FOX_SPAWN_EGG), GOAT("山羊", Material.GOAT_SPAWN_EGG), LLAMA("羊驼", Material.LLAMA_SPAWN_EGG),
-    OCELOT("豹猫", Material.OCELOT_SPAWN_EGG), PANDA("熊猫", Material.PANDA_SPAWN_EGG), POLAR_BEAR("北极熊", Material.POLAR_BEAR_SPAWN_EGG);
-    // 后续添加: COW("牛", Material.LEATHER), PIG("猪", Material.PORKCHOP) ...
+    SHEEP("羊", null, "SHEEP"), PIG("猪", null, "PIG"), COW("牛", null, "COW"), CHICKEN("鸡", null, "CHICKEN"),
+    CAMEL("骆驼", null, "CAMEL"), HORSE("马", null, "HORSE"), DONKEY("驴", null, "DONKEY"), MULE("骡子", null, "MULE"),
+    CAT("猫", null, "CAT"), WOLF("狼", null, "WOLF"),
+    ARMADILLO("犰狳", null, "ARMADILLO"), FOX("狐狸", "1.19.4", "FOX"), GOAT("山羊", null, "GOAT"), LLAMA("羊驼", null, "LLAMA"),
+    OCELOT("豹猫", null, "OCELOT"), PANDA("熊猫", null, "PANDA"), POLAR_BEAR("北极熊", null, "POLAR_BEAR"),
+    TURTLE("海龟", null, "TURTLE"), MOOSHROOM("哞菇", null, "MOOSHROOM"), SNIFFER("探嗅兽", null, "SNIFFER"), IRON_GOLEM("铁傀儡", null, "IRON_GOLEM"),
+    SNOW_GOLEM("雪傀儡", null, "SNOW_GOLEM", "SNOWMAN"), TRADER_LLAMA("行商羊驼", null, "TRADER_LLAMA"), VILLAGER("村民", null, "VILLAGER"), WANDERING_TRADER("流浪商人", null, "WANDERING_TRADER"),
+    COPPER_GOLEM("铜傀儡", null, "COPPER_GOLEM"),
+    ZOMBIE("僵尸", null, "ZOMBIE"), SKELETON("骷髅", null, "SKELETON"), BOGGED("沼骸", null, "BOGGED"), PARCHED("焦骸", "1.21.11", "PARCHED"),
+    HUSK("尸壳", null, "HUSK"), DROWNED("溺尸", null, "DROWNED"), STRAY("流浪者", null, "STRAY"), SKELETON_HORSE("骷髅马", null, "SKELETON_HORSE"),
+    ZOMBIFIED_CAMEL("骆驼尸壳", "1.21.11", "ZOMBIFIED_CAMEL"), ZOMBIE_HORSE("僵尸马", null, "ZOMBIE_HORSE"), ZOMBIE_VILLAGER("僵尸村民", null, "ZOMBIE_VILLAGER"),
+    SPIDER("蜘蛛", null, "SPIDER"), CAVE_SPIDER("洞穴蜘蛛", null, "CAVE_SPIDER"), BREEZE("旋风人", null, "BREEZE"), CREEPER("苦力怕", null, "CREEPER"),
+    SILVERFISH("蠹虫", null, "SILVERFISH");
 
     private final String displayName;
-    private final Material icon;
+    private final String[] entityTypeNames;
+    private final String minVersion; // 最低服务器版本（如 "1.19.4"），null 表示无限制
 
-    DisguiseType(String displayName, Material icon) {
+    DisguiseType(String displayName, String minVersion, String... entityTypeNames) {
         this.displayName = displayName;
-        this.icon = icon;
+        this.minVersion = minVersion;
+        this.entityTypeNames = entityTypeNames;
     }
 
     public String getDisplayName() {
         return displayName;
     }
 
-    public Material getIcon() {
-        return icon;
+    /**
+     * 检测当前服务器是否支持该生物：EntityType 枚举存在 + 服务器版本达标
+     */
+    public boolean isAvailable() {
+        if (!isEntityTypeAvailable()) return false;
+        if (minVersion == null) return true;
+        return isServerAtLeast(minVersion);
+    }
+
+    private boolean isEntityTypeAvailable() {
+        for (String name : entityTypeNames) {
+            try {
+                EntityType.valueOf(name);
+                return true;
+            } catch (IllegalArgumentException ignored) {
+                // 尝试下一个备选名
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 服务器版本是否 >= 目标版本（如 "1.19.4"）
+     */
+    private static boolean isServerAtLeast(String target) {
+        try {
+            int[] targetParts = parseVersion(target);
+            int[] serverParts = parseVersion(Bukkit.getBukkitVersion().split("-")[0]);
+            for (int i = 0; i < 3; i++) {
+                if (serverParts[i] > targetParts[i]) return true;
+                if (serverParts[i] < targetParts[i]) return false;
+            }
+            return true;
+        } catch (Exception e) {
+            // 解析失败时按可达处理（避免误隐藏）
+            return true;
+        }
+    }
+
+    private static int[] parseVersion(String v) {
+        String[] parts = v.split("\\.");
+        int[] r = new int[3];
+        r[0] = Integer.parseInt(parts[0]);
+        r[1] = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+        r[2] = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
+        return r;
     }
 }

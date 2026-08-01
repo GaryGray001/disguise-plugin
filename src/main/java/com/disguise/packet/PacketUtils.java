@@ -2,28 +2,51 @@ package com.disguise.packet;
 
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
-import org.bukkit.Input;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Creature;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Armadillo;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Bogged;
+import org.bukkit.entity.Breeze;
 import org.bukkit.entity.Camel;
 import org.bukkit.entity.Cat;
+import org.bukkit.entity.CaveSpider;
 import org.bukkit.entity.Chicken;
+import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Donkey;
+import org.bukkit.entity.Drowned;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.Goat;
+import org.bukkit.entity.Husk;
+import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.Llama;
 import org.bukkit.entity.LlamaSpit;
 import org.bukkit.entity.Mule;
+import org.bukkit.entity.MushroomCow;
 import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Panda;
 import org.bukkit.entity.PolarBear;
+import org.bukkit.entity.Silverfish;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.SkeletonHorse;
+import org.bukkit.entity.Sniffer;
+import org.bukkit.entity.Snowball;
+import org.bukkit.entity.Snowman;
+import org.bukkit.entity.Spider;
+import org.bukkit.entity.Stray;
+import org.bukkit.entity.TraderLlama;
+import org.bukkit.entity.Turtle;
+import org.bukkit.entity.Villager;
+import org.bukkit.entity.WanderingTrader;
+import org.bukkit.entity.WindCharge;
 import org.bukkit.entity.Wolf;
+import org.bukkit.entity.Zombie;
+import org.bukkit.entity.ZombieHorse;
+import org.bukkit.entity.ZombieVillager;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 import org.bukkit.event.EventHandler;
@@ -42,6 +65,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -64,7 +88,6 @@ public class PacketUtils implements Listener {
     private static final Map<UUID, DisguiseInfo> disguises = new ConcurrentHashMap<>();
     private static final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
     private static final Map<UUID, Boolean> playerMoving = new ConcurrentHashMap<>();
-    private static final Map<UUID, Boolean> lastSprintState = new ConcurrentHashMap<>();
     private static final Set<UUID> recentlyDamaged = ConcurrentHashMap.newKeySet();
     private static final NamespacedKey DISGUISE_KEY = new NamespacedKey("disguise_plugin", "disguise_owner");
     private static final long CHICKEN_EGG_COOLDOWN = 30000L; // 30 秒（毫秒）
@@ -81,7 +104,7 @@ public class PacketUtils implements Listener {
     }
 
     // ===== 通用变身 =====
-    private static void applyDisguise(Player target, Creature mob) {
+    private static void applyDisguise(Player target, Mob mob) {
         UUID uid = target.getUniqueId();
         DisguiseInfo info = new DisguiseInfo(mob, target, target.isInvisible(), target.getMaxHealth());
         target.setCollidable(false);
@@ -141,6 +164,13 @@ public class PacketUtils implements Listener {
             } else { if (!si.mob.hasAI()) si.mob.setAI(true); }
             if (si.mob instanceof Chicken && !target.hasPotionEffect(PotionEffectType.SLOW_FALLING)) {
                 target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 0, false, false));
+            }
+            // 铁傀儡举花：松开 F 超过 1 秒自动放下（按住 F 约 0.4s 重复触发一次刷新）
+            if (si.lastRoseTime > 0 && System.currentTimeMillis() - si.lastRoseTime > 1000L) {
+                if (si.mob instanceof IronGolem golem && !golem.isDead() && golem.isValid()) {
+                    golem.playEffect(org.bukkit.EntityEffect.IRON_GOLEM_SHEATH);
+                }
+                si.lastRoseTime = 0L;
             }
             double hp = target.getHealth();
             if (Math.abs(si.mob.getHealth() - hp) > 0.01) si.mob.setHealth(hp);
@@ -319,6 +349,242 @@ public class PacketUtils implements Listener {
         target.sendActionBar(Component.text("§e🐻 变身北极熊！"));
     }
 
+    // ===== 第二批（海龟/哞菇/探嗅兽/铁傀儡/雪傀儡/行商羊驼/村民/流浪商人）=====
+
+    public static void disguiseAsTurtle(Player target) {
+        Turtle turtle = target.getWorld().spawn(target.getLocation(), Turtle.class);
+        turtle.setAgeLock(true);
+        double originalMaxHp = turtle.getMaxHealth(); // 原版海龟血量（30）
+        saveData(turtle, target); applyDisguise(target, turtle);
+        turtle.setMaxHealth(originalMaxHp); turtle.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        target.sendActionBar(Component.text("§e🐢 变身海龟！"));
+    }
+
+    public static void disguiseAsMooshroom(Player target) {
+        MushroomCow mooshroom = target.getWorld().spawn(target.getLocation(), MushroomCow.class);
+        mooshroom.setAgeLock(true);
+        double originalMaxHp = mooshroom.getMaxHealth(); // 原版哞菇血量（10）
+        saveData(mooshroom, target); applyDisguise(target, mooshroom);
+        mooshroom.setMaxHealth(originalMaxHp); mooshroom.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        target.sendActionBar(Component.text("§e🍄 变身哞菇！"));
+    }
+
+    public static void disguiseAsSniffer(Player target) {
+        Sniffer sniffer = target.getWorld().spawn(target.getLocation(), Sniffer.class);
+        sniffer.setAgeLock(true);
+        double originalMaxHp = sniffer.getMaxHealth(); // 原版探嗅兽血量（14）
+        saveData(sniffer, target); applyDisguise(target, sniffer);
+        sniffer.setMaxHealth(originalMaxHp); sniffer.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        target.sendActionBar(Component.text("§e🦕 变身探嗅兽！"));
+    }
+
+    public static void disguiseAsIronGolem(Player target) {
+        IronGolem golem = target.getWorld().spawn(target.getLocation(), IronGolem.class);
+        double originalMaxHp = golem.getMaxHealth(); // 原版铁傀儡血量（100）
+        saveData(golem, target); applyDisguise(target, golem);
+        golem.setMaxHealth(originalMaxHp); golem.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        // 原版铁傀儡免疫击退：玩家本体 + mob 都设击退抗性 1.0（解除时恢复）
+        DisguiseInfo info = disguises.get(target.getUniqueId());
+        if (info != null) {
+            var playerAttr = target.getAttribute(org.bukkit.attribute.Attribute.KNOCKBACK_RESISTANCE);
+            if (playerAttr != null) {
+                info.originalKnockbackResistance = playerAttr.getBaseValue();
+                playerAttr.setBaseValue(1.0);
+            }
+            var mobAttr = golem.getAttribute(org.bukkit.attribute.Attribute.KNOCKBACK_RESISTANCE);
+            if (mobAttr != null) mobAttr.setBaseValue(1.0);
+        }
+        target.sendActionBar(Component.text("§e🤖 变身铁傀儡！"));
+    }
+
+    public static void disguiseAsSnowGolem(Player target) {
+        Snowman snowman = target.getWorld().spawn(target.getLocation(), Snowman.class);
+        double originalMaxHp = snowman.getMaxHealth(); // 原版雪傀儡血量（4）
+        saveData(snowman, target); applyDisguise(target, snowman);
+        snowman.setMaxHealth(originalMaxHp); snowman.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        target.sendActionBar(Component.text("§e⛄ 变身雪傀儡！"));
+    }
+
+    public static void disguiseAsTraderLlama(Player target) {
+        TraderLlama llama = target.getWorld().spawn(target.getLocation(), TraderLlama.class);
+        llama.setAgeLock(true);
+        double originalMaxHp = llama.getMaxHealth(); // 原版行商羊驼血量（15-30 随机）
+        saveData(llama, target); applyDisguise(target, llama);
+        llama.setMaxHealth(originalMaxHp); llama.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        target.sendActionBar(Component.text("§e🦙 变身行商羊驼！"));
+    }
+
+    public static void disguiseAsVillager(Player target) {
+        Villager villager = target.getWorld().spawn(target.getLocation(), Villager.class);
+        double originalMaxHp = villager.getMaxHealth(); // 原版村民血量（20）
+        saveData(villager, target); applyDisguise(target, villager);
+        villager.setMaxHealth(originalMaxHp); villager.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        target.sendActionBar(Component.text("§e🧑 变身村民！"));
+    }
+
+    public static void disguiseAsWanderingTrader(Player target) {
+        WanderingTrader trader = target.getWorld().spawn(target.getLocation(), WanderingTrader.class);
+        double originalMaxHp = trader.getMaxHealth(); // 原版流浪商人血量（20）
+        saveData(trader, target); applyDisguise(target, trader);
+        trader.setMaxHealth(originalMaxHp); trader.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        target.sendActionBar(Component.text("§e🧑 变身流浪商人！"));
+    }
+
+    public static void disguiseAsCopperGolem(Player target) {
+        // 铜傀儡是 1.21.9+ 生物：低版本服务器不会调用此方法（菜单已过滤）
+        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.COPPER_GOLEM;
+        Mob creature = (Mob) target.getWorld().spawn(target.getLocation(), type.getEntityClass());
+        double originalMaxHp = creature.getMaxHealth(); // 原版铜傀儡血量（12）
+        saveData(creature, target); applyDisguise(target, creature);
+        creature.setMaxHealth(originalMaxHp); creature.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+        target.sendActionBar(Component.text("§e🤖 变身铜傀儡！"));
+    }
+
+    // ===== 亡灵/敌对生物（僵尸/骷髅/蜘蛛等）=====
+
+    private static void applyMobDisguise(Player target, Mob mob) {
+        double originalMaxHp = mob.getMaxHealth();
+        saveData(mob, target); applyDisguise(target, mob);
+        mob.setMaxHealth(originalMaxHp); mob.setHealth(originalMaxHp);
+        target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
+    }
+
+    public static void disguiseAsZombie(Player target) {
+        Zombie z = target.getWorld().spawn(target.getLocation(), Zombie.class);
+        applyMobDisguise(target, z);
+        target.sendActionBar(Component.text("§e🧟 变身僵尸！"));
+    }
+
+    public static void disguiseAsSkeleton(Player target) {
+        Skeleton s = target.getWorld().spawn(target.getLocation(), Skeleton.class);
+        applyMobDisguise(target, s);
+        target.sendActionBar(Component.text("§e💀 变身骷髅！"));
+    }
+
+    public static void disguiseAsBogged(Player target) {
+        Bogged b = target.getWorld().spawn(target.getLocation(), Bogged.class);
+        applyMobDisguise(target, b);
+        target.sendActionBar(Component.text("§e🌿 变身沼骸！"));
+    }
+
+    public static void disguiseAsParched(Player target) {
+        // 焦骸是 1.21.11+ 生物：低版本不会调用（菜单已过滤）
+        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf("PARCHED");
+        Mob creature = (Mob) target.getWorld().spawn(target.getLocation(), type.getEntityClass());
+        applyMobDisguise(target, creature);
+        target.sendActionBar(Component.text("§e🔥 变身焦骸！"));
+    }
+
+    public static void disguiseAsHusk(Player target) {
+        Husk h = target.getWorld().spawn(target.getLocation(), Husk.class);
+        applyMobDisguise(target, h);
+        target.sendActionBar(Component.text("§e🏜️ 变身尸壳！"));
+    }
+
+    public static void disguiseAsDrowned(Player target) {
+        Drowned d = target.getWorld().spawn(target.getLocation(), Drowned.class);
+        applyMobDisguise(target, d);
+        target.sendActionBar(Component.text("§e🌊 变身溺尸！"));
+    }
+
+    public static void disguiseAsStray(Player target) {
+        Stray s = target.getWorld().spawn(target.getLocation(), Stray.class);
+        applyMobDisguise(target, s);
+        target.sendActionBar(Component.text("§e❄️ 变身流浪者！"));
+    }
+
+    public static void disguiseAsSkeletonHorse(Player target) {
+        SkeletonHorse h = target.getWorld().spawn(target.getLocation(), SkeletonHorse.class);
+        applyMobDisguise(target, h);
+        target.sendActionBar(Component.text("§e🐴 变身骷髅马！"));
+    }
+
+    public static void disguiseAsZombifiedCamel(Player target) {
+        // 骆驼尸壳是 1.21.11+ 生物：低版本不会调用（菜单已过滤）
+        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf("ZOMBIFIED_CAMEL");
+        Mob creature = (Mob) target.getWorld().spawn(target.getLocation(), type.getEntityClass());
+        applyMobDisguise(target, creature);
+        target.sendActionBar(Component.text("§e🐫 变身骆驼尸壳！"));
+    }
+
+    public static void disguiseAsZombieHorse(Player target) {
+        ZombieHorse h = target.getWorld().spawn(target.getLocation(), ZombieHorse.class);
+        applyMobDisguise(target, h);
+        target.sendActionBar(Component.text("§e🐴 变身僵尸马！"));
+    }
+
+    public static void disguiseAsZombieVillager(Player target) {
+        ZombieVillager v = target.getWorld().spawn(target.getLocation(), ZombieVillager.class);
+        applyMobDisguise(target, v);
+        target.sendActionBar(Component.text("§e🧟 变身僵尸村民！"));
+    }
+
+    public static void disguiseAsSpider(Player target) {
+        Spider s = target.getWorld().spawn(target.getLocation(), Spider.class);
+        applyMobDisguise(target, s);
+        target.sendActionBar(Component.text("§e🕷️ 变身蜘蛛！"));
+    }
+
+    public static void disguiseAsCaveSpider(Player target) {
+        CaveSpider s = target.getWorld().spawn(target.getLocation(), CaveSpider.class);
+        applyMobDisguise(target, s);
+        target.sendActionBar(Component.text("§e🕷️ 变身洞穴蜘蛛！"));
+    }
+
+    public static void disguiseAsBreeze(Player target) {
+        Breeze b = target.getWorld().spawn(target.getLocation(), Breeze.class);
+        applyMobDisguise(target, b);
+        target.sendActionBar(Component.text("§e🌀 变身旋风人！"));
+    }
+
+    public static void disguiseAsCreeper(Player target) {
+        Creeper c = target.getWorld().spawn(target.getLocation(), Creeper.class);
+        applyMobDisguise(target, c);
+        disableCreeperAutoExplode(c); // 禁用原版自动爆炸（由插件 30 tick 计数控制）
+        target.sendActionBar(Component.text("§e💥 变身苦力怕！"));
+    }
+
+    // 把 NMS maxSwell 设为巨大值 → 原版 aiStep 永远不会触发自动爆炸，爆炸时机完全由插件控制
+    private static void disableCreeperAutoExplode(Creeper creeper) {
+        try {
+            Object nms = creeper.getClass().getMethod("getHandle").invoke(creeper);
+            java.lang.reflect.Field maxSwell = nms.getClass().getField("maxSwell");
+            maxSwell.setInt(nms, 100000);
+        } catch (Exception e) {
+            plugin.getLogger().warning("[变身] Creeper maxSwell 设置失败: " + e);
+        }
+    }
+
+    public static void disguiseAsSilverfish(Player target) {
+        Silverfish s = target.getWorld().spawn(target.getLocation(), Silverfish.class);
+        applyMobDisguise(target, s);
+        target.sendActionBar(Component.text("§e🪳 变身蠹虫！"));
+    }
+
+
+    // 铜傀儡反射检测（1.21.9+ 才有该类，低版本返回 false）
+    private static boolean isCopperGolem(Entity e) {
+        try {
+            return Class.forName("org.bukkit.entity.CopperGolem").isInstance(e);
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
+    }
+
+    // 摔落免疫生物：猫/豹猫/铜傀儡/铁傀儡/雪傀儡（原版特性）
+    private static boolean isFallImmune(Mob mob) {
+        return mob instanceof Cat || mob instanceof Ocelot || mob instanceof IronGolem || mob instanceof Snowman || isCopperGolem(mob);
+    }
+
     public static void undisguise(Player target) {
         UUID uid = target.getUniqueId();
         DisguiseInfo info = disguises.remove(uid);
@@ -335,6 +601,13 @@ public class PacketUtils implements Listener {
         for (Player o : Bukkit.getOnlinePlayers()) if (!o.equals(target)) o.showPlayer(plugin, target);
         showTag(target); playerMoving.remove(uid); recentlyDamaged.remove(uid);
         target.removePotionEffect(PotionEffectType.SLOW_FALLING);
+        // 清理苦力怕蓄力任务
+        if (info != null && info.creeperFuseTask != null) { info.creeperFuseTask.cancel(); info.creeperFuseTask = null; }
+        // 恢复铁傀儡的击退抗性
+        if (info != null && info.originalKnockbackResistance != null) {
+            var attr = target.getAttribute(org.bukkit.attribute.Attribute.KNOCKBACK_RESISTANCE);
+            if (attr != null) attr.setBaseValue(info.originalKnockbackResistance);
+        }
     }
 
     // ===== 模式切换 =====
@@ -396,6 +669,8 @@ public class PacketUtils implements Listener {
 
     // ===== 工具 =====
     public static boolean isDisguised(Player p) { return disguises.containsKey(p.getUniqueId()); }
+    // 由输入监听器（PlayerInputListener / PlayerInputCompat）更新玩家的移动状态
+    public static void setPlayerMoving(UUID uid, boolean moving) { playerMoving.put(uid, moving); }
     public static boolean toggleDebug(Player player) {
         UUID uid = player.getUniqueId();
         boolean on = !debugPlayers.contains(uid);
@@ -418,23 +693,6 @@ public class PacketUtils implements Listener {
         info.mob.teleport(to.clone()); info.mob.setRotation(to.getYaw(), to.getPitch());
     }
 
-    @EventHandler public void onPlayerInput(PlayerInputEvent event) {
-        Player player = event.getPlayer();
-        DisguiseInfo info = disguises.get(player.getUniqueId());
-        if (info == null) return;
-        Input input = event.getInput();
-        boolean moving = input.isForward() || input.isBackward() || input.isLeft() || input.isRight();
-        playerMoving.put(player.getUniqueId(), moving);
-        Boolean lastSprint = lastSprintState.get(player.getUniqueId());
-        boolean sprinting = input.isSprint();
-        if (lastSprint != null && !lastSprint && sprinting) toggleMode(player);
-        lastSprintState.put(player.getUniqueId(), sprinting);
-        if (!moving) {
-            Vector v = player.getVelocity(); player.setVelocity(new Vector(0, v.getY(), 0));
-            Bukkit.getScheduler().runTask(plugin, () -> { if (player.isOnline()) { Vector v2 = player.getVelocity(); player.setVelocity(new Vector(0, v2.getY(), 0)); } });
-        }
-    }
-
     @EventHandler public void onPlayerQuit(PlayerQuitEvent event) { undisguise(event.getPlayer()); }
 
     @EventHandler public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
@@ -447,6 +705,139 @@ public class PacketUtils implements Listener {
         if (info.mob instanceof Fox) { foxSitToggle(event, info); return; }
         if (info.mob instanceof PolarBear) { polarBearAttack(event, info); return; }
         if (info.mob instanceof Llama) { llamaSpit(event, info); return; }
+        if (info.mob instanceof Snowman) { snowGolemShoot(event, info); return; }
+        if (info.mob instanceof IronGolem) { ironGolemHoldRose(event, info); return; }
+        if (info.mob instanceof Breeze) { breezeShoot(event, info); return; }
+    }
+
+    // 旋风人：F 键发射旋风弹（5 秒冷却）
+    private static void breezeShoot(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastBreezeShotTime;
+        if (elapsed < 5000L) {
+            long remaining = (5000L - elapsed + 999) / 1000;
+            p.sendActionBar(Component.text("§e旋风弹冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastBreezeShotTime = now;
+        Vector dir = p.getLocation().getDirection().multiply(1.2);
+        info.mob.getWorld().spawn(info.mob.getLocation().add(0, 1.5, 0), WindCharge.class, wc -> {
+            wc.setShooter(p);
+            wc.setVelocity(dir);
+        });
+    }
+
+    // 苦力怕：按住 Shift 蓄力（每 tick +1，30 tick 自爆），松开每 tick -1 消退
+    // 完全自控膨胀计数，不依赖原版 ignite 逻辑；1.21.4+ 由 PlayerInputListener 调用，旧版由 PlayerToggleSneakEvent 调用
+    public static void handleCreeperSneak(Player player, boolean sneaking) {
+        DisguiseInfo info = disguises.get(player.getUniqueId());
+        if (info == null || info.mob.isDead() || !(info.mob instanceof Creeper creeper)) return;
+        if (sneaking) {
+            if (info.creeperFuseTask != null) return; // 已蓄力中
+            info.creeperFusing = true;
+            player.sendActionBar(Component.text("§e💥 蓄力自爆中...（按住 Shift 1.5 秒）"));
+            // 启动膨胀：设 1 后由原版 aiStep 每 tick +1（动画正好 30 tick 满），
+            // 我们同步用计数器 30 tick 触发爆炸（动画与爆炸天然同步）
+            setCreeperSwelling(creeper, 1);
+            info.creeperFuseTicks = 0;
+            info.creeperFuseTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+                if (creeper.isDead() || !creeper.isValid() || !info.creeperFusing) {
+                    if (info.creeperFuseTask != null) { info.creeperFuseTask.cancel(); info.creeperFuseTask = null; }
+                    return;
+                }
+                info.creeperFuseTicks++;
+                if (info.creeperFuseTicks >= 30) {
+                    info.creeperFuseTask.cancel(); info.creeperFuseTask = null;
+                    info.creeperFusing = false;
+                    creeper.getWorld().createExplosion(creeper.getLocation(), 3.0f, false, false);
+                    creeper.remove();
+                    if (player.isOnline() && !player.isDead()) player.setHealth(0);
+                }
+            }, 1L, 1L);
+        } else {
+            // 松开：停止蓄力，慢慢消退（每 tick 净 -1：原版 +1，我们覆盖 -2）
+            info.creeperFusing = false;
+            if (info.creeperFuseTask != null) { info.creeperFuseTask.cancel(); info.creeperFuseTask = null; }
+            if (getCreeperSwelling(creeper) > 0) {
+                info.creeperFuseTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+                    if (creeper.isDead() || !creeper.isValid()) {
+                        if (info.creeperFuseTask != null) { info.creeperFuseTask.cancel(); info.creeperFuseTask = null; }
+                        return;
+                    }
+                    int current = getCreeperSwelling(creeper);
+                    if (current <= 1) {
+                        setCreeperSwelling(creeper, -1);
+                        info.creeperFuseTask.cancel(); info.creeperFuseTask = null;
+                    } else {
+                        setCreeperSwelling(creeper, current - 2);
+                    }
+                }, 1L, 1L);
+                player.sendActionBar(Component.text("§7自爆消退"));
+            } else {
+                setCreeperSwelling(creeper, -1);
+            }
+        }
+    }
+
+    // 反射读取 NMS Creeper 当前膨胀值
+    private static int getCreeperSwelling(Creeper creeper) {
+        try {
+            Object nms = creeper.getClass().getMethod("getHandle").invoke(creeper);
+            java.lang.reflect.Method m = nms.getClass().getMethod("getSwellDir");
+            return (int) m.invoke(nms);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    // 反射设置 NMS Creeper 膨胀值（-1 未膨胀，0-30 膨胀程度，仅驱动渲染动画）
+    // 1.21.9+ 重构后方法名是 setSwellDir(int)，旧版是 setSwelling(int)
+    private static boolean creeperSwellingLogged = false;
+    private static void setCreeperSwelling(Creeper creeper, int swelling) {
+        try {
+            Object nms = creeper.getClass().getMethod("getHandle").invoke(creeper);
+            java.lang.reflect.Method m;
+            try {
+                m = nms.getClass().getMethod("setSwellDir", int.class);
+            } catch (NoSuchMethodException oldApi) {
+                m = nms.getClass().getMethod("setSwelling", int.class);
+            }
+            m.invoke(nms, swelling);
+        } catch (Exception e) {
+            if (!creeperSwellingLogged) {
+                creeperSwellingLogged = true;
+                plugin.getLogger().warning("[变身] Creeper 膨胀设置反射失败: " + e);
+            }
+        }
+    }
+
+    @EventHandler public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
+        // 旧版路径（1.21.3 及以下）；1.21.4+ 该事件可能不触发，由 PlayerInputListener 兜底
+        handleCreeperSneak(event.getPlayer(), event.isSneaking());
+    }
+
+    // 铁傀儡：按住 F 持续举花（按住时 PlayerSwapHandItemsEvent 重复触发→刷新 lastRoseTime；松开 1.5 秒后 ticker 自动放下）
+    private static void ironGolemHoldRose(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        IronGolem golem = (IronGolem) info.mob;
+        golem.playEffect(org.bukkit.EntityEffect.IRON_GOLEM_ROSE);
+        info.lastRoseTime = System.currentTimeMillis();
+    }
+
+    // 雪傀儡：F 键发射雪球（可连发，0.5 秒冷却，不提醒）
+    private static void snowGolemShoot(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        long now = System.currentTimeMillis();
+        if (now - info.lastSnowballTime < 500L) return;
+        info.lastSnowballTime = now;
+        Player p = event.getPlayer();
+        Vector dir = p.getLocation().getDirection().multiply(1.5);
+        info.mob.getWorld().spawn(info.mob.getLocation().add(0, 1.3, 0), Snowball.class, s -> {
+            s.setShooter(p);
+            s.setVelocity(dir);
+        });
     }
 
     // 犰狳：F 键掉壳（冷却 30 秒，机制同鸡下蛋）
@@ -599,7 +990,7 @@ public class PacketUtils implements Listener {
     }
 
     @EventHandler public void onEntityEnterLoveMode(EntityEnterLoveModeEvent event) {
-        Creature mob = event.getEntity();
+        Mob mob = event.getEntity();
         for (DisguiseInfo info : disguises.values()) {
             if (info.mob.equals(mob)) {
                 if (!info.aiMode) { event.setCancelled(true); info.mob.playEffect(org.bukkit.EntityEffect.LOVE_HEARTS); }
@@ -610,9 +1001,21 @@ public class PacketUtils implements Listener {
 
     @EventHandler public void onEntityDamage(EntityDamageEvent event) {
         Entity e = event.getEntity();
+        // 猫/豹猫/铜傀儡变身：玩家本体免疫摔落伤害
+        if (e instanceof Player player && disguises.containsKey(player.getUniqueId())) {
+            DisguiseInfo info = disguises.get(player.getUniqueId());
+            if (info != null && isFallImmune(info.mob)
+                    && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+                event.setCancelled(true);
+                return;
+            }
+        }
         for (DisguiseInfo info : disguises.values()) {
             if (info.mob.equals(e)) {
                 if (event.getCause() == EntityDamageEvent.DamageCause.SUFFOCATION) { event.setCancelled(true); return; }
+                // 猫/豹猫/铜傀儡变身生物本体也免疫摔落
+                if (isFallImmune(info.mob)
+                        && event.getCause() == EntityDamageEvent.DamageCause.FALL) { event.setCancelled(true); return; }
                 Player owner = info.owner;
                 if (owner == null || !owner.isOnline() || owner.isDead()) return;
                 EntityDamageByEntityEvent de = event instanceof EntityDamageByEntityEvent ed ? ed : null;
@@ -641,7 +1044,21 @@ public class PacketUtils implements Listener {
         UUID ownerUuid = getOwner(event.getEntity());
         if (ownerUuid != null) {
             Player p = Bukkit.getPlayer(ownerUuid);
-            if (p != null && p.isOnline() && !p.isDead()) { p.sendMessage("§c你的变身生物被杀了！变身解除！"); Bukkit.getScheduler().runTask(plugin, () -> undisguise(p)); }
+            if (p != null && p.isOnline() && !p.isDead()) {
+                // 苦力怕自爆：玩家一起死（原版苦力怕自爆也死亡），且自爆不掉落任何东西
+                if (event.getEntity() instanceof Creeper
+                        && event.getEntity().getLastDamageCause() != null) {
+                    EntityDamageEvent.DamageCause cause = event.getEntity().getLastDamageCause().getCause();
+                    if (cause == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION
+                            || cause == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) {
+                        event.getDrops().clear();
+                        p.setHealth(0);
+                        return;
+                    }
+                }
+                p.sendMessage("§c你的变身生物被杀了！变身解除！");
+                Bukkit.getScheduler().runTask(plugin, () -> undisguise(p));
+            }
         }
     }
 
@@ -658,16 +1075,26 @@ public class PacketUtils implements Listener {
     public static PacketUtils getListener() { return listener; }
 
     private static class DisguiseInfo {
-        final Creature mob; final Player owner; final boolean originalInvisible; final double originalMaxHealth;
+        final Mob mob; final Player owner; final boolean originalInvisible; final double originalMaxHealth;
         boolean aiMode, isEating; BukkitTask task;
         ItemStack[] savedInv, savedArmor; ItemStack savedOffHand;
         long lastEggLayTime;
         long lastArmadilloDropTime;
         long lastLlamaSpitTime;
-        DisguiseInfo(Creature m, Player o, boolean origInv, double origMaxHp) {
+        long lastSnowballTime;
+        long lastRoseTime; // 铁傀儡举花最后时间（0 = 未举花）
+        long lastBreezeShotTime; // 旋风人旋风弹冷却
+        Double originalKnockbackResistance; // 铁傀儡：玩家原击退抗性
+        boolean creeperFusing; // 苦力怕蓄力中
+        int creeperFuseTicks; // 苦力怕蓄力计数（30 = 爆炸）
+        BukkitTask creeperFuseTask; // 苦力怕蓄力/消退任务
+        DisguiseInfo(Mob m, Player o, boolean origInv, double origMaxHp) {
             mob = m; owner = o; originalInvisible = origInv; originalMaxHealth = origMaxHp;
             aiMode = false; isEating = false;
             lastEggLayTime = 0L; lastArmadilloDropTime = 0L; lastLlamaSpitTime = 0L;
+            lastSnowballTime = 0L; lastRoseTime = 0L; lastBreezeShotTime = 0L;
+            originalKnockbackResistance = null;
+            creeperFusing = false; creeperFuseTicks = 0; creeperFuseTask = null;
         }
     }
 }
