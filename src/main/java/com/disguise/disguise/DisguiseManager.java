@@ -42,6 +42,23 @@ import com.disguise.disguise.types.CaveSpiderDisguise;
 import com.disguise.disguise.types.BreezeDisguise;
 import com.disguise.disguise.types.CreeperDisguise;
 import com.disguise.disguise.types.SilverfishDisguise;
+import com.disguise.disguise.types.WardenDisguise;
+import com.disguise.disguise.types.WitchDisguise;
+import com.disguise.disguise.types.EvokerDisguise;
+import com.disguise.disguise.types.PillagerDisguise;
+import com.disguise.disguise.types.VindicatorDisguise;
+import com.disguise.disguise.types.RavagerDisguise;
+import com.disguise.disguise.types.BlazeDisguise;
+import com.disguise.disguise.types.PiglinDisguise;
+import com.disguise.disguise.types.PiglinBruteDisguise;
+import com.disguise.disguise.types.StriderDisguise;
+import com.disguise.disguise.types.ZoglinDisguise;
+import com.disguise.disguise.types.ZombifiedPiglinDisguise;
+import com.disguise.disguise.types.WitherSkeletonDisguise;
+import com.disguise.disguise.types.EndermanDisguise;
+import com.disguise.disguise.types.FrogDisguise;
+import com.disguise.disguise.types.MagmaCubeDisguise;
+import com.disguise.disguise.types.SlimeDisguise;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -109,6 +126,23 @@ public class DisguiseManager {
             case BREEZE -> new BreezeDisguise();
             case CREEPER -> new CreeperDisguise();
             case SILVERFISH -> new SilverfishDisguise();
+            case WARDEN -> new WardenDisguise();
+            case WITCH -> new WitchDisguise();
+            case EVOKER -> new EvokerDisguise();
+            case PILLAGER -> new PillagerDisguise();
+            case VINDICATOR -> new VindicatorDisguise();
+            case RAVAGER -> new RavagerDisguise();
+            case BLAZE -> new BlazeDisguise();
+            case PIGLIN -> new PiglinDisguise();
+            case PIGLIN_BRUTE -> new PiglinBruteDisguise();
+            case STRIDER -> new StriderDisguise();
+            case ZOGLIN -> new ZoglinDisguise();
+            case ZOMBIFIED_PIGLIN -> new ZombifiedPiglinDisguise();
+            case WITHER_SKELETON -> new WitherSkeletonDisguise();
+            case ENDERMAN -> new EndermanDisguise();
+            case SLIME -> new SlimeDisguise();
+            case MAGMA_CUBE -> new MagmaCubeDisguise();
+            case FROG -> new FrogDisguise();
         };
         d.apply(player);
         active.put(player.getUniqueId(), d);
@@ -118,6 +152,19 @@ public class DisguiseManager {
     public void applyDisguise(Player player, DisguiseType type, DyeColor color) {
         removeDisguise(player);
         SheepDisguise d = new SheepDisguise(color);
+        d.apply(player);
+        active.put(player.getUniqueId(), d);
+        startSync(player, d);
+    }
+
+    /** 体型选择变身（史莱姆/岩浆怪） */
+    public void applyDisguise(Player player, DisguiseType type, int size) {
+        removeDisguise(player);
+        Disguise d = switch (type) {
+            case SLIME -> new SlimeDisguise(size);
+            case MAGMA_CUBE -> new MagmaCubeDisguise(size);
+            default -> throw new IllegalArgumentException("该生物不支持体型选择");
+        };
         d.apply(player);
         active.put(player.getUniqueId(), d);
         startSync(player, d);

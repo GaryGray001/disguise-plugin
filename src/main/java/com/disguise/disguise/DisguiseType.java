@@ -21,7 +21,13 @@ public enum DisguiseType {
     HUSK("尸壳", null, "HUSK"), DROWNED("溺尸", null, "DROWNED"), STRAY("流浪者", null, "STRAY"), SKELETON_HORSE("骷髅马", null, "SKELETON_HORSE"),
     ZOMBIFIED_CAMEL("骆驼尸壳", "1.21.11", "ZOMBIFIED_CAMEL"), ZOMBIE_HORSE("僵尸马", null, "ZOMBIE_HORSE"), ZOMBIE_VILLAGER("僵尸村民", null, "ZOMBIE_VILLAGER"),
     SPIDER("蜘蛛", null, "SPIDER"), CAVE_SPIDER("洞穴蜘蛛", null, "CAVE_SPIDER"), BREEZE("旋风人", null, "BREEZE"), CREEPER("苦力怕", null, "CREEPER"),
-    SILVERFISH("蠹虫", null, "SILVERFISH");
+    SILVERFISH("蠹虫", null, "SILVERFISH"),
+    WARDEN("坚守者", null, "WARDEN"), WITCH("女巫", null, "WITCH"), EVOKER("唤魔者", null, "EVOKER"), PILLAGER("掠夺者", null, "PILLAGER"),
+    VINDICATOR("卫道士", null, "VINDICATOR"), RAVAGER("劫掠兽", null, "RAVAGER"), BLAZE("烈焰人", null, "BLAZE"), PIGLIN("猪灵", null, "PIGLIN"),
+    PIGLIN_BRUTE("猪灵蛮兵", null, "PIGLIN_BRUTE"),
+    STRIDER("炽足兽", null, "STRIDER"), ZOGLIN("僵尸猪灵兽", null, "ZOGLIN"), ZOMBIFIED_PIGLIN("僵尸猪灵", null, "ZOMBIFIED_PIGLIN"), WITHER_SKELETON("凋零骷髅", null, "WITHER_SKELETON"),
+    ENDERMAN("末影人", null, "ENDERMAN"),
+    SLIME("史莱姆", null, "SLIME"), MAGMA_CUBE("岩浆怪", null, "MAGMA_CUBE"), FROG("青蛙", null, "FROG");
 
     private final String displayName;
     private final String[] entityTypeNames;

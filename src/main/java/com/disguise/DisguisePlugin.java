@@ -28,8 +28,10 @@ public class DisguisePlugin extends JavaPlugin {
         this.possessionTestManager = new PossessionTestManager(this);
 
         ColorSelectMenu csm = new ColorSelectMenu(manager);
-        DisguiseMenu dm = new DisguiseMenu(csm, manager);
+        com.disguise.gui.SizeSelectMenu ssm = new com.disguise.gui.SizeSelectMenu(manager);
+        DisguiseMenu dm = new DisguiseMenu(csm, ssm, manager);
         csm.setParentMenu(dm);
+        ssm.setParentMenu(dm);
 
         PluginCommand bsCommand = getCommand("bs");
         if (bsCommand == null) {
@@ -40,6 +42,7 @@ public class DisguisePlugin extends JavaPlugin {
         bsCommand.setExecutor(new BSCommand(dm, possessionTestManager));
         getServer().getPluginManager().registerEvents(dm, this);
         getServer().getPluginManager().registerEvents(csm, this);
+        getServer().getPluginManager().registerEvents(ssm, this);
         getServer().getPluginManager().registerEvents(PacketUtils.getListener(), this);
         getServer().getPluginManager().registerEvents(possessionTestManager, this);
 

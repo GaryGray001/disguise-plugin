@@ -5,10 +5,12 @@ import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Armadillo;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Bogged;
 import org.bukkit.entity.Breeze;
 import org.bukkit.entity.Camel;
@@ -18,19 +20,32 @@ import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Donkey;
 import org.bukkit.entity.Drowned;
+import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Evoker;
 import org.bukkit.entity.Fox;
+import org.bukkit.entity.Frog;
 import org.bukkit.entity.Goat;
 import org.bukkit.entity.Husk;
 import org.bukkit.entity.IronGolem;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Llama;
 import org.bukkit.entity.LlamaSpit;
+import org.bukkit.entity.MagmaCube;
 import org.bukkit.entity.Mule;
 import org.bukkit.entity.MushroomCow;
 import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Panda;
+import org.bukkit.entity.Piglin;
+import org.bukkit.entity.PiglinBrute;
+import org.bukkit.entity.Pillager;
 import org.bukkit.entity.PolarBear;
+import org.bukkit.entity.Ravager;
 import org.bukkit.entity.Silverfish;
+import org.bukkit.entity.Slime;
+import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.ThrownPotion;
+import org.bukkit.entity.Vex;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.SkeletonHorse;
 import org.bukkit.entity.Sniffer;
@@ -38,13 +53,20 @@ import org.bukkit.entity.Snowball;
 import org.bukkit.entity.Snowman;
 import org.bukkit.entity.Spider;
 import org.bukkit.entity.Stray;
+import org.bukkit.entity.Strider;
 import org.bukkit.entity.TraderLlama;
 import org.bukkit.entity.Turtle;
 import org.bukkit.entity.Villager;
+import org.bukkit.entity.Vindicator;
 import org.bukkit.entity.WanderingTrader;
+import org.bukkit.entity.Warden;
+import org.bukkit.entity.Witch;
+import org.bukkit.entity.WitherSkeleton;
+import org.bukkit.entity.PigZombie;
+import org.bukkit.entity.Zoglin;
+import org.bukkit.entity.Zombie;
 import org.bukkit.entity.WindCharge;
 import org.bukkit.entity.Wolf;
-import org.bukkit.entity.Zombie;
 import org.bukkit.entity.ZombieHorse;
 import org.bukkit.entity.ZombieVillager;
 import org.bukkit.entity.Player;
@@ -57,6 +79,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityEnterLoveModeEvent;
 import org.bukkit.event.entity.EntityMountEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -67,10 +90,13 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
@@ -171,6 +197,18 @@ public class PacketUtils implements Listener {
                     golem.playEffect(org.bukkit.EntityEffect.IRON_GOLEM_SHEATH);
                 }
                 si.lastRoseTime = 0L;
+            }
+            // 史莱姆/岩浆怪特殊机制：行走时强制蹦跳（落地瞬间再跳 → 连续蹦跳节奏）
+            if (!si.aiMode && (si.mob instanceof Slime || si.mob instanceof MagmaCube) && target.isOnGround()) {
+                Boolean moving = playerMoving.get(uid);
+                if (moving != null && moving) {
+                    Vector v = target.getVelocity();
+                    target.setVelocity(new Vector(v.getX(), 0.42, v.getZ()));
+                    // 岩浆怪蹦跳时掉落岩浆粒子（原版跳跃动画特征）
+                    if (si.mob instanceof MagmaCube) {
+                        si.mob.getWorld().spawnParticle(Particle.FLAME, si.mob.getLocation().add(0, 0.5, 0), 4, 0.3, 0.3, 0.3, 0);
+                    }
+                }
             }
             double hp = target.getHealth();
             if (Math.abs(si.mob.getHealth() - hp) > 0.01) si.mob.setHealth(hp);
@@ -570,6 +608,122 @@ public class PacketUtils implements Listener {
         target.sendActionBar(Component.text("§e🪳 变身蠹虫！"));
     }
 
+    // ===== 敌对生物（坚守者/女巫/唤魔者等）=====
+
+    public static void disguiseAsWarden(Player target) {
+        Warden w = target.getWorld().spawn(target.getLocation(), Warden.class);
+        applyMobDisguise(target, w);
+        target.sendActionBar(Component.text("§e🕳️ 变身坚守者！"));
+    }
+
+    public static void disguiseAsWitch(Player target) {
+        Witch w = target.getWorld().spawn(target.getLocation(), Witch.class);
+        applyMobDisguise(target, w);
+        target.sendActionBar(Component.text("§e🧙 变身女巫！"));
+    }
+
+    public static void disguiseAsEvoker(Player target) {
+        Evoker e = target.getWorld().spawn(target.getLocation(), Evoker.class);
+        applyMobDisguise(target, e);
+        target.sendActionBar(Component.text("§e🧙 变身唤魔者！"));
+    }
+
+    public static void disguiseAsPillager(Player target) {
+        Pillager p = target.getWorld().spawn(target.getLocation(), Pillager.class);
+        applyMobDisguise(target, p);
+        target.sendActionBar(Component.text("§e🏹 变身掠夺者！"));
+    }
+
+    public static void disguiseAsVindicator(Player target) {
+        Vindicator v = target.getWorld().spawn(target.getLocation(), Vindicator.class);
+        applyMobDisguise(target, v);
+        target.sendActionBar(Component.text("§e🪓 变身卫道士！"));
+    }
+
+    public static void disguiseAsRavager(Player target) {
+        Ravager r = target.getWorld().spawn(target.getLocation(), Ravager.class);
+        applyMobDisguise(target, r);
+        target.sendActionBar(Component.text("§e🐗 变身劫掠兽！"));
+    }
+
+    public static void disguiseAsBlaze(Player target) {
+        Blaze b = target.getWorld().spawn(target.getLocation(), Blaze.class);
+        applyMobDisguise(target, b);
+        target.sendActionBar(Component.text("§e🔥 变身烈焰人！"));
+    }
+
+    public static void disguiseAsPiglin(Player target) {
+        Piglin p = target.getWorld().spawn(target.getLocation(), Piglin.class);
+        applyMobDisguise(target, p);
+        target.sendActionBar(Component.text("§e🐷 变身猪灵！"));
+    }
+
+    public static void disguiseAsPiglinBrute(Player target) {
+        PiglinBrute p = target.getWorld().spawn(target.getLocation(), PiglinBrute.class);
+        applyMobDisguise(target, p);
+        target.sendActionBar(Component.text("§e🗡️ 变身猪灵蛮兵！"));
+    }
+
+    // ===== 下界/末地生物（炽足兽/僵尸猪灵兽/僵尸猪灵/凋零骷髅/末影人）=====
+
+    public static void disguiseAsStrider(Player target) {
+        Strider s = target.getWorld().spawn(target.getLocation(), Strider.class);
+        applyMobDisguise(target, s);
+        target.sendActionBar(Component.text("§e🕷️ 变身炽足兽！"));
+    }
+
+    public static void disguiseAsZoglin(Player target) {
+        Zoglin z = target.getWorld().spawn(target.getLocation(), Zoglin.class);
+        applyMobDisguise(target, z);
+        target.sendActionBar(Component.text("§e🐗 变身僵尸猪灵兽！"));
+    }
+
+    public static void disguiseAsZombifiedPiglin(Player target) {
+        PigZombie z = target.getWorld().spawn(target.getLocation(), PigZombie.class);
+        applyMobDisguise(target, z);
+        target.sendActionBar(Component.text("§e🐷 变身僵尸猪灵！"));
+    }
+
+    public static void disguiseAsWitherSkeleton(Player target) {
+        WitherSkeleton w = target.getWorld().spawn(target.getLocation(), WitherSkeleton.class);
+        applyMobDisguise(target, w);
+        target.sendActionBar(Component.text("§e💀 变身凋零骷髅！"));
+    }
+
+    public static void disguiseAsEnderman(Player target) {
+        Enderman e = target.getWorld().spawn(target.getLocation(), Enderman.class);
+        applyMobDisguise(target, e);
+        target.sendActionBar(Component.text("§e👾 变身末影人！"));
+    }
+
+    public static void disguiseAsSlime(Player target) {
+        disguiseAsSlime(target, 2);
+    }
+
+    public static void disguiseAsSlime(Player target, int size) {
+        Slime s = target.getWorld().spawn(target.getLocation(), Slime.class);
+        s.setSize(size); // 体型 1-4（血量随体型）
+        applyMobDisguise(target, s);
+        target.sendActionBar(Component.text("§e🟢 变身史莱姆！行走时自动蹦跳"));
+    }
+
+    public static void disguiseAsMagmaCube(Player target) {
+        disguiseAsMagmaCube(target, 2);
+    }
+
+    public static void disguiseAsMagmaCube(Player target, int size) {
+        MagmaCube m = target.getWorld().spawn(target.getLocation(), MagmaCube.class);
+        m.setSize(size); // 体型 1-4（血量随体型）
+        applyMobDisguise(target, m);
+        target.sendActionBar(Component.text("§e🟠 变身岩浆怪！行走时自动蹦跳"));
+    }
+
+    public static void disguiseAsFrog(Player target) {
+        Frog f = target.getWorld().spawn(target.getLocation(), Frog.class);
+        applyMobDisguise(target, f);
+        target.sendActionBar(Component.text("§e🐸 变身青蛙！"));
+    }
+
 
     // 铜傀儡反射检测（1.21.9+ 才有该类，低版本返回 false）
     private static boolean isCopperGolem(Entity e) {
@@ -708,6 +862,183 @@ public class PacketUtils implements Listener {
         if (info.mob instanceof Snowman) { snowGolemShoot(event, info); return; }
         if (info.mob instanceof IronGolem) { ironGolemHoldRose(event, info); return; }
         if (info.mob instanceof Breeze) { breezeShoot(event, info); return; }
+        if (info.mob instanceof Warden) { wardenSonicBoom(event, info); return; }
+        if (info.mob instanceof Witch) { witchThrowPotion(event, info); return; }
+        if (info.mob instanceof Evoker) { evokerSummonVex(event, info); return; }
+        if (info.mob instanceof Blaze) { blazeShootFireballs(event, info); return; }
+        if (info.mob instanceof Enderman) { endermanTeleport(event, info); return; }
+    }
+
+    // 末影人：F 键随机传送到附近（原版末影人瞬移机制：紫色粒子+音效，5 秒冷却）
+    private static void endermanTeleport(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastEndermanTeleportTime;
+        if (elapsed < 5000L) {
+            long remaining = (5000L - elapsed + 999) / 1000;
+            p.sendActionBar(Component.text("§e传送冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastEndermanTeleportTime = now;
+        Enderman enderman = (Enderman) info.mob;
+        if (enderman.teleportRandomly()) {
+            // 玩家跟着瞬移到末影人新位置
+            p.teleport(enderman.getLocation());
+        }
+    }
+
+    // 坚守者：F 键声波攻击（声波粒子 + 射线 10 点无视护甲伤害，15 秒冷却）
+    private static void wardenSonicBoom(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastWardenBoomTime;
+        if (elapsed < 15000L) {
+            long remaining = (15000L - elapsed + 999) / 1000;
+            p.sendActionBar(Component.text("§e声波冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastWardenBoomTime = now;
+        Warden warden = (Warden) info.mob;
+        warden.playEffect(org.bukkit.EntityEffect.WARDEN_SONIC_ATTACK); // 原版声波攻击动画
+        // 动画播完（约 1.5 秒）后再出粒子+伤害
+        Location start = warden.getLocation().add(0, 1.5, 0);
+        Vector dir = p.getLocation().getDirection();
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (warden.isDead() || !warden.isValid()) return;
+            // 声波粒子推进动画
+            for (int i = 1; i <= 15; i++) {
+                Location pl = start.clone().add(dir.clone().multiply(i));
+                warden.getWorld().spawnParticle(Particle.SONIC_BOOM, pl, 1, 0, 0, 0, 0);
+            }
+            // 射线命中：10 点无视护甲伤害
+            RayTraceResult result = warden.getWorld().rayTraceEntities(start, dir, 15, 1.0,
+                    e -> e instanceof LivingEntity le && !le.equals(p) && !le.equals(warden));
+            if (result != null && result.getHitEntity() != null) {
+                ((LivingEntity) result.getHitEntity()).damage(10, warden);
+            }
+        }, 30L);
+    }
+
+    // 女巫：F 键朝面朝方向扔随机毒药（10 秒冷却）
+    private static void witchThrowPotion(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastWitchThrowTime;
+        if (elapsed < 10000L) {
+            long remaining = (10000L - elapsed + 999) / 1000;
+            p.sendActionBar(Component.text("§e毒药冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastWitchThrowTime = now;
+        PotionType[] negatives = {PotionType.WEAKNESS, PotionType.SLOWNESS, PotionType.POISON, PotionType.HARMING};
+        PotionType type = negatives[new java.util.Random().nextInt(negatives.length)];
+        ItemStack item = new ItemStack(Material.SPLASH_POTION);
+        PotionMeta meta = (PotionMeta) item.getItemMeta();
+        meta.setBasePotionType(type);
+        item.setItemMeta(meta);
+        Vector dir = p.getLocation().getDirection().multiply(1.2);
+        info.mob.getWorld().spawn(info.mob.getLocation().add(0, 1.5, 0), ThrownPotion.class, tp -> {
+            tp.setItem(item);
+            tp.setShooter(p);
+            tp.setVelocity(dir);
+        });
+    }
+
+    // 唤魔者：F 键施法召唤恼鬼（原版施法动画，60 秒冷却）
+    private static void evokerSummonVex(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastEvokerSummonTime;
+        if (elapsed < 60000L) {
+            long remaining = (60000L - elapsed + 999) / 1000;
+            p.sendActionBar(Component.text("§e召唤冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastEvokerSummonTime = now;
+        Evoker evoker = (Evoker) info.mob;
+        // 原版召唤恼鬼施法动画（NMS 反射 setSpellCasting(SUMMON_VEX)，失败降级粒子）
+        setEvokerCasting(evoker, "SUMMON_VEX");
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            try {
+                setEvokerCasting(evoker, "NONE"); // 施法结束恢复
+                if (evoker.isDead() || !evoker.isValid()) return;
+                LivingEntity target = findNearestMonster(evoker);
+                int count = 2 + new java.util.Random().nextInt(2); // 2-3 只
+                for (int i = 0; i < count; i++) {
+                    // 在唤魔者头顶生成（漂浮生物高处生成，避免卡进地底）
+                    Vex vex = evoker.getWorld().spawn(evoker.getLocation().add(0, 3 + i * 0.8, 0), Vex.class);
+                    vex.setTarget(target);
+                    vex.setPersistent(true);
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("[变身] 恼鬼召唤失败: " + e);
+            }
+        }, 30L);
+    }
+
+    // 反射调用 NMS SpellcasterIllager 施法动画（原版：举臂 + 紫色魔法粒子）
+    // 1.21.11：方法 setIsCastingSpell(IllagerSpell)，枚举值名用模糊匹配（不依赖具体名字）
+    private static void setEvokerCasting(Evoker evoker, String keyword) {
+        try {
+            Object nms = evoker.getClass().getMethod("getHandle").invoke(evoker);
+            Class<?> spellClass = Class.forName("net.minecraft.world.entity.monster.illager.SpellcasterIllager$IllagerSpell");
+            Object spell = null;
+            for (Object c : spellClass.getEnumConstants()) {
+                String name = ((Enum<?>) c).name();
+                if (name.equalsIgnoreCase(keyword) || name.toUpperCase().contains(keyword.toUpperCase())) {
+                    spell = c;
+                    break;
+                }
+            }
+            if (spell == null) throw new IllegalStateException("spell not found: " + keyword);
+            java.lang.reflect.Method m = nms.getClass().getMethod("setIsCastingSpell", spellClass);
+            m.invoke(nms, spell);
+        } catch (Exception e) {
+            // 反射失败降级：魔法粒子
+            evoker.getWorld().spawnParticle(Particle.ENCHANT, evoker.getLocation().add(0, 1, 0), 40, 0.6, 0.6, 0.6, 0);
+        }
+    }
+
+    // 烈焰人：F 键连续发射 3 个火球（每 5 tick 一个，10 秒冷却）
+    private static void blazeShootFireballs(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        Player p = event.getPlayer();
+        long now = System.currentTimeMillis();
+        long elapsed = now - info.lastBlazeShotTime;
+        if (elapsed < 10000L) {
+            long remaining = (10000L - elapsed + 999) / 1000;
+            p.sendActionBar(Component.text("§e火球冷却：" + remaining + " 秒"));
+            return;
+        }
+        info.lastBlazeShotTime = now;
+        Vector dir = p.getLocation().getDirection().multiply(1.2);
+        for (int i = 0; i < 3; i++) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (info.mob.isDead() || !info.mob.isValid()) return;
+                info.mob.getWorld().spawn(info.mob.getLocation().add(0, 1.2, 0), SmallFireball.class, fb -> {
+                    fb.setShooter(p);
+                    fb.setVelocity(dir);
+                });
+            }, i * 5L);
+        }
+    }
+
+    // 找最近的敌对生物（恼鬼的目标）
+    private static LivingEntity findNearestMonster(Entity from) {
+        LivingEntity nearest = null;
+        double best = Double.MAX_VALUE;
+        for (Entity e : from.getWorld().getNearbyEntities(from.getLocation(), 30, 30, 30)) {
+            if (e.equals(from) || e instanceof Vex) continue;
+            if (e instanceof org.bukkit.entity.Monster m) {
+                double d = e.getLocation().distanceSquared(from.getLocation());
+                if (d < best) { best = d; nearest = m; }
+            }
+        }
+        return nearest;
     }
 
     // 旋风人：F 键发射旋风弹（5 秒冷却）
@@ -972,6 +1303,25 @@ public class PacketUtils implements Listener {
         }
     }
 
+    // 女巫变身：免疫负面药水效果
+    @EventHandler public void onEntityPotionEffect(EntityPotionEffectEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        DisguiseInfo info = disguises.get(player.getUniqueId());
+        if (info == null || !(info.mob instanceof Witch)) return;
+        if (event.getNewEffect() == null) return;
+        PotionEffectType type = event.getNewEffect().getType();
+        if (isNegativePotion(type)) event.setCancelled(true);
+    }
+
+    private static boolean isNegativePotion(PotionEffectType t) {
+        return t == PotionEffectType.POISON || t == PotionEffectType.WITHER
+                || t == PotionEffectType.WEAKNESS || t == PotionEffectType.SLOWNESS
+                || t == PotionEffectType.HUNGER || t == PotionEffectType.INSTANT_DAMAGE
+                || t == PotionEffectType.MINING_FATIGUE || t == PotionEffectType.BLINDNESS
+                || t == PotionEffectType.NAUSEA || t == PotionEffectType.DARKNESS
+                || t == PotionEffectType.LEVITATION || t == PotionEffectType.UNLUCK;
+    }
+
     @EventHandler public void onEntityTame(EntityTameEvent event) {
         // 猫/狼变身生物不可被其他玩家驯服
         for (DisguiseInfo info : disguises.values()) {
@@ -1084,6 +1434,11 @@ public class PacketUtils implements Listener {
         long lastSnowballTime;
         long lastRoseTime; // 铁傀儡举花最后时间（0 = 未举花）
         long lastBreezeShotTime; // 旋风人旋风弹冷却
+        long lastWardenBoomTime; // 坚守者声波冷却
+        long lastWitchThrowTime; // 女巫扔药冷却
+        long lastEvokerSummonTime; // 唤魔者召唤冷却
+        long lastBlazeShotTime; // 烈焰人火球冷却
+        long lastEndermanTeleportTime; // 末影人传送冷却
         Double originalKnockbackResistance; // 铁傀儡：玩家原击退抗性
         boolean creeperFusing; // 苦力怕蓄力中
         int creeperFuseTicks; // 苦力怕蓄力计数（30 = 爆炸）
@@ -1093,6 +1448,8 @@ public class PacketUtils implements Listener {
             aiMode = false; isEating = false;
             lastEggLayTime = 0L; lastArmadilloDropTime = 0L; lastLlamaSpitTime = 0L;
             lastSnowballTime = 0L; lastRoseTime = 0L; lastBreezeShotTime = 0L;
+            lastWardenBoomTime = 0L; lastWitchThrowTime = 0L; lastEvokerSummonTime = 0L; lastBlazeShotTime = 0L;
+            lastEndermanTeleportTime = 0L;
             originalKnockbackResistance = null;
             creeperFusing = false; creeperFuseTicks = 0; creeperFuseTask = null;
         }
