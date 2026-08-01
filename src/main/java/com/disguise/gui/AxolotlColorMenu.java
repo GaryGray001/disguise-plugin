@@ -42,6 +42,7 @@ public class AxolotlColorMenu implements Listener {
 
     private final DisguiseManager disguiseManager;
     private DisguiseMenu parentMenu;
+    private BabySelectMenu babySelectMenu;
 
     public AxolotlColorMenu(DisguiseManager disguiseManager) {
         this.disguiseManager = disguiseManager;
@@ -49,6 +50,10 @@ public class AxolotlColorMenu implements Listener {
 
     public void setParentMenu(DisguiseMenu parentMenu) {
         this.parentMenu = parentMenu;
+    }
+
+    public void setBabySelectMenu(BabySelectMenu babySelectMenu) {
+        this.babySelectMenu = babySelectMenu;
     }
 
     public void open(Player player) {
@@ -94,12 +99,13 @@ public class AxolotlColorMenu implements Listener {
 
         for (Map.Entry<Axolotl.Variant, Material> entry : VARIANT_DYES.entrySet()) {
             if (entry.getValue() == clicked) {
-                String name = VARIANT_NAMES.get(entry.getKey());
-                disguiseManager.applyDisguise(player, DisguiseType.AXOLOTL, entry.getKey());
-                if (PacketUtils.isDisguised(player)) {
-                    player.sendMessage("§a你已变身为§e" + name + "美西螈§a！");
+                // 选完颜色 → 再选体型（小型/正常）
+                if (babySelectMenu != null) {
+                    babySelectMenu.open(player, DisguiseType.AXOLOTL, entry.getKey());
+                } else {
+                    disguiseManager.applyDisguise(player, DisguiseType.AXOLOTL, entry.getKey());
+                    player.closeInventory();
                 }
-                player.closeInventory();
                 return;
             }
         }

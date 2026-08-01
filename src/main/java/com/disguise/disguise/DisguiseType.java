@@ -29,7 +29,12 @@ public enum DisguiseType {
     ENDERMAN("末影人", null, "ENDERMAN"),
     SLIME("史莱姆", null, "SLIME"), MAGMA_CUBE("岩浆怪", null, "MAGMA_CUBE"), FROG("青蛙", null, "FROG"), RABBIT("兔子", null, "RABBIT"), AXOLOTL("美西螈", null, "AXOLOTL"),
     BAT("蝙蝠", null, "BAT"), BEE("蜜蜂", null, "BEE"), ALLAY("悦灵", null, "ALLAY"), GHAST("恶魂", null, "GHAST"), HAPPY_GHAST("快乐恶魂", "1.21.11", "HAPPY_GHAST"),
-    PHANTOM("幻翼", null, "PHANTOM");
+    PHANTOM("幻翼", null, "PHANTOM"), PARROT("鹦鹉", null, "PARROT"),
+    COD("鳕鱼", null, "COD"), SALMON("鲑鱼", null, "SALMON"),
+    PUFFERFISH("河豚", null, "PUFFERFISH"), SQUID("鱿鱼", null, "SQUID"), GLOW_SQUID("发光鱿鱼", null, "GLOW_SQUID"), TROPICAL_FISH("热带鱼", null, "TROPICAL_FISH"),
+    DOLPHIN("海豚", null, "DOLPHIN"), TADPOLE("蝌蚪", null, "TADPOLE"), NAUTILUS("鹦鹉螺", "1.21.11", "NAUTILUS"), ZOMBIFIED_NAUTILUS("僵尸鹦鹉螺", "1.21.11", "ZOMBIFIED_NAUTILUS"),
+    GUARDIAN("守卫者", null, "GUARDIAN"), ELDER_GUARDIAN("远古守卫者", null, "ELDER_GUARDIAN"),
+    HOGLIN("疣猪兽", null, "HOGLIN"), VEX("恼鬼", null, "VEX"), ENDERMITE("末影螨", null, "ENDERMITE");
 
     private final String displayName;
     private final String[] entityTypeNames;

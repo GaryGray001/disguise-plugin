@@ -8,6 +8,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Armadillo;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Allay;
@@ -19,18 +20,25 @@ import org.bukkit.entity.Bogged;
 import org.bukkit.entity.Breeze;
 import org.bukkit.entity.Camel;
 import org.bukkit.entity.Cat;
+import org.bukkit.entity.Cod;
 import org.bukkit.entity.CaveSpider;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Dolphin;
 import org.bukkit.entity.Donkey;
 import org.bukkit.entity.Drowned;
+import org.bukkit.entity.ElderGuardian;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Endermite;
 import org.bukkit.entity.Evoker;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.Frog;
 import org.bukkit.entity.Ghast;
+import org.bukkit.entity.GlowSquid;
+import org.bukkit.entity.Guardian;
 import org.bukkit.entity.Goat;
+import org.bukkit.entity.Hoglin;
 import org.bukkit.entity.Husk;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.LivingEntity;
@@ -42,13 +50,16 @@ import org.bukkit.entity.Mule;
 import org.bukkit.entity.MushroomCow;
 import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Panda;
+import org.bukkit.entity.Parrot;
 import org.bukkit.entity.Piglin;
+import org.bukkit.entity.PufferFish;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.PiglinBrute;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Pillager;
 import org.bukkit.entity.PolarBear;
 import org.bukkit.entity.Ravager;
+import org.bukkit.entity.Salmon;
 import org.bukkit.entity.Silverfish;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.SmallFireball;
@@ -60,8 +71,11 @@ import org.bukkit.entity.Sniffer;
 import org.bukkit.entity.Snowball;
 import org.bukkit.entity.Snowman;
 import org.bukkit.entity.Spider;
+import org.bukkit.entity.Squid;
 import org.bukkit.entity.Stray;
 import org.bukkit.entity.Strider;
+import org.bukkit.entity.Tadpole;
+import org.bukkit.entity.TropicalFish;
 import org.bukkit.entity.TraderLlama;
 import org.bukkit.entity.Turtle;
 import org.bukkit.entity.Villager;
@@ -211,10 +225,22 @@ public class PacketUtils implements Listener {
                 }
                 si.lastRoseTime = 0L;
             }
+            // 河豚膨胀：松开 F 超过 1 秒自动恢复原样
+            if (si.lastPuffTime > 0 && System.currentTimeMillis() - si.lastPuffTime > 1000L) {
+                if (si.mob instanceof PufferFish p && !p.isDead() && p.isValid()) {
+                    p.setPuffState(0);
+                }
+                si.lastPuffTime = 0L;
+            }
             // 飞行生物（蝙蝠/蜜蜂/悦灵/恶魂/快乐恶魂）：时刻保持飞行（生存模式落地会自动取消飞行，这里每 tick 恢复）
             if (isFlyingMob(si.mob)) {
                 if (si.mob instanceof Bat bat && !bat.isAwake()) bat.setAwake(true); // 蝙蝠保持醒着不倒立
                 if (!target.isFlying()) target.setFlying(true);
+            }
+            // 水下生物（会跳的）：离水时强制蹦跳（模拟鱼上岸跳个不停）
+            if (!si.aiMode && isFishHopMob(si.mob) && !target.isInWater() && target.isOnGround()) {
+                Vector v = target.getVelocity();
+                target.setVelocity(new Vector(v.getX(), 0.5, v.getZ()));
             }
             // 蹦跳生物（史莱姆/岩浆怪/兔子）：行走时强制蹦跳（落地瞬间再跳 → 连续蹦跳节奏）
             if (!si.aiMode && (si.mob instanceof Slime || si.mob instanceof MagmaCube || si.mob instanceof Rabbit) && target.isOnGround()) {
@@ -766,6 +792,108 @@ public class PacketUtils implements Listener {
         target.sendActionBar(Component.text("§e🦎 变身美西螈！水陆两栖"));
     }
 
+    // ===== 水下生物（鳕鱼/鲑鱼）=====
+
+    public static void disguiseAsCod(Player target) {
+        Cod cod = target.getWorld().spawn(target.getLocation(), Cod.class);
+        applyMobDisguise(target, cod);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e🐟 变身鳕鱼！水下呼吸"));
+    }
+
+    public static void disguiseAsSalmon(Player target) {
+        Salmon salmon = target.getWorld().spawn(target.getLocation(), Salmon.class);
+        applyMobDisguise(target, salmon);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e🐟 变身鲑鱼！水下呼吸"));
+    }
+
+    // 水下呼吸（鱼变身通用）
+    private static void enableWaterBreathing(Player target) {
+        target.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, Integer.MAX_VALUE, 0, false, false));
+    }
+
+    // 离水会跳的水下生物（鱼/海豚/蝌蚪/守卫者等）
+    private static boolean isFishHopMob(Mob mob) {
+        return mob instanceof Cod || mob instanceof Salmon || mob instanceof PufferFish
+                || mob instanceof TropicalFish || mob instanceof Dolphin || mob instanceof Tadpole
+                || mob instanceof Guardian || mob instanceof ElderGuardian;
+    }
+
+    public static void disguiseAsPufferfish(Player target) {
+        PufferFish p = target.getWorld().spawn(target.getLocation(), PufferFish.class);
+        applyMobDisguise(target, p);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e🐡 变身河豚！离水会跳"));
+    }
+
+    public static void disguiseAsSquid(Player target) {
+        Squid s = target.getWorld().spawn(target.getLocation(), Squid.class);
+        applyMobDisguise(target, s);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e🦑 变身鱿鱼！"));
+    }
+
+    public static void disguiseAsGlowSquid(Player target) {
+        GlowSquid s = target.getWorld().spawn(target.getLocation(), GlowSquid.class);
+        applyMobDisguise(target, s);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e🦑 变身发光鱿鱼！"));
+    }
+
+    public static void disguiseAsTropicalFish(Player target) {
+        TropicalFish f = target.getWorld().spawn(target.getLocation(), TropicalFish.class);
+        applyMobDisguise(target, f);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e🐠 变身热带鱼！离水会跳"));
+    }
+
+    public static void disguiseAsDolphin(Player target) {
+        Dolphin d = target.getWorld().spawn(target.getLocation(), Dolphin.class);
+        applyMobDisguise(target, d);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e🐬 变身海豚！离水会跳"));
+    }
+
+    public static void disguiseAsTadpole(Player target) {
+        Tadpole t = target.getWorld().spawn(target.getLocation(), Tadpole.class);
+        applyMobDisguise(target, t);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e🐸 变身蝌蚪！离水会跳"));
+    }
+
+    public static void disguiseAsNautilus(Player target) {
+        // 鹦鹉螺是 1.21.11+ 生物：低版本不会调用（菜单已过滤）
+        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf("NAUTILUS");
+        Mob m = (Mob) target.getWorld().spawn(target.getLocation(), type.getEntityClass());
+        applyMobDisguise(target, m);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e🐚 变身鹦鹉螺！"));
+    }
+
+    public static void disguiseAsZombifiedNautilus(Player target) {
+        // 僵尸鹦鹉螺是 1.21.11+ 生物：低版本不会调用（菜单已过滤）
+        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf("ZOMBIFIED_NAUTILUS");
+        Mob m = (Mob) target.getWorld().spawn(target.getLocation(), type.getEntityClass());
+        applyMobDisguise(target, m);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e🐚 变身僵尸鹦鹉螺！"));
+    }
+
+    public static void disguiseAsGuardian(Player target) {
+        Guardian g = target.getWorld().spawn(target.getLocation(), Guardian.class);
+        applyMobDisguise(target, g);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e👁️ 变身守卫者！离水会跳"));
+    }
+
+    public static void disguiseAsElderGuardian(Player target) {
+        ElderGuardian g = target.getWorld().spawn(target.getLocation(), ElderGuardian.class);
+        applyMobDisguise(target, g);
+        enableWaterBreathing(target);
+        target.sendActionBar(Component.text("§e👁️ 变身远古守卫者！离水会跳"));
+    }
+
     // ===== 空中生物（蝙蝠）=====
 
     public static void disguiseAsBat(Player target) {
@@ -811,6 +939,38 @@ public class PacketUtils implements Listener {
         target.sendActionBar(Component.text("§e👾 变身幻翼！可自由飞行"));
     }
 
+    public static void disguiseAsParrot(Player target) {
+        Parrot parrot = target.getWorld().spawn(target.getLocation(), Parrot.class);
+        applyMobDisguise(target, parrot);
+        enableFlight(target);
+        target.sendActionBar(Component.text("§e🦜 变身鹦鹉！可自由飞行"));
+    }
+
+    public static void disguiseAsHoglin(Player target) {
+        Hoglin h = target.getWorld().spawn(target.getLocation(), Hoglin.class);
+        applyMobDisguise(target, h);
+        target.sendActionBar(Component.text("§e🐗 变身疣猪兽！"));
+    }
+
+    public static void disguiseAsVex(Player target) {
+        Vex vex = target.getWorld().spawn(target.getLocation(), Vex.class);
+        applyMobDisguise(target, vex);
+        // 恼鬼原版有存活时限，设置永不消失
+        vex.setLifeTicks(Integer.MAX_VALUE);
+        vex.setPersistent(true);
+        enableFlight(target);
+        target.sendActionBar(Component.text("§e👻 变身恼鬼！永不消失"));
+    }
+
+    public static void disguiseAsEndermite(Player target) {
+        Endermite mite = target.getWorld().spawn(target.getLocation(), Endermite.class);
+        applyMobDisguise(target, mite);
+        // 末影螨原版会随时间消失，设置永不消失
+        mite.setLifetimeTicks(Integer.MAX_VALUE);
+        mite.setPersistent(true);
+        target.sendActionBar(Component.text("§e🪳 变身末影螨！永不消失"));
+    }
+
     public static void disguiseAsGhast(Player target) {
         Ghast ghast = target.getWorld().spawn(target.getLocation(), Ghast.class);
         applyMobDisguise(target, ghast);
@@ -852,12 +1012,13 @@ public class PacketUtils implements Listener {
     // 是否飞行生物（时刻保持飞行模式）
     private static boolean isFlyingMob(Mob mob) {
         return mob instanceof Bat || mob instanceof Bee || mob instanceof Allay
-                || mob instanceof Ghast || isHappyGhast(mob) || mob instanceof Phantom;
+                || mob instanceof Ghast || isHappyGhast(mob) || mob instanceof Phantom
+                || mob instanceof Parrot || mob instanceof Vex;
     }
 
     // 飞行生物头顶偏移量（0 = 不偏移）：按碰撞箱高度计算，保证与玩家碰撞箱（0~1.8）完全错开
     private static double flyingOffset(Mob mob) {
-        if (mob instanceof Bee || mob instanceof Allay) return 2.2; // 小体型（高 0.6）
+        if (mob instanceof Bee || mob instanceof Allay || mob instanceof Vex) return 2.2; // 小体型（高 0.6）
         if (mob instanceof Phantom) return 2.2; // 幻翼（高 0.5，宽 0.9 > 玩家）
         if (mob instanceof Ghast) return 4.2; // 恶魂（高 4，中心需在 1.8+2 以上）
         if (isHappyGhast(mob)) return 3.4; // 快乐恶魂（高约 3）
@@ -895,6 +1056,7 @@ public class PacketUtils implements Listener {
         for (Player o : Bukkit.getOnlinePlayers()) if (!o.equals(target)) o.showPlayer(plugin, target);
         showTag(target); playerMoving.remove(uid); recentlyDamaged.remove(uid);
         target.removePotionEffect(PotionEffectType.SLOW_FALLING);
+        target.removePotionEffect(PotionEffectType.WATER_BREATHING);
         // 清理苦力怕蓄力任务
         if (info != null && info.creeperFuseTask != null) { info.creeperFuseTask.cancel(); info.creeperFuseTask = null; }
         // 恢复铁傀儡的击退抗性
@@ -972,6 +1134,14 @@ public class PacketUtils implements Listener {
     public static boolean isDisguised(Player p) { return disguises.containsKey(p.getUniqueId()); }
     // 由输入监听器（PlayerInputListener / PlayerInputCompat）更新玩家的移动状态
     public static void setPlayerMoving(UUID uid, boolean moving) { playerMoving.put(uid, moving); }
+    // 设置变身生物为幼年/正常体型（生物需支持 Ageable；1.21.9 setBaby() 无参设置幼年）
+    public static void setBaby(Player p, boolean baby) {
+        DisguiseInfo info = disguises.get(p.getUniqueId());
+        if (info != null && info.mob instanceof Ageable a) {
+            if (baby) a.setBaby();
+            else a.setAge(0);
+        }
+    }
     public static boolean toggleDebug(Player player) {
         UUID uid = player.getUniqueId();
         boolean on = !debugPlayers.contains(uid);
@@ -1019,6 +1189,15 @@ public class PacketUtils implements Listener {
         if (info.mob instanceof Blaze) { blazeShootFireballs(event, info); return; }
         if (info.mob instanceof Enderman) { endermanTeleport(event, info); return; }
         if (info.mob instanceof Ghast) { ghastShootFireball(event, info); return; }
+        if (info.mob instanceof PufferFish) { pufferfishPuff(event, info); return; }
+    }
+
+    // 河豚：按住 F 膨胀（松开 1 秒后恢复原样，setPuffState 用 int：0=未膨胀 2=完全膨胀）
+    private static void pufferfishPuff(PlayerSwapHandItemsEvent event, DisguiseInfo info) {
+        event.setCancelled(true);
+        PufferFish p = (PufferFish) info.mob;
+        p.setPuffState(2);
+        info.lastPuffTime = System.currentTimeMillis();
     }
 
     // 恶魂：F 键朝面朝方向发射大火球（原版恶魂弹射物，5 秒冷却）
@@ -1622,6 +1801,7 @@ public class PacketUtils implements Listener {
         long lastBlazeShotTime; // 烈焰人火球冷却
         long lastEndermanTeleportTime; // 末影人传送冷却
         long lastGhastFireballTime; // 恶魂火球冷却
+        long lastPuffTime; // 河豚膨胀最后时间（0 = 未膨胀）
         Double originalKnockbackResistance; // 铁傀儡：玩家原击退抗性
         Boolean originalAllowFlight; // 蝙蝠：玩家原飞行许可
         Boolean originalFlying; // 蝙蝠：玩家原飞行状态
@@ -1634,7 +1814,7 @@ public class PacketUtils implements Listener {
             lastEggLayTime = 0L; lastArmadilloDropTime = 0L; lastLlamaSpitTime = 0L;
             lastSnowballTime = 0L; lastRoseTime = 0L; lastBreezeShotTime = 0L;
             lastWardenBoomTime = 0L; lastWitchThrowTime = 0L; lastEvokerSummonTime = 0L; lastBlazeShotTime = 0L;
-            lastEndermanTeleportTime = 0L; lastGhastFireballTime = 0L;
+            lastEndermanTeleportTime = 0L; lastGhastFireballTime = 0L; lastPuffTime = 0L;
             originalKnockbackResistance = null;
             originalAllowFlight = null; originalFlying = null;
             creeperFusing = false; creeperFuseTicks = 0; creeperFuseTask = null;

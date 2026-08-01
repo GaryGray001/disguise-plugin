@@ -30,10 +30,15 @@ public class DisguisePlugin extends JavaPlugin {
         ColorSelectMenu csm = new ColorSelectMenu(manager);
         com.disguise.gui.SizeSelectMenu ssm = new com.disguise.gui.SizeSelectMenu(manager);
         com.disguise.gui.AxolotlColorMenu acm = new com.disguise.gui.AxolotlColorMenu(manager);
-        DisguiseMenu dm = new DisguiseMenu(csm, ssm, acm, manager);
+        com.disguise.gui.BabySelectMenu bsm = new com.disguise.gui.BabySelectMenu(manager);
+        DisguiseMenu dm = new DisguiseMenu(csm, ssm, acm, bsm, manager);
         csm.setParentMenu(dm);
         ssm.setParentMenu(dm);
         acm.setParentMenu(dm);
+        bsm.setParentMenu(dm);
+        // 羊/美西螈选完颜色后再选体型
+        csm.setBabySelectMenu(bsm);
+        acm.setBabySelectMenu(bsm);
 
         PluginCommand bsCommand = getCommand("bs");
         if (bsCommand == null) {
@@ -46,6 +51,7 @@ public class DisguisePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(csm, this);
         getServer().getPluginManager().registerEvents(ssm, this);
         getServer().getPluginManager().registerEvents(acm, this);
+        getServer().getPluginManager().registerEvents(bsm, this);
         getServer().getPluginManager().registerEvents(PacketUtils.getListener(), this);
         getServer().getPluginManager().registerEvents(possessionTestManager, this);
 

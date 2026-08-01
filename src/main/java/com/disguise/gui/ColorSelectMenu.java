@@ -47,6 +47,7 @@ public class ColorSelectMenu implements Listener {
 
     private final DisguiseManager disguiseManager;
     private DisguiseMenu parentMenu;
+    private BabySelectMenu babySelectMenu;
 
     public ColorSelectMenu(DisguiseManager disguiseManager) {
         this.disguiseManager = disguiseManager;
@@ -54,6 +55,10 @@ public class ColorSelectMenu implements Listener {
 
     public void setParentMenu(DisguiseMenu parentMenu) {
         this.parentMenu = parentMenu;
+    }
+
+    public void setBabySelectMenu(BabySelectMenu babySelectMenu) {
+        this.babySelectMenu = babySelectMenu;
     }
 
     public void open(Player player) {
@@ -124,13 +129,13 @@ public class ColorSelectMenu implements Listener {
 
             DyeColor selectedColor = getDyeColorFromWool(clicked);
             if (selectedColor != null) {
-                String colorName = COLOR_NAMES.getOrDefault(selectedColor, "未知颜色");
-                player.sendMessage("§a正在变身...");
-                disguiseManager.applyDisguise(player, DisguiseType.SHEEP, selectedColor);
-                if (PacketUtils.isDisguised(player)) {
-                    player.sendMessage("§a你已变身为 §e" + colorName + "羊§a！");
+                // 选完颜色 → 再选体型（小型/正常）
+                if (babySelectMenu != null) {
+                    babySelectMenu.open(player, DisguiseType.SHEEP, selectedColor);
+                } else {
+                    disguiseManager.applyDisguise(player, DisguiseType.SHEEP, selectedColor);
+                    player.closeInventory();
                 }
-                player.closeInventory();
             }
         } catch (Exception e) {
             event.getWhoClicked().sendMessage("§c变身出错: " + e.getMessage());
