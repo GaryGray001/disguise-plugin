@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -96,7 +97,8 @@ public class DisguiseMenu implements Listener {
             DisguiseType.FOX, DisguiseType.GOAT, DisguiseType.LLAMA, DisguiseType.OCELOT, DisguiseType.PANDA,
             DisguiseType.POLAR_BEAR, DisguiseType.TURTLE, DisguiseType.MOOSHROOM, DisguiseType.RABBIT,
             DisguiseType.AXOLOTL, DisguiseType.FROG, DisguiseType.DOLPHIN, DisguiseType.CAMEL,
-            DisguiseType.SNIFFER, DisguiseType.ARMADILLO, DisguiseType.TRADER_LLAMA);
+            DisguiseType.SNIFFER, DisguiseType.ARMADILLO, DisguiseType.TRADER_LLAMA, DisguiseType.VILLAGER,
+            DisguiseType.BEE, DisguiseType.STRIDER, DisguiseType.SKELETON_HORSE, DisguiseType.ZOMBIE_HORSE);
 
     // 刷怪蛋 Material → 有幼年变体的 DisguiseType（无则返回 null）
     private static DisguiseType babyTypeFromMaterial(Material m) {
@@ -116,6 +118,8 @@ public class DisguiseMenu implements Listener {
             case HORSE_SPAWN_EGG -> DisguiseType.HORSE;
             case DONKEY_SPAWN_EGG -> DisguiseType.DONKEY;
             case MULE_SPAWN_EGG -> DisguiseType.MULE;
+            case SKELETON_HORSE_SPAWN_EGG -> DisguiseType.SKELETON_HORSE;
+            case ZOMBIE_HORSE_SPAWN_EGG -> DisguiseType.ZOMBIE_HORSE;
             case CAT_SPAWN_EGG -> DisguiseType.CAT;
             case WOLF_SPAWN_EGG -> DisguiseType.WOLF;
             case FOX_SPAWN_EGG -> DisguiseType.FOX;
@@ -133,10 +137,19 @@ public class DisguiseMenu implements Listener {
             case SNIFFER_SPAWN_EGG -> DisguiseType.SNIFFER;
             case ARMADILLO_SPAWN_EGG -> DisguiseType.ARMADILLO;
             case TRADER_LLAMA_SPAWN_EGG -> DisguiseType.TRADER_LLAMA;
+            case VILLAGER_SPAWN_EGG -> DisguiseType.VILLAGER;
+            case BEE_SPAWN_EGG -> DisguiseType.BEE;
+            case STRIDER_SPAWN_EGG -> DisguiseType.STRIDER;
             default -> null;
         };
         // 注意：Set.of 的 contains(null) 会抛 NPE，必须先判空
         return t != null && BABY_TYPES.contains(t) ? t : null;
+    }
+
+    // 玩家退出：清理翻页状态（防内存残留）
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        playerPages.remove(event.getPlayer().getUniqueId());
     }
 
     public void open(Player player) {
@@ -299,7 +312,7 @@ public class DisguiseMenu implements Listener {
             case BEE -> createIconItem(Material.BEE_SPAWN_EGG, "§e🐝 蜜蜂", List.of("§7点击变身为蜜蜂", "§7可自由飞行"));
             case ALLAY -> createIconItem(Material.ALLAY_SPAWN_EGG, "§e🧚 悦灵", List.of("§7点击变身为悦灵", "§7可自由飞行"));
             case GHAST -> createIconItem(Material.GHAST_SPAWN_EGG, "§e👻 恶魂", List.of("§7点击变身为恶魂", "§7按 F 键发射火球", "§7可自由飞行"));
-            case HAPPY_GHAST -> createIconItem(safeMaterial("HAPPY_GHAST_SPAWN_EGG"), "§e😊 快乐恶魂", List.of("§7点击变身为快乐恶魂", "§7可被其他玩家乘骑", "§7可自由飞行"));
+            case HAPPY_GHAST -> createIconItem(safeMaterial("HAPPY_GHAST_SPAWN_EGG"), "§e😊 快乐恶魂", List.of("§7点击变身为快乐恶魂", "§7可自由飞行"));
             case PHANTOM -> createIconItem(Material.PHANTOM_SPAWN_EGG, "§e👾 幻翼", List.of("§7点击变身为幻翼", "§7可自由飞行"));
             case PARROT -> createIconItem(Material.PARROT_SPAWN_EGG, "§e🦜 鹦鹉", List.of("§7点击变身为鹦鹉", "§7可自由飞行", "§8→ 无法被驯服"));
         };
@@ -648,6 +661,10 @@ public class DisguiseMenu implements Listener {
             player.sendMessage("§a你已变身为恼鬼！永不消失！");
             player.closeInventory();
         } else if (clicked == Material.SHULKER_SPAWN_EGG) {
+            if (!player.isOnGround()) {
+                player.sendMessage("§c潜影贝不能在空中变身！请先落地！");
+                return;
+            }
             disguiseManager.applyDisguise(player, DisguiseType.SHULKER);
             player.sendMessage("§a你已变身为潜影贝！固定原地，WASD 瞬移！");
             player.closeInventory();

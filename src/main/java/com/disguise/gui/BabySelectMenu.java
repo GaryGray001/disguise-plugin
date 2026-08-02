@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -29,7 +30,8 @@ import java.util.UUID;
  */
 public class BabySelectMenu implements Listener {
 
-    private static final String TITLE_STR = "体型选择";
+    // 标题用 Component 常量：创建与匹配用同一对象（getTitle() 字符串不可靠，Component 比较才精确）
+    private static final Component TITLE = Component.text("体型选择").color(NamedTextColor.DARK_GRAY);
 
     // 颜色中文名（羊 DyeColor / 美西螈 Variant）
     private static final Map<DyeColor, String> COLOR_NAMES = new LinkedHashMap<>();
@@ -89,8 +91,7 @@ public class BabySelectMenu implements Listener {
         currentType.put(uid, type);
         pendingColor.put(uid, color);
         pendingVariant.put(uid, variant);
-        Inventory inv = Bukkit.createInventory(null, 27,
-                Component.text(TITLE_STR).color(NamedTextColor.DARK_GRAY));
+        Inventory inv = Bukkit.createInventory(null, 27, TITLE);
 
         // 正常体型（slot 11）
         ItemStack normal = new ItemStack(Material.ENDER_PEARL);
@@ -117,10 +118,18 @@ public class BabySelectMenu implements Listener {
         player.openInventory(inv);
     }
 
+    // 玩家退出：清理状态 map（防内存残留）
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        UUID uid = event.getPlayer().getUniqueId();
+        currentType.remove(uid);
+        pendingColor.remove(uid);
+        pendingVariant.remove(uid);
+    }
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        String t = event.getView().getTitle();
-        if (t == null || !t.contains(TITLE_STR)) return;
+        if (!event.getView().title().equals(TITLE)) return; // Component 精确匹配，避免与其他"体型"菜单互相劫持
         event.setCancelled(true);
 
         if (!(event.getWhoClicked() instanceof Player player)) return;

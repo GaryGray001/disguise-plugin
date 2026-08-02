@@ -111,7 +111,7 @@ import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerInputEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -164,13 +164,26 @@ public class PacketUtils implements Listener {
         DisguiseInfo info = new DisguiseInfo(mob, target, target.isInvisible(), target.getMaxHealth());
         target.setCollidable(false);
         target.setInvisible(true);
-        target.setWalkSpeed(0.14f);
+        // 按原版生物移动速度（小型体型不再加速）
+        float speed = mobWalkSpeed(mob);
+        applyMobSpeed(target, speed);
         target.setMaxHealth(8.0); target.setHealth(8.0);
         for (Player o : Bukkit.getOnlinePlayers()) if (!o.equals(target)) o.hidePlayer(plugin, target);
         mob.setInvulnerable(false); mob.setMaxHealth(8.0); mob.setHealth(8.0);
         mob.setAI(false); mob.setSilent(false); mob.setPersistent(true);
         mob.setRemoveWhenFarAway(false);
         hideTag(target);
+
+        // 同步原版击退抗性给玩家本体：原版免疫击退的生物（铁傀儡 1.0/凋零 1.0/末影龙 1.0/潜影贝 1.0/劫掠兽 0.5/疣猪兽 0.6 等）
+        // 变身后玩家同样免疫（解除变身时恢复）
+        var mobKr = mob.getAttribute(org.bukkit.attribute.Attribute.KNOCKBACK_RESISTANCE);
+        if (mobKr != null && mobKr.getBaseValue() > 0) {
+            var playerKr = target.getAttribute(org.bukkit.attribute.Attribute.KNOCKBACK_RESISTANCE);
+            if (playerKr != null) {
+                info.originalKnockbackResistance = playerKr.getBaseValue();
+                playerKr.setBaseValue(mobKr.getBaseValue());
+            }
+        }
 
         info.savedInv = target.getInventory().getContents();
         info.savedArmor = target.getInventory().getArmorContents();
@@ -243,6 +256,17 @@ public class PacketUtils implements Listener {
             if (isFlyingMob(si.mob)) {
                 if (si.mob instanceof Bat bat && !bat.isAwake()) bat.setAwake(true); // 蝙蝠保持醒着不倒立
                 if (!target.isFlying()) target.setFlying(true);
+            }
+            // 持续保持变身速度（防任何地方覆盖）—— getWalkSpeed() 返回 abilities.walkSpeed，
+            // 偏离时重新设置（任何覆盖都会被拉回）
+            float wantSpeed = mobWalkSpeed(si.mob);
+            if (Math.abs(target.getWalkSpeed() - wantSpeed) > 0.001f) {
+                applyMobSpeed(target, wantSpeed);
+            }
+            // 陆地生物水中降速（游泳速度不依赖 walkSpeed，需手动压低防"水里飞起"；0.7 保留正常游泳手感）
+            if (target.isInWater() && !isFishHopMob(si.mob) && !isFlyingMob(si.mob)) {
+                Vector v = target.getVelocity();
+                target.setVelocity(new Vector(v.getX() * 0.7, v.getY(), v.getZ() * 0.7));
             }
             // 潜影贝：固定原地（玩家不能走，只能瞬移移动）
             if (si.mob instanceof Shulker && si.anchoredLoc != null) {
@@ -488,17 +512,7 @@ public class PacketUtils implements Listener {
         saveData(golem, target); applyDisguise(target, golem);
         golem.setMaxHealth(originalMaxHp); golem.setHealth(originalMaxHp);
         target.setMaxHealth(originalMaxHp); target.setHealth(originalMaxHp);
-        // 原版铁傀儡免疫击退：玩家本体 + mob 都设击退抗性 1.0（解除时恢复）
-        DisguiseInfo info = disguises.get(target.getUniqueId());
-        if (info != null) {
-            var playerAttr = target.getAttribute(org.bukkit.attribute.Attribute.KNOCKBACK_RESISTANCE);
-            if (playerAttr != null) {
-                info.originalKnockbackResistance = playerAttr.getBaseValue();
-                playerAttr.setBaseValue(1.0);
-            }
-            var mobAttr = golem.getAttribute(org.bukkit.attribute.Attribute.KNOCKBACK_RESISTANCE);
-            if (mobAttr != null) mobAttr.setBaseValue(1.0);
-        }
+        // 击退抗性 1.0 由 applyDisguise 统一同步（原版铁傀儡基础值）
         target.sendActionBar(Component.text("§e🤖 变身铁傀儡！"));
     }
 
@@ -1013,6 +1027,11 @@ public class PacketUtils implements Listener {
     // ===== 潜影贝（固定原地 + 瞬移）=====
 
     public static void disguiseAsShulker(Player target) {
+        // 潜影贝不能在空中变身（固定原地需要落点）
+        if (!target.isOnGround()) {
+            target.sendMessage("§c潜影贝不能在空中变身！请先落地！");
+            return;
+        }
         Shulker shulker = target.getWorld().spawn(target.getLocation(), Shulker.class);
         applyMobDisguise(target, shulker);
         // 固定玩家在变身位置（只能瞬移移动）+ 关闭重力（漂浮悬停）
@@ -1049,8 +1068,9 @@ public class PacketUtils implements Listener {
                 dest.setYaw(player.getLocation().getYaw());
                 dest.setPitch(player.getLocation().getPitch());
                 player.teleport(dest);
-                // 设置潜影贝附着面（站立/倒立/侧立）
+                // 立即同步潜影贝实体位置 + 设置附着面（站立/倒立/侧立），防止位置与附着面错位
                 Shulker shulker = (Shulker) info.mob;
+                shulker.teleport(dest.clone());
                 try {
                     shulker.setAttachedFace(face);
                 } catch (Exception ignored) {}
@@ -1177,6 +1197,24 @@ public class PacketUtils implements Listener {
         }
     }
 
+    // 焦骸反射检测（1.21.11+）
+    private static boolean isParched(Mob mob) {
+        try {
+            return Class.forName("org.bukkit.entity.Parched").isInstance(mob);
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
+    }
+
+    // 骆驼尸壳反射检测（1.21.11+）
+    private static boolean isZombifiedCamel(Mob mob) {
+        try {
+            return Class.forName("org.bukkit.entity.ZombifiedCamel").isInstance(mob);
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
+    }
+
     // 摔落免疫生物：猫/豹猫/铜傀儡/铁傀儡/雪傀儡（原版特性）
     private static boolean isFallImmune(Mob mob) {
         return mob instanceof Cat || mob instanceof Ocelot || mob instanceof IronGolem || mob instanceof Snowman || isCopperGolem(mob);
@@ -1191,7 +1229,12 @@ public class PacketUtils implements Listener {
             target.getInventory().setArmorContents(info.savedArmor);
             target.getInventory().setItemInOffHand(info.savedOffHand);
         }
-        target.setCollidable(true); target.setWalkSpeed(0.2f);
+        target.setCollidable(true);
+        // 恢复移动速度：setWalkSpeed(0.2f) 同时恢复 abilities.walkSpeed 与属性 base（0.1）
+        // 清除速度 modifier（实验残留，防止叠加）
+        var speedAttr = target.getAttribute(org.bukkit.attribute.Attribute.MOVEMENT_SPEED);
+        if (speedAttr != null) speedAttr.removeModifier(SPEED_KEY);
+        target.setWalkSpeed(0.2f);
         if (info != null) { target.setMaxHealth(info.originalMaxHealth); } else { target.setMaxHealth(20.0); }
         target.setHealth(target.getMaxHealth()); target.setFoodLevel(20);
         target.setInvisible(info != null && info.originalInvisible);
@@ -1215,6 +1258,60 @@ public class PacketUtils implements Listener {
         if (info != null && info.originalGravity != null) {
             target.setGravity(info.originalGravity);
         }
+    }
+
+    // ===== 原版生物移动速度（walkSpeed，正常体型慢速，小型体型在 setBaby 里 ×2）=====
+    private static float mobWalkSpeed(Mob mob) {
+        if (mob instanceof Shulker) return 0.0f; // 潜影贝固定
+        // 慢速组
+        if (mob instanceof Camel) return 0.02f; // 骆驼最慢
+        if (mob instanceof Panda || mob instanceof Sniffer) return 0.025f;
+        if (mob instanceof IronGolem) return 0.0275f; // 铁傀儡
+        if (mob instanceof Armadillo || mob instanceof Turtle) return 0.03f;
+        // 中速组
+        if (mob instanceof Llama || mob instanceof TraderLlama || mob instanceof Donkey
+                || mob instanceof Mule) return 0.04f;
+        if (mob instanceof org.bukkit.entity.Cow || mob instanceof MushroomCow || mob instanceof Sheep || mob instanceof Chicken
+                || mob instanceof org.bukkit.entity.Pig || mob instanceof Goat || mob instanceof org.bukkit.entity.Horse
+                || mob instanceof SkeletonHorse || mob instanceof ZombieHorse
+                || mob instanceof Villager || mob instanceof WanderingTrader || mob instanceof Evoker
+                || mob instanceof Snowman || isCopperGolem(mob) || mob instanceof Slime || mob instanceof MagmaCube
+                || mob instanceof Axolotl || mob instanceof Frog || mob instanceof Strider
+                || mob instanceof Zombie || mob instanceof Husk || mob instanceof Drowned
+                || mob instanceof ZombieVillager || mob instanceof PigZombie
+                || mob instanceof PolarBear || mob instanceof Blaze || mob instanceof Silverfish
+                || mob instanceof Endermite || mob instanceof Witch || mob instanceof Squid || mob instanceof GlowSquid
+                || mob instanceof Cod || mob instanceof Salmon || mob instanceof PufferFish
+                || mob instanceof TropicalFish || mob instanceof Tadpole || mob instanceof Creeper
+                || mob instanceof Bat || mob instanceof Allay || mob instanceof Ghast || isHappyGhast(mob)
+                || mob instanceof Warden || isZombifiedCamel(mob)) return 0.045f;
+        // 快速组
+        if (mob instanceof Rabbit || mob instanceof Cat || mob instanceof Wolf || mob instanceof Ocelot
+                || mob instanceof Bee || mob instanceof Phantom || mob instanceof Breeze
+                || mob instanceof Pillager || mob instanceof Vindicator || mob instanceof Ravager
+                || mob instanceof Hoglin || mob instanceof Zoglin
+                || mob instanceof Skeleton || mob instanceof Stray || mob instanceof Bogged
+                || isParched(mob) || mob instanceof WitherSkeleton) return 0.06f;
+        if (mob instanceof Dolphin) return 0.15f; // 海豚水中飞快
+        if (mob instanceof Fox || mob instanceof Spider || mob instanceof CaveSpider
+                || mob instanceof Enderman || mob instanceof Vex) return 0.065f;
+        if (mob instanceof Piglin || mob instanceof PiglinBrute) return 0.07f;
+        if (mob instanceof Parrot) return 0.08f;
+        if (mob instanceof Guardian) return 0.075f;
+        if (mob instanceof ElderGuardian) return 0.05f;
+        if (mob instanceof Wither) return 0.075f; // Boss 悬浮
+        if (mob instanceof EnderDragon) return 0.1f; // Boss 飞行
+        return 0.05f; // 默认
+    }
+
+    // 用 setWalkSpeed 控制移动速度——实测证明：客户端移动速度由 abilities.walkSpeed 驱动，
+    // getWalkSpeed() 返回的也是它（setBaseValue 只改属性，客户端移动不变，走路一直是普通速度）
+    // setWalkSpeed 会同时设置 abilities.walkSpeed + 属性 base（value/2）
+    private static final org.bukkit.NamespacedKey SPEED_KEY = new org.bukkit.NamespacedKey("disguise_plugin", "speed_modifier");
+    private static void applyMobSpeed(Player p, float walkSpeed) {
+        var attr = p.getAttribute(org.bukkit.attribute.Attribute.MOVEMENT_SPEED);
+        if (attr != null) attr.removeModifier(SPEED_KEY); // 清理实验残留的旧 modifier（可能已保存进玩家数据）
+        p.setWalkSpeed(walkSpeed);
     }
 
     // ===== 模式切换 =====
@@ -1258,6 +1355,7 @@ public class PacketUtils implements Listener {
                     if (owner != null && owner.isOnline()) {
                         Location here = owner.getLocation(); here.setX(sheep.getX()); here.setY(sheep.getY()); here.setZ(sheep.getZ()); owner.teleport(here);
                     }
+                    info.isEating = false; // 动画结束：恢复位置跟随（不重置会永久卡死，onPlayerMove/ticker 都会跳过）
                 }, 40L);
                 return;
             }
@@ -1280,11 +1378,15 @@ public class PacketUtils implements Listener {
     // 由输入监听器（PlayerInputListener / PlayerInputCompat）更新玩家的移动状态
     public static void setPlayerMoving(UUID uid, boolean moving) { playerMoving.put(uid, moving); }
     // 设置变身生物为幼年/正常体型（生物需支持 Ageable；1.21.9 setBaby() 无参设置幼年）
+    // 变身时 mob 还是成年，setBaby 之后重新应用速度（体型不影响速度）
     public static void setBaby(Player p, boolean baby) {
         DisguiseInfo info = disguises.get(p.getUniqueId());
         if (info != null && info.mob instanceof Ageable a) {
             if (baby) a.setBaby();
             else a.setAge(0);
+            float speed = mobWalkSpeed(info.mob);
+            applyMobSpeed(p, speed);
+            p.sendMessage("§e当前移动速度：" + speed);
         }
     }
     public static boolean toggleDebug(Player player) {
@@ -1323,6 +1425,22 @@ public class PacketUtils implements Listener {
     }
 
     @EventHandler public void onPlayerQuit(PlayerQuitEvent event) { undisguise(event.getPlayer()); }
+
+    // 新玩家进服：重新隐藏所有已变身的玩家（hidePlayer 不自动对新进服玩家生效）
+    @EventHandler public void onPlayerJoin(PlayerJoinEvent event) {
+        Player joiner = event.getPlayer();
+        // 清理实验残留：旧速度 modifier（可能已保存进玩家数据）与异常 base（崩溃未解除变身时残留）
+        var speedAttr = joiner.getAttribute(org.bukkit.attribute.Attribute.MOVEMENT_SPEED);
+        if (speedAttr != null) speedAttr.removeModifier(SPEED_KEY);
+        if (Math.abs(joiner.getWalkSpeed() - 0.2f) > 0.001f) joiner.setWalkSpeed(0.2f);
+        for (DisguiseInfo info : disguises.values()) {
+            Player owner = info.owner;
+            if (owner != null && !owner.equals(joiner)) {
+                joiner.hidePlayer(plugin, owner);
+                owner.setInvisible(true);
+            }
+        }
+    }
 
     @EventHandler public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
         DisguiseInfo info = disguises.get(event.getPlayer().getUniqueId());
@@ -1964,13 +2082,22 @@ public class PacketUtils implements Listener {
                 EntityDamageByEntityEvent de = event instanceof EntityDamageByEntityEvent ed ? ed : null;
                 if (de != null && de.getDamager() instanceof Player && de.getDamager().equals(owner)) { event.setCancelled(true); return; }
                 owner.damage(event.getDamage());
+                // 只有实体攻击（有击退）才设置 recentlyDamaged——岩浆/火焰等持续伤害不设置，
+                // 让"没按 WASD 清速度"的保护照常生效（防止持续烫伤时被流体推挤漂移）
                 if (de != null) {
                     Vector dir = owner.getLocation().toVector().subtract(de.getDamager().getLocation().toVector());
                     dir.setY(0).normalize().multiply(0.4).setY(0.35);
-                    owner.setVelocity(dir);
+                    // 尊重击退抗性：铁傀儡（抗性 1.0）完全免疫手动击退——setVelocity 直接改速度向量，不走原版抗性计算
+                    double resist = 0.0;
+                    var kr = owner.getAttribute(org.bukkit.attribute.Attribute.KNOCKBACK_RESISTANCE);
+                    if (kr != null) resist = kr.getValue();
+                    if (resist < 0.999) {
+                        dir.multiply(Math.max(0.0, 1.0 - resist));
+                        owner.setVelocity(dir);
+                    }
+                    recentlyDamaged.add(owner.getUniqueId());
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> recentlyDamaged.remove(owner.getUniqueId()), 20L);
                 }
-                recentlyDamaged.add(owner.getUniqueId());
-                Bukkit.getScheduler().runTaskLater(plugin, () -> recentlyDamaged.remove(owner.getUniqueId()), 20L);
                 return;
             }
         }

@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -23,7 +24,10 @@ import java.util.UUID;
 
 public class SizeSelectMenu implements Listener {
 
-    private static final String TITLE_STR = "体型";
+    // 标题用 Component 常量：创建与匹配用同一对象（getTitle() 字符串不可靠，Component 比较才精确）
+    // 精确匹配两个固定标题，避免与 BabySelectMenu 的"体型选择"互相劫持
+    private static final Component TITLE_SLIME = Component.text("选择史莱姆体型").color(NamedTextColor.DARK_GRAY);
+    private static final Component TITLE_MAGMA = Component.text("选择岩浆怪体型").color(NamedTextColor.DARK_GRAY);
 
     // 体型选择：槽位 -> (体型, 名称)
     private static final int[] SIZE_SLOTS = {10, 12, 14, 16};
@@ -45,8 +49,7 @@ public class SizeSelectMenu implements Listener {
     public void open(Player player, DisguiseType type) {
         currentType.put(player.getUniqueId(), type);
         String mobName = type == DisguiseType.SLIME ? "史莱姆" : "岩浆怪";
-        Inventory inv = Bukkit.createInventory(null, 27,
-                Component.text("选择" + mobName + "体型").color(NamedTextColor.DARK_GRAY));
+        Inventory inv = Bukkit.createInventory(null, 27, type == DisguiseType.SLIME ? TITLE_SLIME : TITLE_MAGMA);
 
         Material icon = type == DisguiseType.SLIME ? Material.SLIME_SPAWN_EGG : Material.MAGMA_CUBE_SPAWN_EGG;
         for (int i = 0; i < SIZE_SLOTS.length; i++) {
@@ -68,10 +71,15 @@ public class SizeSelectMenu implements Listener {
         player.openInventory(inv);
     }
 
+    // 玩家退出：清理状态 map（防内存残留）
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        currentType.remove(event.getPlayer().getUniqueId());
+    }
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        String t = event.getView().getTitle();
-        if (t == null || !t.contains(TITLE_STR)) return;
+        if (!event.getView().title().equals(TITLE_SLIME) && !event.getView().title().equals(TITLE_MAGMA)) return;
         event.setCancelled(true);
 
         if (!(event.getWhoClicked() instanceof Player player)) return;
