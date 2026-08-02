@@ -2,6 +2,7 @@ package com.disguise.gui;
 
 import com.disguise.disguise.DisguiseManager;
 import com.disguise.disguise.DisguiseType;
+import com.disguise.lang.LanguageManager;
 import com.disguise.packet.PacketUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -20,8 +21,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -30,34 +31,17 @@ import java.util.UUID;
  */
 public class BabySelectMenu implements Listener {
 
-    // 标题用 Component 常量：创建与匹配用同一对象（getTitle() 字符串不可靠，Component 比较才精确）
-    private static final Component TITLE = Component.text("体型选择").color(NamedTextColor.DARK_GRAY);
+    // 标题用 Component：创建与匹配用同一对象（语言化后按当前语言动态匹配）
+    private static Component title() {
+        return Component.text(LanguageManager.get("menu.baby")).color(NamedTextColor.DARK_GRAY);
+    }
 
-    // 颜色中文名（羊 DyeColor / 美西螈 Variant）
-    private static final Map<DyeColor, String> COLOR_NAMES = new LinkedHashMap<>();
-    private static final Map<Axolotl.Variant, String> VARIANT_NAMES = new LinkedHashMap<>();
-    static {
-        COLOR_NAMES.put(DyeColor.WHITE, "白色");
-        COLOR_NAMES.put(DyeColor.ORANGE, "橙色");
-        COLOR_NAMES.put(DyeColor.MAGENTA, "品红色");
-        COLOR_NAMES.put(DyeColor.LIGHT_BLUE, "淡蓝色");
-        COLOR_NAMES.put(DyeColor.YELLOW, "黄色");
-        COLOR_NAMES.put(DyeColor.LIME, "黄绿色");
-        COLOR_NAMES.put(DyeColor.PINK, "粉色");
-        COLOR_NAMES.put(DyeColor.GRAY, "灰色");
-        COLOR_NAMES.put(DyeColor.LIGHT_GRAY, "淡灰色");
-        COLOR_NAMES.put(DyeColor.CYAN, "青色");
-        COLOR_NAMES.put(DyeColor.PURPLE, "紫色");
-        COLOR_NAMES.put(DyeColor.BLUE, "蓝色");
-        COLOR_NAMES.put(DyeColor.BROWN, "棕色");
-        COLOR_NAMES.put(DyeColor.GREEN, "绿色");
-        COLOR_NAMES.put(DyeColor.RED, "红色");
-        COLOR_NAMES.put(DyeColor.BLACK, "黑色");
-        VARIANT_NAMES.put(Axolotl.Variant.LUCY, "白化");
-        VARIANT_NAMES.put(Axolotl.Variant.WILD, "野生");
-        VARIANT_NAMES.put(Axolotl.Variant.GOLD, "金色");
-        VARIANT_NAMES.put(Axolotl.Variant.CYAN, "青色");
-        VARIANT_NAMES.put(Axolotl.Variant.BLUE, "蓝色");
+    // 颜色显示名（语言文件中 color.* / axolotl.*，查询时取当前语言）
+    private static String colorName(DyeColor color) {
+        return LanguageManager.get("color." + color.name().toLowerCase(Locale.ROOT));
+    }
+    private static String variantName(Axolotl.Variant variant) {
+        return LanguageManager.get("axolotl." + variant.name().toLowerCase(Locale.ROOT));
     }
 
     private final DisguiseManager disguiseManager;
@@ -91,27 +75,27 @@ public class BabySelectMenu implements Listener {
         currentType.put(uid, type);
         pendingColor.put(uid, color);
         pendingVariant.put(uid, variant);
-        Inventory inv = Bukkit.createInventory(null, 27, TITLE);
+        Inventory inv = Bukkit.createInventory(null, 27, title());
 
         // 正常体型（slot 11）
         ItemStack normal = new ItemStack(Material.ENDER_PEARL);
         ItemMeta normalMeta = normal.getItemMeta();
-        normalMeta.displayName(Component.text("§e正常体型").decoration(TextDecoration.ITALIC, false));
-        normalMeta.lore(List.of(Component.text("§7点击变身为正常体型")));
+        normalMeta.displayName(Component.text(LanguageManager.get("button.normal")).decoration(TextDecoration.ITALIC, false));
+        normalMeta.lore(List.of(Component.text(LanguageManager.get("button.normal-lore"))));
         normal.setItemMeta(normalMeta);
         inv.setItem(11, normal);
 
         // 小型体型（slot 15）
         ItemStack baby = new ItemStack(Material.SLIME_BALL);
         ItemMeta babyMeta = baby.getItemMeta();
-        babyMeta.displayName(Component.text("§e小型体型").decoration(TextDecoration.ITALIC, false));
-        babyMeta.lore(List.of(Component.text("§7点击变身为小型体型")));
+        babyMeta.displayName(Component.text(LanguageManager.get("button.baby")).decoration(TextDecoration.ITALIC, false));
+        babyMeta.lore(List.of(Component.text(LanguageManager.get("button.baby-lore"))));
         baby.setItemMeta(babyMeta);
         inv.setItem(15, baby);
 
         ItemStack backItem = new ItemStack(Material.ARROW);
         ItemMeta backMeta = backItem.getItemMeta();
-        backMeta.displayName(Component.text("§c← 返回主菜单"));
+        backMeta.displayName(Component.text(LanguageManager.get("button.back")));
         backItem.setItemMeta(backMeta);
         inv.setItem(22, backItem);
 
@@ -129,7 +113,7 @@ public class BabySelectMenu implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!event.getView().title().equals(TITLE)) return; // Component 精确匹配，避免与其他"体型"菜单互相劫持
+        if (!event.getView().title().equals(title())) return; // Component 精确匹配，避免与其他"体型"菜单互相劫持
         event.setCancelled(true);
 
         if (!(event.getWhoClicked() instanceof Player player)) return;
@@ -156,14 +140,14 @@ public class BabySelectMenu implements Listener {
 
     // 按上下文变身：普通生物 / 羊（带颜色）/ 美西螈（带颜色）
     private void applyWithContext(Player player, DisguiseType type, DyeColor color, Axolotl.Variant variant, boolean baby) {
-        String prefix = baby ? "小型" : "";
-        String colorName = "";
+        String prefix = baby ? LanguageManager.get("size.1") : ""; // 小型
+        String colorText = "";
         if (color != null) {
             disguiseManager.applyDisguise(player, DisguiseType.SHEEP, color);
-            colorName = COLOR_NAMES.getOrDefault(color, "");
+            colorText = colorName(color);
         } else if (variant != null) {
             disguiseManager.applyDisguise(player, DisguiseType.AXOLOTL, variant);
-            colorName = VARIANT_NAMES.getOrDefault(variant, "");
+            colorText = variantName(variant);
         } else {
             disguiseManager.applyDisguise(player, type);
         }
@@ -172,7 +156,7 @@ public class BabySelectMenu implements Listener {
         pendingColor.remove(uid);
         pendingVariant.remove(uid);
         if (PacketUtils.isDisguised(player)) {
-            player.sendMessage("§a你已变身为§e" + prefix + colorName + type.getDisplayName() + "§a！");
+            player.sendMessage(LanguageManager.get("message.baby-disguised", prefix, colorText, type.getDisplayName()));
         }
         player.closeInventory();
     }

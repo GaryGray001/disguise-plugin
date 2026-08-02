@@ -2,7 +2,7 @@ package com.disguise.gui;
 
 import com.disguise.disguise.DisguiseManager;
 import com.disguise.disguise.DisguiseType;
-import com.disguise.packet.PacketUtils;
+import com.disguise.lang.LanguageManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -19,30 +19,25 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class ColorSelectMenu implements Listener {
 
-    private static final String TITLE_STR = "选择羊的颜色";
+    // 标题用 Component：创建与匹配用同一对象（语言化后按当前语言动态匹配）
+    private static Component title() {
+        return Component.text(LanguageManager.get("menu.sheep-color")).color(NamedTextColor.DARK_GRAY);
+    }
 
-    private static final Map<DyeColor, String> COLOR_NAMES = new LinkedHashMap<>();
+    // 颜色显示名（语言文件 color.*，查询时取当前语言）
+    private static String colorName(DyeColor color) {
+        return LanguageManager.get("color." + color.name().toLowerCase(Locale.ROOT));
+    }
+
+    // 展示顺序（保持原样：按 DyeColor 枚举序）
+    private static final Map<DyeColor, DyeColor> COLOR_ORDER = new LinkedHashMap<>();
     static {
-        COLOR_NAMES.put(DyeColor.WHITE, "白色");
-        COLOR_NAMES.put(DyeColor.ORANGE, "橙色");
-        COLOR_NAMES.put(DyeColor.MAGENTA, "品红色");
-        COLOR_NAMES.put(DyeColor.LIGHT_BLUE, "淡蓝色");
-        COLOR_NAMES.put(DyeColor.YELLOW, "黄色");
-        COLOR_NAMES.put(DyeColor.LIME, "黄绿色");
-        COLOR_NAMES.put(DyeColor.PINK, "粉色");
-        COLOR_NAMES.put(DyeColor.GRAY, "灰色");
-        COLOR_NAMES.put(DyeColor.LIGHT_GRAY, "淡灰色");
-        COLOR_NAMES.put(DyeColor.CYAN, "青色");
-        COLOR_NAMES.put(DyeColor.PURPLE, "紫色");
-        COLOR_NAMES.put(DyeColor.BLUE, "蓝色");
-        COLOR_NAMES.put(DyeColor.BROWN, "棕色");
-        COLOR_NAMES.put(DyeColor.GREEN, "绿色");
-        COLOR_NAMES.put(DyeColor.RED, "红色");
-        COLOR_NAMES.put(DyeColor.BLACK, "黑色");
+        for (DyeColor c : DyeColor.values()) COLOR_ORDER.put(c, c);
     }
 
     private final DisguiseManager disguiseManager;
@@ -62,19 +57,16 @@ public class ColorSelectMenu implements Listener {
     }
 
     public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27,
-                Component.text(TITLE_STR).color(NamedTextColor.DARK_GRAY));
+        Inventory inv = Bukkit.createInventory(null, 27, title());
 
         int slot = 0;
-        for (Map.Entry<DyeColor, String> entry : COLOR_NAMES.entrySet()) {
-            DyeColor color = entry.getKey();
-            String chineseName = entry.getValue();
-
+        for (DyeColor color : COLOR_ORDER.keySet()) {
+            String name = colorName(color);
             ItemStack item = new ItemStack(getWoolMaterial(color));
             ItemMeta meta = item.getItemMeta();
-            meta.displayName(Component.text(chineseName + "羊")
+            meta.displayName(Component.text(LanguageManager.get("icon.color-sheep", name))
                     .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(Component.text("§7点击变身为 " + chineseName + "羊")));
+            meta.lore(List.of(Component.text(LanguageManager.get("lore.color-sheep", name))));
             item.setItemMeta(meta);
             inv.setItem(slot, item);
             slot++;
@@ -82,7 +74,7 @@ public class ColorSelectMenu implements Listener {
 
         ItemStack backItem = new ItemStack(Material.ARROW);
         ItemMeta backMeta = backItem.getItemMeta();
-        backMeta.displayName(Component.text("§c← 返回主菜单"));
+        backMeta.displayName(Component.text(LanguageManager.get("button.back")));
         backItem.setItemMeta(backMeta);
         inv.setItem(26, backItem);
 
@@ -113,8 +105,7 @@ public class ColorSelectMenu implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         try {
-            String t = event.getView().getTitle();
-            if (t == null || !t.contains(TITLE_STR)) return;
+            if (!event.getView().title().equals(title())) return;
             event.setCancelled(true);
 
             if (!(event.getWhoClicked() instanceof Player player)) return;
@@ -138,7 +129,7 @@ public class ColorSelectMenu implements Listener {
                 }
             }
         } catch (Exception e) {
-            event.getWhoClicked().sendMessage("§c变身出错: " + e.getMessage());
+            event.getWhoClicked().sendMessage(LanguageManager.get("msg.error", e.getMessage()));
             e.printStackTrace();
         }
     }

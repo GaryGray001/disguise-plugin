@@ -2,6 +2,7 @@ package com.disguise.gui;
 
 import com.disguise.disguise.DisguiseManager;
 import com.disguise.disguise.DisguiseType;
+import com.disguise.lang.LanguageManager;
 import com.disguise.packet.PacketUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -24,15 +25,15 @@ import java.util.UUID;
 
 public class SizeSelectMenu implements Listener {
 
-    // 标题用 Component 常量：创建与匹配用同一对象（getTitle() 字符串不可靠，Component 比较才精确）
-    // 精确匹配两个固定标题，避免与 BabySelectMenu 的"体型选择"互相劫持
-    private static final Component TITLE_SLIME = Component.text("选择史莱姆体型").color(NamedTextColor.DARK_GRAY);
-    private static final Component TITLE_MAGMA = Component.text("选择岩浆怪体型").color(NamedTextColor.DARK_GRAY);
+    // 标题用 Component 常量：创建与匹配用同一对象（语言化后按当前语言动态匹配）
+    private static Component title(DisguiseType type) {
+        String key = type == DisguiseType.SLIME ? "menu.slime-size" : "menu.magma-size";
+        return Component.text(LanguageManager.get(key)).color(NamedTextColor.DARK_GRAY);
+    }
 
-    // 体型选择：槽位 -> (体型, 名称)
+    // 体型选择：槽位 -> (体型, 名称 key)
     private static final int[] SIZE_SLOTS = {10, 12, 14, 16};
     private static final int[] SIZES = {1, 2, 3, 4};
-    private static final String[] SIZE_NAMES = {"小型", "中型", "大型", "巨型"};
 
     private final DisguiseManager disguiseManager;
     private DisguiseMenu parentMenu;
@@ -48,23 +49,23 @@ public class SizeSelectMenu implements Listener {
 
     public void open(Player player, DisguiseType type) {
         currentType.put(player.getUniqueId(), type);
-        String mobName = type == DisguiseType.SLIME ? "史莱姆" : "岩浆怪";
-        Inventory inv = Bukkit.createInventory(null, 27, type == DisguiseType.SLIME ? TITLE_SLIME : TITLE_MAGMA);
+        Inventory inv = Bukkit.createInventory(null, 27, title(type));
 
         Material icon = type == DisguiseType.SLIME ? Material.SLIME_SPAWN_EGG : Material.MAGMA_CUBE_SPAWN_EGG;
         for (int i = 0; i < SIZE_SLOTS.length; i++) {
+            String sizeName = LanguageManager.get("size." + SIZES[i]);
             ItemStack item = new ItemStack(icon);
             ItemMeta meta = item.getItemMeta();
-            meta.displayName(Component.text("§e" + SIZE_NAMES[i] + " " + mobName)
+            meta.displayName(Component.text("§e" + sizeName + " " + type.getDisplayName())
                     .decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(Component.text("§7点击变身为" + SIZE_NAMES[i])));
+            meta.lore(List.of(Component.text(LanguageManager.get("lore.click-size", sizeName))));
             item.setItemMeta(meta);
             inv.setItem(SIZE_SLOTS[i], item);
         }
 
         ItemStack backItem = new ItemStack(Material.ARROW);
         ItemMeta backMeta = backItem.getItemMeta();
-        backMeta.displayName(Component.text("§c← 返回主菜单"));
+        backMeta.displayName(Component.text(LanguageManager.get("button.back")));
         backItem.setItemMeta(backMeta);
         inv.setItem(22, backItem);
 
@@ -79,7 +80,8 @@ public class SizeSelectMenu implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!event.getView().title().equals(TITLE_SLIME) && !event.getView().title().equals(TITLE_MAGMA)) return;
+        if (!event.getView().title().equals(title(DisguiseType.SLIME))
+                && !event.getView().title().equals(title(DisguiseType.MAGMA_CUBE))) return;
         event.setCancelled(true);
 
         if (!(event.getWhoClicked() instanceof Player player)) return;
@@ -95,10 +97,10 @@ public class SizeSelectMenu implements Listener {
             if (slot == SIZE_SLOTS[i]) {
                 int size = SIZES[i];
                 DisguiseType type = currentType.getOrDefault(player.getUniqueId(), DisguiseType.SLIME);
-                String mobName = type == DisguiseType.SLIME ? "史莱姆" : "岩浆怪";
+                String sizeName = LanguageManager.get("size." + size);
                 disguiseManager.applyDisguise(player, type, size);
                 if (PacketUtils.isDisguised(player)) {
-                    player.sendMessage("§a你已变身为§e" + SIZE_NAMES[i] + mobName + "§a！");
+                    player.sendMessage(LanguageManager.get("message.size-disguised", sizeName, type.getDisplayName()));
                 }
                 player.closeInventory();
                 return;

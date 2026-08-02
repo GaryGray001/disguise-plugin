@@ -2,6 +2,7 @@ package com.disguise.gui;
 
 import com.disguise.disguise.DisguiseManager;
 import com.disguise.disguise.DisguiseType;
+import com.disguise.lang.LanguageManager;
 import com.disguise.packet.PacketUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -18,16 +19,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
 public class DisguiseMenu implements Listener {
-
-    private static final Component TITLE = Component.text("✧ 变身主菜单 ✧")
-            .color(NamedTextColor.DARK_GRAY)
-            .decoration(TextDecoration.BOLD, false);
 
     private static final int MENU_SIZE = 54;
     // 可用槽位（避开外围玻璃板边框）
@@ -37,6 +36,116 @@ public class DisguiseMenu implements Listener {
             28, 29, 30, 31, 32, 33, 34,
             37, 38, 39, 40, 41, 42, 43
     };
+
+    // 语言 key 辅助：DisguiseType 枚举名小写
+    private static String key(DisguiseType type) {
+        return type.name().toLowerCase(Locale.ROOT);
+    }
+
+    // 菜单标题（语言化，每次构造：创建与事件匹配用同一文本）
+    private static Component title() {
+        return Component.text(LanguageManager.get("menu.main"))
+                .color(NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.BOLD, false);
+    }
+
+    // 生物图标材质表（语言化的图标名与 lore 都在语言文件 icon.* / lore.* 中）
+    // 低版本材质用 safeMaterial（matchMaterial 找不到返回 null 时用备用），不会参与点击（该生物已被 isAvailable 过滤）
+    private static final Map<DisguiseType, Material> ICON_MATERIALS = new EnumMap<>(DisguiseType.class);
+    static {
+        ICON_MATERIALS.put(DisguiseType.SHEEP, Material.SHEEP_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.PIG, Material.PIG_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.COW, Material.COW_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.CHICKEN, Material.CHICKEN_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.CAMEL, Material.CAMEL_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.HORSE, Material.HORSE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.DONKEY, Material.DONKEY_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.MULE, Material.MULE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.CAT, Material.CAT_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.WOLF, Material.WOLF_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.ARMADILLO, Material.ARMADILLO_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.FOX, Material.FOX_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.GOAT, Material.GOAT_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.LLAMA, Material.LLAMA_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.OCELOT, Material.OCELOT_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.PANDA, Material.PANDA_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.POLAR_BEAR, Material.POLAR_BEAR_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.TURTLE, Material.TURTLE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.MOOSHROOM, Material.MOOSHROOM_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.SNIFFER, Material.SNIFFER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.IRON_GOLEM, Material.IRON_GOLEM_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.SNOW_GOLEM, Material.SNOW_GOLEM_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.TRADER_LLAMA, Material.TRADER_LLAMA_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.VILLAGER, Material.VILLAGER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.WANDERING_TRADER, Material.WANDERING_TRADER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.COPPER_GOLEM, safeMaterial("COPPER_GOLEM_SPAWN_EGG"));
+        ICON_MATERIALS.put(DisguiseType.ZOMBIE, Material.ZOMBIE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.SKELETON, Material.SKELETON_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.BOGGED, Material.BOGGED_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.PARCHED, safeMaterial("PARCHED_SPAWN_EGG"));
+        ICON_MATERIALS.put(DisguiseType.HUSK, Material.HUSK_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.DROWNED, Material.DROWNED_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.STRAY, Material.STRAY_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.SKELETON_HORSE, Material.SKELETON_HORSE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.ZOMBIFIED_CAMEL, safeMaterial("ZOMBIFIED_CAMEL_SPAWN_EGG"));
+        ICON_MATERIALS.put(DisguiseType.ZOMBIE_HORSE, Material.ZOMBIE_HORSE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.ZOMBIE_VILLAGER, Material.ZOMBIE_VILLAGER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.SPIDER, Material.SPIDER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.CAVE_SPIDER, Material.CAVE_SPIDER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.BREEZE, Material.BREEZE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.CREEPER, Material.CREEPER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.SILVERFISH, Material.SILVERFISH_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.WARDEN, Material.WARDEN_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.WITCH, Material.WITCH_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.EVOKER, Material.EVOKER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.PILLAGER, Material.PILLAGER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.VINDICATOR, Material.VINDICATOR_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.RAVAGER, Material.RAVAGER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.BLAZE, Material.BLAZE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.PIGLIN, Material.PIGLIN_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.PIGLIN_BRUTE, Material.PIGLIN_BRUTE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.STRIDER, Material.STRIDER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.ZOGLIN, Material.ZOGLIN_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.ZOMBIFIED_PIGLIN, Material.ZOMBIFIED_PIGLIN_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.WITHER_SKELETON, Material.WITHER_SKELETON_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.ENDERMAN, Material.ENDERMAN_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.SLIME, Material.SLIME_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.MAGMA_CUBE, Material.MAGMA_CUBE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.FROG, Material.FROG_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.RABBIT, Material.RABBIT_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.AXOLOTL, Material.AXOLOTL_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.BAT, Material.BAT_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.BEE, Material.BEE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.ALLAY, Material.ALLAY_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.GHAST, Material.GHAST_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.HAPPY_GHAST, safeMaterial("HAPPY_GHAST_SPAWN_EGG"));
+        ICON_MATERIALS.put(DisguiseType.PHANTOM, Material.PHANTOM_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.PARROT, Material.PARROT_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.COD, Material.COD_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.SALMON, Material.SALMON_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.PUFFERFISH, Material.PUFFERFISH_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.SQUID, Material.SQUID_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.GLOW_SQUID, Material.GLOW_SQUID_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.TROPICAL_FISH, Material.TROPICAL_FISH_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.DOLPHIN, Material.DOLPHIN_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.TADPOLE, Material.TADPOLE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.NAUTILUS, safeMaterial("NAUTILUS_SPAWN_EGG"));
+        ICON_MATERIALS.put(DisguiseType.ZOMBIFIED_NAUTILUS, safeMaterial("ZOMBIFIED_NAUTILUS_SPAWN_EGG"));
+        ICON_MATERIALS.put(DisguiseType.GUARDIAN, Material.GUARDIAN_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.ELDER_GUARDIAN, Material.ELDER_GUARDIAN_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.HOGLIN, Material.HOGLIN_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.VEX, Material.VEX_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.ENDERMITE, Material.ENDERMITE_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.ENDER_DRAGON, Material.ENDER_DRAGON_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.WITHER, Material.WITHER_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.SHULKER, Material.SHULKER_SPAWN_EGG);
+    }
+
+    // 材质反查 → 变身类型（点击处理用）
+    private static final Map<Material, DisguiseType> MATERIAL_TYPES = new HashMap<>();
+    static {
+        ICON_MATERIALS.forEach((t, m) -> MATERIAL_TYPES.put(m, t));
+    }
 
     private final ColorSelectMenu colorSelectMenu;
     private final SizeSelectMenu sizeSelectMenu;
@@ -167,7 +276,7 @@ public class DisguiseMenu implements Listener {
         if (page >= pages) page = pages - 1;
         playerPages.put(player.getUniqueId(), page);
 
-        Inventory inv = Bukkit.createInventory(null, MENU_SIZE, TITLE);
+        Inventory inv = Bukkit.createInventory(null, MENU_SIZE, title());
 
         // 装饰边框
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
@@ -183,8 +292,11 @@ public class DisguiseMenu implements Listener {
 
         // Slot 4: 顶部提示（含页码）
         inv.setItem(4, createIconItem(Material.BOOK,
-                "§e💡 提示",
-                List.of("§7点击生物图标选择变身", "§7第 " + (page + 1) + " / " + pages + " 页", "§7按 Ctrl 即可切换模式")));
+                LanguageManager.get("tip.name"),
+                List.of(
+                        LanguageManager.get("tip.lore1"),
+                        LanguageManager.get("tip.lore2", page + 1, pages),
+                        LanguageManager.get("tip.lore3"))));
 
         // 本页生物
         int start = page * SLOTS.length;
@@ -195,12 +307,12 @@ public class DisguiseMenu implements Listener {
 
         // 翻页按钮
         if (page > 0) {
-            inv.setItem(45, createIconItem(Material.ARROW, "§e◀ 上一页", "§7点击翻到上一页"));
+            inv.setItem(45, createIconItem(Material.ARROW, LanguageManager.get("button.page-prev"), LanguageManager.get("button.page-prev-lore")));
         } else {
             inv.setItem(45, border);
         }
         if (page < pages - 1) {
-            inv.setItem(53, createIconItem(Material.ARROW, "§e下一页 ▶", "§7点击翻到下一页"));
+            inv.setItem(53, createIconItem(Material.ARROW, LanguageManager.get("button.page-next"), LanguageManager.get("button.page-next-lore")));
         } else {
             inv.setItem(53, border);
         }
@@ -209,13 +321,17 @@ public class DisguiseMenu implements Listener {
         if (PacketUtils.isDisguised(player)) {
             inv.setItem(49, createIconItem(
                     Material.BARRIER,
-                    "§c❌ 取消变身",
-                    List.of("§7点击恢复原形", "§a▸ 当前已变身")));
+                    LanguageManager.get("button.undo-on"),
+                    List.of(
+                            LanguageManager.get("button.undo-on-lore1"),
+                            LanguageManager.get("button.undo-on-lore2"))));
         } else {
             inv.setItem(49, createIconItem(
                     Material.BARRIER,
-                    "§8❌ 取消变身",
-                    List.of("§7你还未变身", "§8选择一个生物开始变身")));
+                    LanguageManager.get("button.undo-off"),
+                    List.of(
+                            LanguageManager.get("button.undo-off-lore1"),
+                            LanguageManager.get("button.undo-off-lore2"))));
         }
 
         player.openInventory(inv);
@@ -228,94 +344,9 @@ public class DisguiseMenu implements Listener {
     }
 
     private ItemStack createAnimalIcon(DisguiseType type) {
-        return switch (type) {
-            case SHEEP -> createIconItem(Material.SHEEP_SPAWN_EGG, "§e🐑 羊", List.of("§7点击选择颜色后变身为羊", "§8→ 有16种颜色可选", "§7按 F 键即可吃草"));
-            case PIG -> createIconItem(Material.PIG_SPAWN_EGG, "§e🐷 猪", List.of("§7点击变身为猪", "§8→ 两个模式可用"));
-            case COW -> createIconItem(Material.COW_SPAWN_EGG, "§e🐮 牛", List.of("§7点击变身为牛", "§8→ 其他玩家可挤奶"));
-            case CHICKEN -> createIconItem(Material.CHICKEN_SPAWN_EGG, "§e🐔 鸡", List.of("§7点击变身为鸡", "§7按 F 键下蛋", "§8→ 可喂种子繁殖"));
-            case CAMEL -> createIconItem(Material.CAMEL_SPAWN_EGG, "§e🐫 骆驼", List.of("§7点击变身为骆驼", "§7按 F 键趴下/站起", "§7可被其他玩家乘骑", "§8→ 乘骑者无法控制方向"));
-            case HORSE -> createIconItem(Material.HORSE_SPAWN_EGG, "§e🐴 马", List.of("§7点击变身为马", "§7可被其他玩家乘骑", "§8→ 乘骑者无法控制方向"));
-            case DONKEY -> createIconItem(Material.DONKEY_SPAWN_EGG, "§e🐴 驴", List.of("§7点击变身为驴", "§7可被其他玩家乘骑", "§8→ 乘骑者无法控制方向"));
-            case MULE -> createIconItem(Material.MULE_SPAWN_EGG, "§e🐴 骡子", List.of("§7点击变身为骡子", "§7可被其他玩家乘骑", "§8→ 乘骑者无法控制方向"));
-            case CAT -> createIconItem(Material.CAT_SPAWN_EGG, "§e🐱 猫", List.of("§7点击变身为猫", "§8→ 无法被驯服", "§8→ 免疫摔落伤害"));
-            case WOLF -> createIconItem(Material.WOLF_SPAWN_EGG, "§e🐺 狼", List.of("§7点击变身为狼", "§8→ 无法被驯服"));
-            case ARMADILLO -> createIconItem(Material.ARMADILLO_SPAWN_EGG, "§e🦔 犰狳", List.of("§7点击变身为犰狳", "§7按 F 键掉壳"));
-            case FOX -> createIconItem(Material.FOX_SPAWN_EGG, "§e🦊 狐狸", List.of("§7点击变身为狐狸", "§7按 F 键卧下睡觉", "§8→ 卧下时不跟随"));
-            case GOAT -> createIconItem(Material.GOAT_SPAWN_EGG, "§e🐐 山羊", List.of("§7点击变身为山羊"));
-            case LLAMA -> createIconItem(Material.LLAMA_SPAWN_EGG, "§e🦙 羊驼", List.of("§7点击变身为羊驼", "§7按 F 键吐口水"));
-            case OCELOT -> createIconItem(Material.OCELOT_SPAWN_EGG, "§e🐆 豹猫", List.of("§7点击变身为豹猫", "§8→ 免疫摔落伤害"));
-            case PANDA -> createIconItem(Material.PANDA_SPAWN_EGG, "§e🐼 熊猫", List.of("§7点击变身为熊猫"));
-            case POLAR_BEAR -> createIconItem(Material.POLAR_BEAR_SPAWN_EGG, "§e🐻 北极熊", List.of("§7点击变身为北极熊", "§7按 F 键攻击动画"));
-            case TURTLE -> createIconItem(Material.TURTLE_SPAWN_EGG, "§e🐢 海龟", List.of("§7点击变身为海龟"));
-            case MOOSHROOM -> createIconItem(Material.MOOSHROOM_SPAWN_EGG, "§e🍄 哞菇", List.of("§7点击变身为哞菇", "§8→ 可挤奶"));
-            case SNIFFER -> createIconItem(Material.SNIFFER_SPAWN_EGG, "§e🦕 探嗅兽", List.of("§7点击变身为探嗅兽"));
-            case IRON_GOLEM -> createIconItem(Material.IRON_GOLEM_SPAWN_EGG, "§e🤖 铁傀儡", List.of("§7点击变身为铁傀儡", "§7按住 F 键举花", "§8→ 免疫摔落伤害", "§8→ 免疫击退"));
-            case SNOW_GOLEM -> createIconItem(Material.SNOW_GOLEM_SPAWN_EGG, "§e⛄ 雪傀儡", List.of("§7点击变身为雪傀儡", "§7按 F 键发射雪球", "§8→ 免疫摔落伤害"));
-            case TRADER_LLAMA -> createIconItem(Material.TRADER_LLAMA_SPAWN_EGG, "§e🦙 行商羊驼", List.of("§7点击变身为行商羊驼"));
-            case VILLAGER -> createIconItem(Material.VILLAGER_SPAWN_EGG, "§e🧑 村民", List.of("§7点击变身为村民"));
-            case WANDERING_TRADER -> createIconItem(Material.WANDERING_TRADER_SPAWN_EGG, "§e🧑 流浪商人", List.of("§7点击变身为流浪商人"));
-            case COPPER_GOLEM -> createIconItem(safeMaterial("COPPER_GOLEM_SPAWN_EGG"), "§e🤖 铜傀儡", List.of("§7点击变身为铜傀儡", "§8→ 免疫摔落伤害"));
-            case ZOMBIE -> createIconItem(Material.ZOMBIE_SPAWN_EGG, "§e🧟 僵尸", List.of("§7点击变身为僵尸"));
-            case SKELETON -> createIconItem(Material.SKELETON_SPAWN_EGG, "§e💀 骷髅", List.of("§7点击变身为骷髅"));
-            case BOGGED -> createIconItem(Material.BOGGED_SPAWN_EGG, "§e🌿 沼骸", List.of("§7点击变身为沼骸"));
-            case PARCHED -> createIconItem(safeMaterial("PARCHED_SPAWN_EGG"), "§e🔥 焦骸", List.of("§7点击变身为焦骸"));
-            case HUSK -> createIconItem(Material.HUSK_SPAWN_EGG, "§e🏜️ 尸壳", List.of("§7点击变身为尸壳"));
-            case DROWNED -> createIconItem(Material.DROWNED_SPAWN_EGG, "§e🌊 溺尸", List.of("§7点击变身为溺尸"));
-            case STRAY -> createIconItem(Material.STRAY_SPAWN_EGG, "§e❄️ 流浪者", List.of("§7点击变身为流浪者"));
-            case SKELETON_HORSE -> createIconItem(Material.SKELETON_HORSE_SPAWN_EGG, "§e🐴 骷髅马", List.of("§7点击变身为骷髅马"));
-            case ZOMBIFIED_CAMEL -> createIconItem(safeMaterial("ZOMBIFIED_CAMEL_SPAWN_EGG"), "§e🐫 骆驼尸壳", List.of("§7点击变身为骆驼尸壳"));
-            case ZOMBIE_HORSE -> createIconItem(Material.ZOMBIE_HORSE_SPAWN_EGG, "§e🐴 僵尸马", List.of("§7点击变身为僵尸马"));
-            case ZOMBIE_VILLAGER -> createIconItem(Material.ZOMBIE_VILLAGER_SPAWN_EGG, "§e🧟 僵尸村民", List.of("§7点击变身为僵尸村民"));
-            case SPIDER -> createIconItem(Material.SPIDER_SPAWN_EGG, "§e🕷️ 蜘蛛", List.of("§7点击变身为蜘蛛"));
-            case CAVE_SPIDER -> createIconItem(Material.CAVE_SPIDER_SPAWN_EGG, "§e🕷️ 洞穴蜘蛛", List.of("§7点击变身为洞穴蜘蛛"));
-            case BREEZE -> createIconItem(Material.BREEZE_SPAWN_EGG, "§e🌀 旋风人", List.of("§7点击变身为旋风人", "§7按 F 键发射旋风弹"));
-            case CREEPER -> createIconItem(Material.CREEPER_SPAWN_EGG, "§e💥 苦力怕", List.of("§7点击变身为苦力怕", "§7按住 Shift 蓄力自爆", "§8→ 长按 1.5 秒爆炸"));
-            case SILVERFISH -> createIconItem(Material.SILVERFISH_SPAWN_EGG, "§e🪳 蠹虫", List.of("§7点击变身为蠹虫"));
-            case WARDEN -> createIconItem(Material.WARDEN_SPAWN_EGG, "§e🕳️ 坚守者", List.of("§7点击变身为坚守者", "§7按 F 键声波攻击"));
-            case WITCH -> createIconItem(Material.WITCH_SPAWN_EGG, "§e🧙 女巫", List.of("§7点击变身为女巫", "§7按 F 键扔随机毒药", "§8→ 免疫负面药水"));
-            case EVOKER -> createIconItem(Material.EVOKER_SPAWN_EGG, "§e🧙 唤魔者", List.of("§7点击变身为唤魔者", "§7按 F 键召唤恼鬼"));
-            case PILLAGER -> createIconItem(Material.PILLAGER_SPAWN_EGG, "§e🏹 掠夺者", List.of("§7点击变身为掠夺者"));
-            case VINDICATOR -> createIconItem(Material.VINDICATOR_SPAWN_EGG, "§e🪓 卫道士", List.of("§7点击变身为卫道士"));
-            case RAVAGER -> createIconItem(Material.RAVAGER_SPAWN_EGG, "§e🐗 劫掠兽", List.of("§7点击变身为劫掠兽"));
-            case BLAZE -> createIconItem(Material.BLAZE_SPAWN_EGG, "§e🔥 烈焰人", List.of("§7点击变身为烈焰人", "§7按 F 键连发 3 火球", "§8→ 可走路可飞行"));
-            case PIGLIN -> createIconItem(Material.PIGLIN_SPAWN_EGG, "§e🐷 猪灵", List.of("§7点击变身为猪灵"));
-            case PIGLIN_BRUTE -> createIconItem(Material.PIGLIN_BRUTE_SPAWN_EGG, "§e🗡️ 猪灵蛮兵", List.of("§7点击变身为猪灵蛮兵"));
-            case STRIDER -> createIconItem(Material.STRIDER_SPAWN_EGG, "§e🕷️ 炽足兽", List.of("§7点击变身为炽足兽"));
-            case ZOGLIN -> createIconItem(Material.ZOGLIN_SPAWN_EGG, "§e🐗 僵尸猪灵兽", List.of("§7点击变身为僵尸猪灵兽"));
-            case ZOMBIFIED_PIGLIN -> createIconItem(Material.ZOMBIFIED_PIGLIN_SPAWN_EGG, "§e🐷 僵尸猪灵", List.of("§7点击变身为僵尸猪灵"));
-            case WITHER_SKELETON -> createIconItem(Material.WITHER_SKELETON_SPAWN_EGG, "§e💀 凋零骷髅", List.of("§7点击变身为凋零骷髅"));
-            case ENDERMAN -> createIconItem(Material.ENDERMAN_SPAWN_EGG, "§e👾 末影人", List.of("§7点击变身为末影人", "§7按 F 键随机传送"));
-            case SLIME -> createIconItem(Material.SLIME_SPAWN_EGG, "§e🟢 史莱姆", List.of("§7点击变身为史莱姆", "§7行走时自动蹦跳"));
-            case MAGMA_CUBE -> createIconItem(Material.MAGMA_CUBE_SPAWN_EGG, "§e🟠 岩浆怪", List.of("§7点击变身为岩浆怪", "§7行走时自动蹦跳", "§8→ 蹦跳带岩浆粒子"));
-            case FROG -> createIconItem(Material.FROG_SPAWN_EGG, "§e🐸 青蛙", List.of("§7点击变身为青蛙"));
-            case RABBIT -> createIconItem(Material.RABBIT_SPAWN_EGG, "§e🐰 兔子", List.of("§7点击变身为兔子", "§7行走时自动蹦跳"));
-            case AXOLOTL -> createIconItem(Material.AXOLOTL_SPAWN_EGG, "§e🦎 美西螈", List.of("§7点击选择颜色后变身为美西螈", "§8→ 有 5 种颜色可选", "§8→ 水陆两栖"));
-            case COD -> createIconItem(Material.COD_SPAWN_EGG, "§e🐟 鳕鱼", List.of("§7点击变身为鳕鱼", "§8→ 离水会跳"));
-            case SALMON -> createIconItem(Material.SALMON_SPAWN_EGG, "§e🐟 鲑鱼", List.of("§7点击变身为鲑鱼", "§8→ 离水会跳"));
-            case PUFFERFISH -> createIconItem(Material.PUFFERFISH_SPAWN_EGG, "§e🐡 河豚", List.of("§7点击变身为河豚", "§7按住 F 键膨胀", "§8→ 离水会跳"));
-            case SQUID -> createIconItem(Material.SQUID_SPAWN_EGG, "§e🦑 鱿鱼", List.of("§7点击变身为鱿鱼"));
-            case GLOW_SQUID -> createIconItem(Material.GLOW_SQUID_SPAWN_EGG, "§e🦑 发光鱿鱼", List.of("§7点击变身为发光鱿鱼"));
-            case TROPICAL_FISH -> createIconItem(Material.TROPICAL_FISH_SPAWN_EGG, "§e🐠 热带鱼", List.of("§7点击变身为热带鱼", "§8→ 离水会跳"));
-            case DOLPHIN -> createIconItem(Material.DOLPHIN_SPAWN_EGG, "§e🐬 海豚", List.of("§7点击变身为海豚", "§8→ 离水会跳"));
-            case TADPOLE -> createIconItem(Material.TADPOLE_SPAWN_EGG, "§e🐸 蝌蚪", List.of("§7点击变身为蝌蚪", "§8→ 离水会跳"));
-            case NAUTILUS -> createIconItem(safeMaterial("NAUTILUS_SPAWN_EGG"), "§e🐚 鹦鹉螺", List.of("§7点击变身为鹦鹉螺"));
-            case ZOMBIFIED_NAUTILUS -> createIconItem(safeMaterial("ZOMBIFIED_NAUTILUS_SPAWN_EGG"), "§e🐚 僵尸鹦鹉螺", List.of("§7点击变身为僵尸鹦鹉螺"));
-            case GUARDIAN -> createIconItem(Material.GUARDIAN_SPAWN_EGG, "§e👁️ 守卫者", List.of("§7点击变身为守卫者", "§8→ 离水会跳"));
-            case ELDER_GUARDIAN -> createIconItem(Material.ELDER_GUARDIAN_SPAWN_EGG, "§e👁️ 远古守卫者", List.of("§7点击变身为远古守卫者", "§8→ 离水会跳"));
-            case HOGLIN -> createIconItem(Material.HOGLIN_SPAWN_EGG, "§e🐗 疣猪兽", List.of("§7点击变身为疣猪兽"));
-            case VEX -> createIconItem(Material.VEX_SPAWN_EGG, "§e👻 恼鬼", List.of("§7点击变身为恼鬼", "§7可自由飞行", "§8→ 永不消失"));
-            case SHULKER -> createIconItem(Material.SHULKER_SPAWN_EGG, "§e🦐 潜影贝", List.of("§7点击变身为潜影贝", "§7WASD 随机瞬移", "§7F 键发射子弹", "§7Shift 开壳/关壳", "§8→ 固定原地"));
-            case ENDERMITE -> createIconItem(Material.ENDERMITE_SPAWN_EGG, "§e🪳 末影螨", List.of("§7点击变身为末影螨", "§8→ 永不消失"));
-            case WITHER -> createIconItem(Material.WITHER_SPAWN_EGG, "§e☠️ 凋零", List.of("§7点击变身为凋零", "§7按 F 键发射凋零头颅", "§7可自由飞行", "§8→ 终极 Boss"));
-            case ENDER_DRAGON -> createIconItem(Material.ENDER_DRAGON_SPAWN_EGG, "§e🐲 末影龙", List.of("§7点击变身为末影龙", "§7按 F 键发射龙息弹", "§7可自由飞行", "§8→ 终极 Boss"));
-            case BAT -> createIconItem(Material.BAT_SPAWN_EGG, "§e🦇 蝙蝠", List.of("§7点击变身为蝙蝠", "§7可自由飞行"));
-            case BEE -> createIconItem(Material.BEE_SPAWN_EGG, "§e🐝 蜜蜂", List.of("§7点击变身为蜜蜂", "§7可自由飞行"));
-            case ALLAY -> createIconItem(Material.ALLAY_SPAWN_EGG, "§e🧚 悦灵", List.of("§7点击变身为悦灵", "§7可自由飞行"));
-            case GHAST -> createIconItem(Material.GHAST_SPAWN_EGG, "§e👻 恶魂", List.of("§7点击变身为恶魂", "§7按 F 键发射火球", "§7可自由飞行"));
-            case HAPPY_GHAST -> createIconItem(safeMaterial("HAPPY_GHAST_SPAWN_EGG"), "§e😊 快乐恶魂", List.of("§7点击变身为快乐恶魂", "§7可自由飞行"));
-            case PHANTOM -> createIconItem(Material.PHANTOM_SPAWN_EGG, "§e👾 幻翼", List.of("§7点击变身为幻翼", "§7可自由飞行"));
-            case PARROT -> createIconItem(Material.PARROT_SPAWN_EGG, "§e🦜 鹦鹉", List.of("§7点击变身为鹦鹉", "§7可自由飞行", "§8→ 无法被驯服"));
-        };
+        return createIconItem(ICON_MATERIALS.get(type),
+                LanguageManager.get("icon." + key(type)),
+                LanguageManager.getList("lore." + key(type)));
     }
 
     private ItemStack createIconItem(Material material, String name, List<String> lore) {
@@ -338,7 +369,7 @@ public class DisguiseMenu implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!event.getView().title().equals(TITLE)) return;
+        if (!event.getView().title().equals(title())) return;
         event.setCancelled(true);
 
         if (!(event.getWhoClicked() instanceof Player player)) return;
@@ -353,6 +384,12 @@ public class DisguiseMenu implements Listener {
             return;
         }
 
+        // 先走特殊菜单：羊/美西螈选颜色，史莱姆/岩浆怪选体型
+        if (clicked == Material.SHEEP_SPAWN_EGG) { colorSelectMenu.open(player); return; }
+        if (clicked == Material.AXOLOTL_SPAWN_EGG) { axolotlColorMenu.open(player); return; }
+        if (clicked == Material.SLIME_SPAWN_EGG) { sizeSelectMenu.open(player, DisguiseType.SLIME); return; }
+        if (clicked == Material.MAGMA_CUBE_SPAWN_EGG) { sizeSelectMenu.open(player, DisguiseType.MAGMA_CUBE); return; }
+
         // 有幼年变体的生物 → 弹出小型/正常选择
         DisguiseType babyType = babyTypeFromMaterial(clicked);
         if (babyType != null) {
@@ -360,360 +397,27 @@ public class DisguiseMenu implements Listener {
             return;
         }
 
-        // 2.1.11+ 生物刷怪蛋（低版本 matchMaterial 返回 null，正常不会点击到）
-        Material parchedEgg = Material.matchMaterial("PARCHED_SPAWN_EGG");
-        Material zombifiedCamelEgg = Material.matchMaterial("ZOMBIFIED_CAMEL_SPAWN_EGG");
-        Material copperGolemEgg = Material.matchMaterial("COPPER_GOLEM_SPAWN_EGG");
-        Material happyGhastEgg = Material.matchMaterial("HAPPY_GHAST_SPAWN_EGG");
-        Material nautilusEgg = Material.matchMaterial("NAUTILUS_SPAWN_EGG");
-        Material zombifiedNautilusEgg = Material.matchMaterial("ZOMBIFIED_NAUTILUS_SPAWN_EGG");
-
-        if (clicked == Material.SHEEP_SPAWN_EGG) {
-            colorSelectMenu.open(player);
-        } else if (clicked == Material.PIG_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.PIG);
-            player.sendMessage("§a你已变身为猪！");
-            player.closeInventory();
-        } else if (clicked == Material.COW_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.COW);
-            player.sendMessage("§a你已变身为牛！");
-            player.closeInventory();
-        } else if (clicked == Material.CHICKEN_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.CHICKEN);
-            player.sendMessage("§a你已变身为鸡！按 F 键可下蛋！");
-            player.closeInventory();
-        } else if (clicked == Material.CAMEL_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.CAMEL);
-            player.sendMessage("§a你已变身为骆驼！可被其他玩家乘骑！");
-            player.closeInventory();
-        } else if (clicked == Material.HORSE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.HORSE);
-            player.sendMessage("§a你已变身为马！可被其他玩家乘骑！");
-            player.closeInventory();
-        } else if (clicked == Material.DONKEY_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.DONKEY);
-            player.sendMessage("§a你已变身为驴！可被其他玩家乘骑！");
-            player.closeInventory();
-        } else if (clicked == Material.MULE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.MULE);
-            player.sendMessage("§a你已变身为骡子！可被其他玩家乘骑！");
-            player.closeInventory();
-        } else if (clicked == Material.CAT_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.CAT);
-            player.sendMessage("§a你已变身为猫！");
-            player.closeInventory();
-        } else if (clicked == Material.WOLF_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.WOLF);
-            player.sendMessage("§a你已变身为狼！");
-            player.closeInventory();
-        } else if (clicked == Material.ARMADILLO_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ARMADILLO);
-            player.sendMessage("§a你已变身为犰狳！");
-            player.closeInventory();
-        } else if (clicked == Material.FOX_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.FOX);
-            player.sendMessage("§a你已变身为狐狸！");
-            player.closeInventory();
-        } else if (clicked == Material.GOAT_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.GOAT);
-            player.sendMessage("§a你已变身为山羊！");
-            player.closeInventory();
-        } else if (clicked == Material.LLAMA_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.LLAMA);
-            player.sendMessage("§a你已变身为羊驼！");
-            player.closeInventory();
-        } else if (clicked == Material.OCELOT_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.OCELOT);
-            player.sendMessage("§a你已变身为豹猫！");
-            player.closeInventory();
-        } else if (clicked == Material.PANDA_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.PANDA);
-            player.sendMessage("§a你已变身为熊猫！");
-            player.closeInventory();
-        } else if (clicked == Material.POLAR_BEAR_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.POLAR_BEAR);
-            player.sendMessage("§a你已变身为北极熊！");
-            player.closeInventory();
-        } else if (clicked == Material.TURTLE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.TURTLE);
-            player.sendMessage("§a你已变身为海龟！");
-            player.closeInventory();
-        } else if (clicked == Material.MOOSHROOM_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.MOOSHROOM);
-            player.sendMessage("§a你已变身为哞菇！");
-            player.closeInventory();
-        } else if (clicked == Material.SNIFFER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.SNIFFER);
-            player.sendMessage("§a你已变身为探嗅兽！");
-            player.closeInventory();
-        } else if (clicked == Material.IRON_GOLEM_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.IRON_GOLEM);
-            player.sendMessage("§a你已变身为铁傀儡！");
-            player.closeInventory();
-        } else if (clicked == Material.SNOW_GOLEM_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.SNOW_GOLEM);
-            player.sendMessage("§a你已变身为雪傀儡！");
-            player.closeInventory();
-        } else if (clicked == Material.TRADER_LLAMA_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.TRADER_LLAMA);
-            player.sendMessage("§a你已变身为行商羊驼！");
-            player.closeInventory();
-        } else if (clicked == Material.VILLAGER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.VILLAGER);
-            player.sendMessage("§a你已变身为村民！");
-            player.closeInventory();
-        } else if (clicked == Material.WANDERING_TRADER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.WANDERING_TRADER);
-            player.sendMessage("§a你已变身为流浪商人！");
-            player.closeInventory();
-        } else if (copperGolemEgg != null && clicked == copperGolemEgg) {
-            disguiseManager.applyDisguise(player, DisguiseType.COPPER_GOLEM);
-            player.sendMessage("§a你已变身为铜傀儡！");
-            player.closeInventory();
-        } else if (clicked == Material.ZOMBIE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ZOMBIE);
-            player.sendMessage("§a你已变身为僵尸！");
-            player.closeInventory();
-        } else if (clicked == Material.SKELETON_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.SKELETON);
-            player.sendMessage("§a你已变身为骷髅！");
-            player.closeInventory();
-        } else if (clicked == Material.BOGGED_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.BOGGED);
-            player.sendMessage("§a你已变身为沼骸！");
-            player.closeInventory();
-        } else if (parchedEgg != null && clicked == parchedEgg) {
-            disguiseManager.applyDisguise(player, DisguiseType.PARCHED);
-            player.sendMessage("§a你已变身为焦骸！");
-            player.closeInventory();
-        } else if (clicked == Material.HUSK_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.HUSK);
-            player.sendMessage("§a你已变身为尸壳！");
-            player.closeInventory();
-        } else if (clicked == Material.DROWNED_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.DROWNED);
-            player.sendMessage("§a你已变身为溺尸！");
-            player.closeInventory();
-        } else if (clicked == Material.STRAY_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.STRAY);
-            player.sendMessage("§a你已变身为流浪者！");
-            player.closeInventory();
-        } else if (clicked == Material.SKELETON_HORSE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.SKELETON_HORSE);
-            player.sendMessage("§a你已变身为骷髅马！");
-            player.closeInventory();
-        } else if (zombifiedCamelEgg != null && clicked == zombifiedCamelEgg) {
-            disguiseManager.applyDisguise(player, DisguiseType.ZOMBIFIED_CAMEL);
-            player.sendMessage("§a你已变身为骆驼尸壳！");
-            player.closeInventory();
-        } else if (clicked == Material.ZOMBIE_HORSE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ZOMBIE_HORSE);
-            player.sendMessage("§a你已变身为僵尸马！");
-            player.closeInventory();
-        } else if (clicked == Material.ZOMBIE_VILLAGER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ZOMBIE_VILLAGER);
-            player.sendMessage("§a你已变身为僵尸村民！");
-            player.closeInventory();
-        } else if (clicked == Material.SPIDER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.SPIDER);
-            player.sendMessage("§a你已变身为蜘蛛！");
-            player.closeInventory();
-        } else if (clicked == Material.CAVE_SPIDER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.CAVE_SPIDER);
-            player.sendMessage("§a你已变身为洞穴蜘蛛！");
-            player.closeInventory();
-        } else if (clicked == Material.BREEZE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.BREEZE);
-            player.sendMessage("§a你已变身为旋风人！");
-            player.closeInventory();
-        } else if (clicked == Material.CREEPER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.CREEPER);
-            player.sendMessage("§a你已变身为苦力怕！");
-            player.closeInventory();
-        } else if (clicked == Material.SILVERFISH_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.SILVERFISH);
-            player.sendMessage("§a你已变身为蠹虫！");
-            player.closeInventory();
-        } else if (clicked == Material.WARDEN_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.WARDEN);
-            player.sendMessage("§a你已变身为坚守者！");
-            player.closeInventory();
-        } else if (clicked == Material.WITCH_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.WITCH);
-            player.sendMessage("§a你已变身为女巫！");
-            player.closeInventory();
-        } else if (clicked == Material.EVOKER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.EVOKER);
-            player.sendMessage("§a你已变身为唤魔者！");
-            player.closeInventory();
-        } else if (clicked == Material.PILLAGER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.PILLAGER);
-            player.sendMessage("§a你已变身为掠夺者！");
-            player.closeInventory();
-        } else if (clicked == Material.VINDICATOR_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.VINDICATOR);
-            player.sendMessage("§a你已变身为卫道士！");
-            player.closeInventory();
-        } else if (clicked == Material.RAVAGER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.RAVAGER);
-            player.sendMessage("§a你已变身为劫掠兽！");
-            player.closeInventory();
-        } else if (clicked == Material.BLAZE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.BLAZE);
-            player.sendMessage("§a你已变身为烈焰人！");
-            player.closeInventory();
-        } else if (clicked == Material.PIGLIN_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.PIGLIN);
-            player.sendMessage("§a你已变身为猪灵！");
-            player.closeInventory();
-        } else if (clicked == Material.PIGLIN_BRUTE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.PIGLIN_BRUTE);
-            player.sendMessage("§a你已变身为猪灵蛮兵！");
-            player.closeInventory();
-        } else if (clicked == Material.STRIDER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.STRIDER);
-            player.sendMessage("§a你已变身为炽足兽！");
-            player.closeInventory();
-        } else if (clicked == Material.ZOGLIN_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ZOGLIN);
-            player.sendMessage("§a你已变身为僵尸猪灵兽！");
-            player.closeInventory();
-        } else if (clicked == Material.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ZOMBIFIED_PIGLIN);
-            player.sendMessage("§a你已变身为僵尸猪灵！");
-            player.closeInventory();
-        } else if (clicked == Material.WITHER_SKELETON_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.WITHER_SKELETON);
-            player.sendMessage("§a你已变身为凋零骷髅！");
-            player.closeInventory();
-        } else if (clicked == Material.ENDERMAN_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ENDERMAN);
-            player.sendMessage("§a你已变身为末影人！");
-            player.closeInventory();
-        } else if (clicked == Material.SLIME_SPAWN_EGG) {
-            sizeSelectMenu.open(player, DisguiseType.SLIME);
-        } else if (clicked == Material.MAGMA_CUBE_SPAWN_EGG) {
-            sizeSelectMenu.open(player, DisguiseType.MAGMA_CUBE);
-        } else if (clicked == Material.FROG_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.FROG);
-            player.sendMessage("§a你已变身为青蛙！");
-            player.closeInventory();
-        } else if (clicked == Material.RABBIT_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.RABBIT);
-            player.sendMessage("§a你已变身为兔子！行走时自动蹦跳！");
-            player.closeInventory();
-        } else if (clicked == Material.AXOLOTL_SPAWN_EGG) {
-            axolotlColorMenu.open(player);
-        } else if (clicked == Material.COD_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.COD);
-            player.sendMessage("§a你已变身为鳕鱼！水下呼吸！");
-            player.closeInventory();
-        } else if (clicked == Material.SALMON_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.SALMON);
-            player.sendMessage("§a你已变身为鲑鱼！水下呼吸！");
-            player.closeInventory();
-        } else if (clicked == Material.PUFFERFISH_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.PUFFERFISH);
-            player.sendMessage("§a你已变身为河豚！");
-            player.closeInventory();
-        } else if (clicked == Material.SQUID_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.SQUID);
-            player.sendMessage("§a你已变身为鱿鱼！");
-            player.closeInventory();
-        } else if (clicked == Material.GLOW_SQUID_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.GLOW_SQUID);
-            player.sendMessage("§a你已变身为发光鱿鱼！");
-            player.closeInventory();
-        } else if (clicked == Material.TROPICAL_FISH_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.TROPICAL_FISH);
-            player.sendMessage("§a你已变身为热带鱼！");
-            player.closeInventory();
-        } else if (clicked == Material.DOLPHIN_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.DOLPHIN);
-            player.sendMessage("§a你已变身为海豚！");
-            player.closeInventory();
-        } else if (clicked == Material.TADPOLE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.TADPOLE);
-            player.sendMessage("§a你已变身为蝌蚪！");
-            player.closeInventory();
-        } else if (nautilusEgg != null && clicked == nautilusEgg) {
-            disguiseManager.applyDisguise(player, DisguiseType.NAUTILUS);
-            player.sendMessage("§a你已变身为鹦鹉螺！");
-            player.closeInventory();
-        } else if (zombifiedNautilusEgg != null && clicked == zombifiedNautilusEgg) {
-            disguiseManager.applyDisguise(player, DisguiseType.ZOMBIFIED_NAUTILUS);
-            player.sendMessage("§a你已变身为僵尸鹦鹉螺！");
-            player.closeInventory();
-        } else if (clicked == Material.GUARDIAN_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.GUARDIAN);
-            player.sendMessage("§a你已变身为守卫者！");
-            player.closeInventory();
-        } else if (clicked == Material.ELDER_GUARDIAN_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ELDER_GUARDIAN);
-            player.sendMessage("§a你已变身为远古守卫者！");
-            player.closeInventory();
-        } else if (clicked == Material.HOGLIN_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.HOGLIN);
-            player.sendMessage("§a你已变身为疣猪兽！");
-            player.closeInventory();
-        } else if (clicked == Material.VEX_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.VEX);
-            player.sendMessage("§a你已变身为恼鬼！永不消失！");
-            player.closeInventory();
-        } else if (clicked == Material.SHULKER_SPAWN_EGG) {
-            if (!player.isOnGround()) {
-                player.sendMessage("§c潜影贝不能在空中变身！请先落地！");
+        // 通用变身（材质 → 类型，低版本不可用的生物不会出现在菜单中）
+        DisguiseType type = MATERIAL_TYPES.get(clicked);
+        if (type != null) {
+            // 潜影贝不能在空中变身（固定原地需要落点）
+            if (type == DisguiseType.SHULKER && !player.isOnGround()) {
+                player.sendMessage(LanguageManager.get("msg.shulker-air"));
                 return;
             }
-            disguiseManager.applyDisguise(player, DisguiseType.SHULKER);
-            player.sendMessage("§a你已变身为潜影贝！固定原地，WASD 瞬移！");
+            disguiseManager.applyDisguise(player, type);
+            player.sendMessage(LanguageManager.get("message.disguised." + key(type)));
             player.closeInventory();
-        } else if (clicked == Material.ENDERMITE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ENDERMITE);
-            player.sendMessage("§a你已变身为末影螨！永不消失！");
-            player.closeInventory();
-        } else if (clicked == Material.WITHER_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.WITHER);
-            player.sendMessage("§a你已变身为凋零！终极 Boss！");
-            player.closeInventory();
-        } else if (clicked == Material.ENDER_DRAGON_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ENDER_DRAGON);
-            player.sendMessage("§a你已变身为末影龙！终极 Boss！");
-            player.closeInventory();
-        } else if (clicked == Material.BAT_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.BAT);
-            player.sendMessage("§a你已变身为蝙蝠！可以自由飞行！");
-            player.closeInventory();
-        } else if (clicked == Material.BEE_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.BEE);
-            player.sendMessage("§a你已变身为蜜蜂！可以自由飞行！");
-            player.closeInventory();
-        } else if (clicked == Material.ALLAY_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.ALLAY);
-            player.sendMessage("§a你已变身为悦灵！可以自由飞行！");
-            player.closeInventory();
-        } else if (clicked == Material.GHAST_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.GHAST);
-            player.sendMessage("§a你已变身为恶魂！可以自由飞行！");
-            player.closeInventory();
-        } else if (clicked == Material.PHANTOM_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.PHANTOM);
-            player.sendMessage("§a你已变身为幻翼！可以自由飞行！");
-            player.closeInventory();
-        } else if (clicked == Material.PARROT_SPAWN_EGG) {
-            disguiseManager.applyDisguise(player, DisguiseType.PARROT);
-            player.sendMessage("§a你已变身为鹦鹉！可以自由飞行！");
-            player.closeInventory();
-        } else if (happyGhastEgg != null && clicked == happyGhastEgg) {
-            disguiseManager.applyDisguise(player, DisguiseType.HAPPY_GHAST);
-            player.sendMessage("§a你已变身为快乐恶魂！可以自由飞行！");
-            player.closeInventory();
-        } else if (clicked == Material.BARRIER) {
+            return;
+        }
+
+        // 取消变身（最底部 BARRIER 按钮）
+        if (clicked == Material.BARRIER) {
             if (PacketUtils.isDisguised(player)) {
                 disguiseManager.removeDisguise(player);
-                player.sendMessage("§a你已恢复原形！");
+                player.sendMessage(LanguageManager.get("message.undisguised"));
             } else {
-                player.sendMessage("§e你还没有变身呢，选个生物试试吧！");
+                player.sendMessage(LanguageManager.get("message.not-disguised"));
             }
             player.closeInventory();
         }

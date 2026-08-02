@@ -1,0 +1,735 @@
+# ==================== English (United States) ====================
+# Copy this file to create a new language (e.g. fr_fr.yml) and set it in config.yml
+# Note: {0} {1} are placeholders replaced by the plugin at runtime, keep them
+
+# ===== Mob names =====
+mob.sheep: Sheep
+mob.pig: Pig
+mob.cow: Cow
+mob.chicken: Chicken
+mob.camel: Camel
+mob.horse: Horse
+mob.donkey: Donkey
+mob.mule: Mule
+mob.cat: Cat
+mob.wolf: Wolf
+mob.armadillo: Armadillo
+mob.fox: Fox
+mob.goat: Goat
+mob.llama: Llama
+mob.ocelot: Ocelot
+mob.panda: Panda
+mob.polar_bear: Polar Bear
+mob.turtle: Turtle
+mob.mooshroom: Mooshroom
+mob.sniffer: Sniffer
+mob.iron_golem: Iron Golem
+mob.snow_golem: Snow Golem
+mob.trader_llama: Trader Llama
+mob.villager: Villager
+mob.wandering_trader: Wandering Trader
+mob.copper_golem: Copper Golem
+mob.zombie: Zombie
+mob.skeleton: Skeleton
+mob.bogged: Bogged
+mob.parched: Parched
+mob.husk: Husk
+mob.drowned: Drowned
+mob.stray: Stray
+mob.skeleton_horse: Skeleton Horse
+mob.zombified_camel: Zombified Camel
+mob.zombie_horse: Zombie Horse
+mob.zombie_villager: Zombie Villager
+mob.spider: Spider
+mob.cave_spider: Cave Spider
+mob.breeze: Breeze
+mob.creeper: Creeper
+mob.silverfish: Silverfish
+mob.warden: Warden
+mob.witch: Witch
+mob.evoker: Evoker
+mob.pillager: Pillager
+mob.vindicator: Vindicator
+mob.ravager: Ravager
+mob.blaze: Blaze
+mob.piglin: Piglin
+mob.piglin_brute: Piglin Brute
+mob.strider: Strider
+mob.zoglin: Zoglin
+mob.zombified_piglin: Zombified Piglin
+mob.wither_skeleton: Wither Skeleton
+mob.enderman: Enderman
+mob.slime: Slime
+mob.magma_cube: Magma Cube
+mob.frog: Frog
+mob.rabbit: Rabbit
+mob.axolotl: Axolotl
+mob.bat: Bat
+mob.bee: Bee
+mob.allay: Allay
+mob.ghast: Ghast
+mob.happy_ghast: Happy Ghast
+mob.phantom: Phantom
+mob.parrot: Parrot
+mob.cod: Cod
+mob.salmon: Salmon
+mob.pufferfish: Pufferfish
+mob.squid: Squid
+mob.glow_squid: Glow Squid
+mob.tropical_fish: Tropical Fish
+mob.dolphin: Dolphin
+mob.tadpole: Tadpole
+mob.nautilus: Nautilus
+mob.zombified_nautilus: Zombified Nautilus
+mob.guardian: Guardian
+mob.elder_guardian: Elder Guardian
+mob.hoglin: Hoglin
+mob.vex: Vex
+mob.endermite: Endermite
+mob.ender_dragon: Ender Dragon
+mob.wither: Wither
+mob.shulker: Shulker
+
+# ===== Colors (sheep) =====
+color.white: White
+color.orange: Orange
+color.magenta: Magenta
+color.light_blue: Light Blue
+color.yellow: Yellow
+color.lime: Lime
+color.pink: Pink
+color.gray: Gray
+color.light_gray: Light Gray
+color.cyan: Cyan
+color.purple: Purple
+color.blue: Blue
+color.brown: Brown
+color.green: Green
+color.red: Red
+color.black: Black
+
+# ===== Colors (axolotl variants) =====
+axolotl.lucy: Leucistic
+axolotl.wild: Wild
+axolotl.gold: Gold
+axolotl.cyan: Cyan
+axolotl.blue: Blue
+
+# ===== Sizes =====
+size.1: Small
+size.2: Medium
+size.3: Large
+size.4: Huge
+
+# ===== Menu titles =====
+menu.main: "✧ Disguise Menu ✧"
+menu.baby: Choose Size
+menu.slime-size: Choose Slime Size
+menu.magma-size: Choose Magma Cube Size
+menu.sheep-color: Choose Sheep Color
+menu.axolotl-color: Choose Axolotl Color
+
+# ===== Common buttons / hints =====
+button.back: "§c← Back to Main Menu"
+button.normal: "§eNormal Size"
+button.normal-lore: "§7Click to disguise as normal size"
+button.baby: "§eBaby Size"
+button.baby-lore: "§7Click to disguise as baby size"
+button.page-prev: "§e◀ Previous"
+button.page-prev-lore: "§7Click for previous page"
+button.page-next: "§eNext ▶"
+button.page-next-lore: "§7Click for next page"
+button.undo-on: "§c❌ Undo Disguise"
+button.undo-on-lore1: "§7Click to return to normal"
+button.undo-on-lore2: "§a▸ Currently disguised"
+button.undo-off: "§8❌ Undo Disguise"
+button.undo-off-lore1: "§7You are not disguised"
+button.undo-off-lore2: "§8Pick a mob to start"
+tip.name: "§e💡 Tips"
+tip.lore1: "§7Click a mob icon to disguise"
+tip.lore2: "§7Page {0} / {1}"
+tip.lore3: "§7Press Ctrl to switch mode"
+lore.click-size: "§7Click to disguise as {0}"
+icon.color-sheep: "{0} Sheep"
+lore.color-sheep: "§7Click to disguise as {0} Sheep"
+icon.axolotl-color: "§e{0} Axolotl"
+lore.axolotl-color: "§7Click to disguise as {0} Axolotl"
+
+# ===== Icon names (emoji + name) =====
+icon.sheep: "§e🐑 Sheep"
+icon.pig: "§e🐷 Pig"
+icon.cow: "§e🐮 Cow"
+icon.chicken: "§e🐔 Chicken"
+icon.camel: "§e🐫 Camel"
+icon.horse: "§e🐴 Horse"
+icon.donkey: "§e🐴 Donkey"
+icon.mule: "§e🐴 Mule"
+icon.cat: "§e🐱 Cat"
+icon.wolf: "§e🐺 Wolf"
+icon.armadillo: "§e🦔 Armadillo"
+icon.fox: "§e🦊 Fox"
+icon.goat: "§e🐐 Goat"
+icon.llama: "§e🦙 Llama"
+icon.ocelot: "§e🐆 Ocelot"
+icon.panda: "§e🐼 Panda"
+icon.polar_bear: "§e🐻 Polar Bear"
+icon.turtle: "§e🐢 Turtle"
+icon.mooshroom: "§e🍄 Mooshroom"
+icon.sniffer: "§e🦕 Sniffer"
+icon.iron_golem: "§e🤖 Iron Golem"
+icon.snow_golem: "§e⛄ Snow Golem"
+icon.trader_llama: "§e🦙 Trader Llama"
+icon.villager: "§e🧑 Villager"
+icon.wandering_trader: "§e🧑 Wandering Trader"
+icon.copper_golem: "§e🤖 Copper Golem"
+icon.zombie: "§e🧟 Zombie"
+icon.skeleton: "§e💀 Skeleton"
+icon.bogged: "§e🌿 Bogged"
+icon.parched: "§e🔥 Parched"
+icon.husk: "§e🏜️ Husk"
+icon.drowned: "§e🌊 Drowned"
+icon.stray: "§e❄️ Stray"
+icon.skeleton_horse: "§e🐴 Skeleton Horse"
+icon.zombified_camel: "§e🐫 Zombified Camel"
+icon.zombie_horse: "§e🐴 Zombie Horse"
+icon.zombie_villager: "§e🧟 Zombie Villager"
+icon.spider: "§e🕷️ Spider"
+icon.cave_spider: "§e🕷️ Cave Spider"
+icon.breeze: "§e🌀 Breeze"
+icon.creeper: "§e💥 Creeper"
+icon.silverfish: "§e🪳 Silverfish"
+icon.warden: "§e🕳️ Warden"
+icon.witch: "§e🧙 Witch"
+icon.evoker: "§e🧙 Evoker"
+icon.pillager: "§e🏹 Pillager"
+icon.vindicator: "§e🪓 Vindicator"
+icon.ravager: "§e🐗 Ravager"
+icon.blaze: "§e🔥 Blaze"
+icon.piglin: "§e🐷 Piglin"
+icon.piglin_brute: "§e🗡️ Piglin Brute"
+icon.strider: "§e🕷️ Strider"
+icon.zoglin: "§e🐗 Zoglin"
+icon.zombified_piglin: "§e🐷 Zombified Piglin"
+icon.wither_skeleton: "§e💀 Wither Skeleton"
+icon.enderman: "§e👾 Enderman"
+icon.slime: "§e🟢 Slime"
+icon.magma_cube: "§e🟠 Magma Cube"
+icon.frog: "§e🐸 Frog"
+icon.rabbit: "§e🐰 Rabbit"
+icon.axolotl: "§e🦎 Axolotl"
+icon.bat: "§e🦇 Bat"
+icon.bee: "§e🐝 Bee"
+icon.allay: "§e🧚 Allay"
+icon.ghast: "§e👻 Ghast"
+icon.happy_ghast: "§e😊 Happy Ghast"
+icon.phantom: "§e👾 Phantom"
+icon.parrot: "§e🦜 Parrot"
+icon.cod: "§e🐟 Cod"
+icon.salmon: "§e🐟 Salmon"
+icon.pufferfish: "§e🐡 Pufferfish"
+icon.squid: "§e🦑 Squid"
+icon.glow_squid: "§e🦑 Glow Squid"
+icon.tropical_fish: "§e🐠 Tropical Fish"
+icon.dolphin: "§e🐬 Dolphin"
+icon.tadpole: "§e🐸 Tadpole"
+icon.nautilus: "§e🐚 Nautilus"
+icon.zombified_nautilus: "§e🐚 Zombified Nautilus"
+icon.guardian: "§e👁️ Guardian"
+icon.elder_guardian: "§e👁️ Elder Guardian"
+icon.hoglin: "§e🐗 Hoglin"
+icon.vex: "§e👻 Vex"
+icon.endermite: "§e🪳 Endermite"
+icon.ender_dragon: "§e🐲 Ender Dragon"
+icon.wither: "§e☠️ Wither"
+icon.shulker: "§e🦐 Shulker"
+
+# ===== Icon lore =====
+lore.sheep:
+  - "§7Click to choose a color, then disguise as a Sheep"
+  - "§8→ 16 colors available"
+  - "§7Press F to eat grass"
+lore.pig:
+  - "§7Click to disguise as a Pig"
+  - "§8→ Two modes available"
+lore.cow:
+  - "§7Click to disguise as a Cow"
+  - "§8→ Other players can milk you"
+lore.chicken:
+  - "§7Click to disguise as a Chicken"
+  - "§7Press F to lay an egg"
+  - "§8→ Feed seeds to breed"
+lore.camel:
+  - "§7Click to disguise as a Camel"
+  - "§7Press F to sit / stand up"
+  - "§7Can be ridden by other players"
+  - "§8→ Rider cannot control direction"
+lore.horse:
+  - "§7Click to disguise as a Horse"
+  - "§7Can be ridden by other players"
+  - "§8→ Rider cannot control direction"
+lore.donkey:
+  - "§7Click to disguise as a Donkey"
+  - "§7Can be ridden by other players"
+  - "§8→ Rider cannot control direction"
+lore.mule:
+  - "§7Click to disguise as a Mule"
+  - "§7Can be ridden by other players"
+  - "§8→ Rider cannot control direction"
+lore.cat:
+  - "§7Click to disguise as a Cat"
+  - "§8→ Cannot be tamed"
+  - "§8→ Immune to fall damage"
+lore.wolf:
+  - "§7Click to disguise as a Wolf"
+  - "§8→ Cannot be tamed"
+lore.armadillo:
+  - "§7Click to disguise as an Armadillo"
+  - "§7Press F to drop a scute"
+lore.fox:
+  - "§7Click to disguise as a Fox"
+  - "§7Press F to sleep"
+  - "§8→ Stops following while sleeping"
+lore.goat:
+  - "§7Click to disguise as a Goat"
+lore.llama:
+  - "§7Click to disguise as a Llama"
+  - "§7Press F to spit"
+lore.ocelot:
+  - "§7Click to disguise as an Ocelot"
+  - "§8→ Immune to fall damage"
+lore.panda:
+  - "§7Click to disguise as a Panda"
+lore.polar_bear:
+  - "§7Click to disguise as a Polar Bear"
+  - "§7Press F for attack animation"
+lore.turtle:
+  - "§7Click to disguise as a Turtle"
+lore.mooshroom:
+  - "§7Click to disguise as a Mooshroom"
+  - "§8→ Can be milked"
+lore.sniffer:
+  - "§7Click to disguise as a Sniffer"
+lore.iron_golem:
+  - "§7Click to disguise as an Iron Golem"
+  - "§7Hold F to hold a rose"
+  - "§8→ Immune to fall damage"
+  - "§8→ Immune to knockback"
+lore.snow_golem:
+  - "§7Click to disguise as a Snow Golem"
+  - "§7Press F to throw snowballs"
+  - "§8→ Immune to fall damage"
+lore.trader_llama:
+  - "§7Click to disguise as a Trader Llama"
+lore.villager:
+  - "§7Click to disguise as a Villager"
+lore.wandering_trader:
+  - "§7Click to disguise as a Wandering Trader"
+lore.copper_golem:
+  - "§7Click to disguise as a Copper Golem"
+  - "§8→ Immune to fall damage"
+lore.zombie:
+  - "§7Click to disguise as a Zombie"
+lore.skeleton:
+  - "§7Click to disguise as a Skeleton"
+lore.bogged:
+  - "§7Click to disguise as a Bogged"
+lore.parched:
+  - "§7Click to disguise as a Parched"
+lore.husk:
+  - "§7Click to disguise as a Husk"
+lore.drowned:
+  - "§7Click to disguise as a Drowned"
+lore.stray:
+  - "§7Click to disguise as a Stray"
+lore.skeleton_horse:
+  - "§7Click to disguise as a Skeleton Horse"
+lore.zombified_camel:
+  - "§7Click to disguise as a Zombified Camel"
+lore.zombie_horse:
+  - "§7Click to disguise as a Zombie Horse"
+lore.zombie_villager:
+  - "§7Click to disguise as a Zombie Villager"
+lore.spider:
+  - "§7Click to disguise as a Spider"
+lore.cave_spider:
+  - "§7Click to disguise as a Cave Spider"
+lore.breeze:
+  - "§7Click to disguise as a Breeze"
+  - "§7Press F to launch a wind charge"
+lore.creeper:
+  - "§7Click to disguise as a Creeper"
+  - "§7Hold Shift to charge and explode"
+  - "§8→ Hold for 1.5s to explode"
+lore.silverfish:
+  - "§7Click to disguise as a Silverfish"
+lore.warden:
+  - "§7Click to disguise as a Warden"
+  - "§7Press F for sonic boom"
+lore.witch:
+  - "§7Click to disguise as a Witch"
+  - "§7Press F to throw a random potion"
+  - "§8→ Immune to negative potions"
+lore.evoker:
+  - "§7Click to disguise as an Evoker"
+  - "§7Press F to summon Vexes"
+lore.pillager:
+  - "§7Click to disguise as a Pillager"
+lore.vindicator:
+  - "§7Click to disguise as a Vindicator"
+lore.ravager:
+  - "§7Click to disguise as a Ravager"
+lore.blaze:
+  - "§7Click to disguise as a Blaze"
+  - "§7Press F to fire 3 fireballs"
+  - "§8→ Can walk and fly"
+lore.piglin:
+  - "§7Click to disguise as a Piglin"
+lore.piglin_brute:
+  - "§7Click to disguise as a Piglin Brute"
+lore.strider:
+  - "§7Click to disguise as a Strider"
+lore.zoglin:
+  - "§7Click to disguise as a Zoglin"
+lore.zombified_piglin:
+  - "§7Click to disguise as a Zombified Piglin"
+lore.wither_skeleton:
+  - "§7Click to disguise as a Wither Skeleton"
+lore.enderman:
+  - "§7Click to disguise as an Enderman"
+  - "§7Press F to teleport randomly"
+lore.slime:
+  - "§7Click to disguise as a Slime"
+  - "§7Auto-bounces while walking"
+lore.magma_cube:
+  - "§7Click to disguise as a Magma Cube"
+  - "§7Auto-bounces while walking"
+  - "§8→ Bounces leave magma particles"
+lore.frog:
+  - "§7Click to disguise as a Frog"
+lore.rabbit:
+  - "§7Click to disguise as a Rabbit"
+  - "§7Auto-bounces while walking"
+lore.axolotl:
+  - "§7Click to choose a color, then disguise as an Axolotl"
+  - "§8→ 5 colors available"
+  - "§8→ Amphibious"
+lore.cod:
+  - "§7Click to disguise as a Cod"
+  - "§8→ Hops out of water"
+lore.salmon:
+  - "§7Click to disguise as a Salmon"
+  - "§8→ Hops out of water"
+lore.pufferfish:
+  - "§7Click to disguise as a Pufferfish"
+  - "§7Hold F to puff up"
+  - "§8→ Hops out of water"
+lore.squid:
+  - "§7Click to disguise as a Squid"
+lore.glow_squid:
+  - "§7Click to disguise as a Glow Squid"
+lore.tropical_fish:
+  - "§7Click to disguise as a Tropical Fish"
+  - "§8→ Hops out of water"
+lore.dolphin:
+  - "§7Click to disguise as a Dolphin"
+  - "§8→ Hops out of water"
+lore.tadpole:
+  - "§7Click to disguise as a Tadpole"
+  - "§8→ Hops out of water"
+lore.nautilus:
+  - "§7Click to disguise as a Nautilus"
+lore.zombified_nautilus:
+  - "§7Click to disguise as a Zombified Nautilus"
+lore.guardian:
+  - "§7Click to disguise as a Guardian"
+  - "§8→ Hops out of water"
+lore.elder_guardian:
+  - "§7Click to disguise as an Elder Guardian"
+  - "§8→ Hops out of water"
+lore.hoglin:
+  - "§7Click to disguise as a Hoglin"
+lore.vex:
+  - "§7Click to disguise as a Vex"
+  - "§7Can fly freely"
+  - "§8→ Never disappears"
+lore.shulker:
+  - "§7Click to disguise as a Shulker"
+  - "§7WASD to teleport randomly"
+  - "§7F to fire a bullet"
+  - "§7Shift to open / close shell"
+  - "§8→ Anchored in place"
+lore.endermite:
+  - "§7Click to disguise as an Endermite"
+  - "§8→ Never disappears"
+lore.wither:
+  - "§7Click to disguise as a Wither"
+  - "§7Press F to fire a wither skull"
+  - "§7Can fly freely"
+  - "§8→ Ultimate Boss"
+lore.ender_dragon:
+  - "§7Click to disguise as the Ender Dragon"
+  - "§7Press F to fire dragon breath"
+  - "§7Can fly freely"
+  - "§8→ Ultimate Boss"
+lore.bat:
+  - "§7Click to disguise as a Bat"
+  - "§7Can fly freely"
+lore.bee:
+  - "§7Click to disguise as a Bee"
+  - "§7Can fly freely"
+lore.allay:
+  - "§7Click to disguise as an Allay"
+  - "§7Can fly freely"
+lore.ghast:
+  - "§7Click to disguise as a Ghast"
+  - "§7Press F to fire a fireball"
+  - "§7Can fly freely"
+lore.happy_ghast:
+  - "§7Click to disguise as a Happy Ghast"
+  - "§7Can fly freely"
+lore.phantom:
+  - "§7Click to disguise as a Phantom"
+  - "§7Can fly freely"
+lore.parrot:
+  - "§7Click to disguise as a Parrot"
+  - "§7Can fly freely"
+  - "§8→ Cannot be tamed"
+
+# ===== Disguise success chat messages =====
+message.disguised.sheep: "§aYou are now a Sheep!"
+message.disguised.pig: "§aYou are now a Pig!"
+message.disguised.cow: "§aYou are now a Cow!"
+message.disguised.chicken: "§aYou are now a Chicken! Press F to lay an egg!"
+message.disguised.camel: "§aYou are now a Camel! Other players can ride you!"
+message.disguised.horse: "§aYou are now a Horse! Other players can ride you!"
+message.disguised.donkey: "§aYou are now a Donkey! Other players can ride you!"
+message.disguised.mule: "§aYou are now a Mule! Other players can ride you!"
+message.disguised.cat: "§aYou are now a Cat!"
+message.disguised.wolf: "§aYou are now a Wolf!"
+message.disguised.armadillo: "§aYou are now an Armadillo!"
+message.disguised.fox: "§aYou are now a Fox!"
+message.disguised.goat: "§aYou are now a Goat!"
+message.disguised.llama: "§aYou are now a Llama!"
+message.disguised.ocelot: "§aYou are now an Ocelot!"
+message.disguised.panda: "§aYou are now a Panda!"
+message.disguised.polar_bear: "§aYou are now a Polar Bear!"
+message.disguised.turtle: "§aYou are now a Turtle!"
+message.disguised.mooshroom: "§aYou are now a Mooshroom!"
+message.disguised.sniffer: "§aYou are now a Sniffer!"
+message.disguised.iron_golem: "§aYou are now an Iron Golem!"
+message.disguised.snow_golem: "§aYou are now a Snow Golem!"
+message.disguised.trader_llama: "§aYou are now a Trader Llama!"
+message.disguised.villager: "§aYou are now a Villager!"
+message.disguised.wandering_trader: "§aYou are now a Wandering Trader!"
+message.disguised.copper_golem: "§aYou are now a Copper Golem!"
+message.disguised.zombie: "§aYou are now a Zombie!"
+message.disguised.skeleton: "§aYou are now a Skeleton!"
+message.disguised.bogged: "§aYou are now a Bogged!"
+message.disguised.parched: "§aYou are now a Parched!"
+message.disguised.husk: "§aYou are now a Husk!"
+message.disguised.drowned: "§aYou are now a Drowned!"
+message.disguised.stray: "§aYou are now a Stray!"
+message.disguised.skeleton_horse: "§aYou are now a Skeleton Horse!"
+message.disguised.zombified_camel: "§aYou are now a Zombified Camel!"
+message.disguised.zombie_horse: "§aYou are now a Zombie Horse!"
+message.disguised.zombie_villager: "§aYou are now a Zombie Villager!"
+message.disguised.spider: "§aYou are now a Spider!"
+message.disguised.cave_spider: "§aYou are now a Cave Spider!"
+message.disguised.breeze: "§aYou are now a Breeze!"
+message.disguised.creeper: "§aYou are now a Creeper!"
+message.disguised.silverfish: "§aYou are now a Silverfish!"
+message.disguised.warden: "§aYou are now a Warden!"
+message.disguised.witch: "§aYou are now a Witch!"
+message.disguised.evoker: "§aYou are now an Evoker!"
+message.disguised.pillager: "§aYou are now a Pillager!"
+message.disguised.vindicator: "§aYou are now a Vindicator!"
+message.disguised.ravager: "§aYou are now a Ravager!"
+message.disguised.blaze: "§aYou are now a Blaze!"
+message.disguised.piglin: "§aYou are now a Piglin!"
+message.disguised.piglin_brute: "§aYou are now a Piglin Brute!"
+message.disguised.strider: "§aYou are now a Strider!"
+message.disguised.zoglin: "§aYou are now a Zoglin!"
+message.disguised.zombified_piglin: "§aYou are now a Zombified Piglin!"
+message.disguised.wither_skeleton: "§aYou are now a Wither Skeleton!"
+message.disguised.enderman: "§aYou are now an Enderman!"
+message.disguised.slime: "§aYou are now a Slime!"
+message.disguised.magma_cube: "§aYou are now a Magma Cube!"
+message.disguised.frog: "§aYou are now a Frog!"
+message.disguised.rabbit: "§aYou are now a Rabbit! Auto-bounces while walking!"
+message.disguised.axolotl: "§aYou are now an Axolotl!"
+message.disguised.bat: "§aYou are now a Bat! You can fly freely!"
+message.disguised.bee: "§aYou are now a Bee! You can fly freely!"
+message.disguised.allay: "§aYou are now an Allay! You can fly freely!"
+message.disguised.ghast: "§aYou are now a Ghast! You can fly freely!"
+message.disguised.happy_ghast: "§aYou are now a Happy Ghast! You can fly freely!"
+message.disguised.phantom: "§aYou are now a Phantom! You can fly freely!"
+message.disguised.parrot: "§aYou are now a Parrot! You can fly freely!"
+message.disguised.cod: "§aYou are now a Cod! Water breathing!"
+message.disguised.salmon: "§aYou are now a Salmon! Water breathing!"
+message.disguised.pufferfish: "§aYou are now a Pufferfish!"
+message.disguised.squid: "§aYou are now a Squid!"
+message.disguised.glow_squid: "§aYou are now a Glow Squid!"
+message.disguised.tropical_fish: "§aYou are now a Tropical Fish!"
+message.disguised.dolphin: "§aYou are now a Dolphin!"
+message.disguised.tadpole: "§aYou are now a Tadpole!"
+message.disguised.nautilus: "§aYou are now a Nautilus!"
+message.disguised.zombified_nautilus: "§aYou are now a Zombified Nautilus!"
+message.disguised.guardian: "§aYou are now a Guardian!"
+message.disguised.elder_guardian: "§aYou are now an Elder Guardian!"
+message.disguised.hoglin: "§aYou are now a Hoglin!"
+message.disguised.vex: "§aYou are now a Vex! Never disappears!"
+message.disguised.shulker: "§aYou are now a Shulker! Anchored in place, WASD to teleport!"
+message.disguised.endermite: "§aYou are now an Endermite! Never disappears!"
+message.disguised.wither: "§aYou are now a Wither! Ultimate Boss!"
+message.disguised.ender_dragon: "§aYou are now the Ender Dragon! Ultimate Boss!"
+message.undisguised: "§aYou are back to normal!"
+message.not-disguised: "§eYou are not disguised yet, pick a mob to start!"
+message.baby-disguised: "§aYou are now a §e{0}{1}{2}§a!"
+message.size-disguised: "§aYou are now a §e{0} {1}§a!"
+
+# ===== Disguise success actionbar =====
+actionbar.chicken: "§e🐔 Chicken disguise ready!"
+actionbar.camel: "§e🐫 Disguised as a Camel! Others can ride you"
+actionbar.horse: "§e🐴 Disguised as a Horse! Others can ride you"
+actionbar.donkey: "§e🐴 Disguised as a Donkey! Others can ride you"
+actionbar.mule: "§e🐴 Disguised as a Mule! Others can ride you"
+actionbar.cat: "§e🐱 Disguised as a Cat! Cannot be tamed"
+actionbar.wolf: "§e🐺 Disguised as a Wolf! Cannot be tamed"
+actionbar.armadillo: "§e🦔 Disguised as an Armadillo!"
+actionbar.fox: "§e🦊 Disguised as a Fox!"
+actionbar.goat: "§e🐐 Disguised as a Goat!"
+actionbar.llama: "§e🦙 Disguised as a Llama!"
+actionbar.ocelot: "§e🐆 Disguised as an Ocelot!"
+actionbar.panda: "§e🐼 Disguised as a Panda!"
+actionbar.polar_bear: "§e🐻 Disguised as a Polar Bear!"
+actionbar.turtle: "§e🐢 Disguised as a Turtle!"
+actionbar.mooshroom: "§e🍄 Disguised as a Mooshroom!"
+actionbar.sniffer: "§e🦕 Disguised as a Sniffer!"
+actionbar.iron_golem: "§e🤖 Disguised as an Iron Golem!"
+actionbar.snow_golem: "§e⛄ Disguised as a Snow Golem!"
+actionbar.trader_llama: "§e🦙 Disguised as a Trader Llama!"
+actionbar.villager: "§e🧑 Disguised as a Villager!"
+actionbar.wandering_trader: "§e🧑 Disguised as a Wandering Trader!"
+actionbar.copper_golem: "§e🤖 Disguised as a Copper Golem!"
+actionbar.zombie: "§e🧟 Disguised as a Zombie!"
+actionbar.skeleton: "§e💀 Disguised as a Skeleton!"
+actionbar.bogged: "§e🌿 Disguised as a Bogged!"
+actionbar.parched: "§e🔥 Disguised as a Parched!"
+actionbar.husk: "§e🏜️ Disguised as a Husk!"
+actionbar.drowned: "§e🌊 Disguised as a Drowned!"
+actionbar.stray: "§e❄️ Disguised as a Stray!"
+actionbar.skeleton_horse: "§e🐴 Disguised as a Skeleton Horse!"
+actionbar.zombified_camel: "§e🐫 Disguised as a Zombified Camel!"
+actionbar.zombie_horse: "§e🐴 Disguised as a Zombie Horse!"
+actionbar.zombie_villager: "§e🧟 Disguised as a Zombie Villager!"
+actionbar.spider: "§e🕷️ Disguised as a Spider!"
+actionbar.cave_spider: "§e🕷️ Disguised as a Cave Spider!"
+actionbar.breeze: "§e🌀 Disguised as a Breeze!"
+actionbar.creeper: "§e💥 Disguised as a Creeper!"
+actionbar.silverfish: "§e🪳 Disguised as a Silverfish!"
+actionbar.warden: "§e🕳️ Disguised as a Warden!"
+actionbar.witch: "§e🧙 Disguised as a Witch!"
+actionbar.evoker: "§e🧙 Disguised as an Evoker!"
+actionbar.pillager: "§e🏹 Disguised as a Pillager!"
+actionbar.vindicator: "§e🪓 Disguised as a Vindicator!"
+actionbar.ravager: "§e🐗 Disguised as a Ravager!"
+actionbar.blaze: "§e🔥 Disguised as a Blaze! Can walk and fly"
+actionbar.piglin: "§e🐷 Disguised as a Piglin!"
+actionbar.piglin_brute: "§e🗡️ Disguised as a Piglin Brute!"
+actionbar.strider: "§e🕷️ Disguised as a Strider!"
+actionbar.zoglin: "§e🐗 Disguised as a Zoglin!"
+actionbar.zombified_piglin: "§e🐷 Disguised as a Zombified Piglin!"
+actionbar.wither_skeleton: "§e💀 Disguised as a Wither Skeleton!"
+actionbar.enderman: "§e👾 Disguised as an Enderman!"
+actionbar.slime: "§e🟢 Disguised as a Slime! Auto-bounces while walking"
+actionbar.magma_cube: "§e🟠 Disguised as a Magma Cube! Auto-bounces while walking"
+actionbar.frog: "§e🐸 Disguised as a Frog!"
+actionbar.rabbit: "§e🐰 Disguised as a Rabbit! Auto-bounces while walking"
+actionbar.axolotl: "§e🦎 Disguised as an Axolotl! Amphibious"
+actionbar.cod: "§e🐟 Disguised as a Cod! Water breathing"
+actionbar.salmon: "§e🐟 Disguised as a Salmon! Water breathing"
+actionbar.pufferfish: "§e🐡 Disguised as a Pufferfish! Hops out of water"
+actionbar.squid: "§e🦑 Disguised as a Squid!"
+actionbar.glow_squid: "§e🦑 Disguised as a Glow Squid!"
+actionbar.tropical_fish: "§e🐠 Disguised as a Tropical Fish! Hops out of water"
+actionbar.dolphin: "§e🐬 Disguised as a Dolphin! Hops out of water"
+actionbar.tadpole: "§e🐸 Disguised as a Tadpole! Hops out of water"
+actionbar.nautilus: "§e🐚 Disguised as a Nautilus!"
+actionbar.zombified_nautilus: "§e🐚 Disguised as a Zombified Nautilus!"
+actionbar.guardian: "§e👁️ Disguised as a Guardian! Hops out of water"
+actionbar.elder_guardian: "§e👁️ Disguised as an Elder Guardian! Hops out of water"
+actionbar.bat: "§e🦇 Disguised as a Bat! You can fly freely"
+actionbar.bee: "§e🐝 Disguised as a Bee! You can fly freely"
+actionbar.allay: "§e🧚 Disguised as an Allay! You can fly freely"
+actionbar.phantom: "§e👾 Disguised as a Phantom! You can fly freely"
+actionbar.parrot: "§e🦜 Disguised as a Parrot! You can fly freely"
+actionbar.hoglin: "§e🐗 Disguised as a Hoglin!"
+actionbar.vex: "§e👻 Disguised as a Vex! Never disappears"
+actionbar.endermite: "§e🪳 Disguised as an Endermite! Never disappears"
+actionbar.ender_dragon: "§e🐲 Disguised as the Ender Dragon! You can fly freely"
+actionbar.wither: "§e☠️ Disguised as a Wither! You can fly freely"
+actionbar.shulker: "§e🦐 Disguised as a Shulker! Anchored in place, WASD to teleport"
+actionbar.ghast: "§e👻 Disguised as a Ghast! You can fly freely"
+actionbar.happy_ghast: "§e😊 Disguised as a Happy Ghast! You can fly freely"
+
+# ===== Chat / status messages =====
+msg.shulker-air: "§cA Shulker cannot disguise in the air! Land first!"
+msg.shulker-no-teleport: "§cNo valid teleport spot here!"
+msg.shulker-need-open: "§cOpen the shell to fire bullets! (Hold Shift)"
+msg.shulker-open: "§e🦐 Shell open! Attack stance"
+msg.shulker-close: "§7Shell closed! Defensive stance (50% damage reduction)"
+msg.creeper-fusing: "§e💥 Charging to explode... (Hold Shift for 1.5s)"
+msg.creeper-fade: "§7Explosion cancelled"
+msg.mode-ai: "§e[Disguise] Switched to §aAI Auto Mode"
+msg.mode-player: "§e[Disguise] Switched to §bPlayer Control Mode"
+msg.cant-eat: "§cYou can't eat that!"
+msg.speed: "§eCurrent walk speed: {0}"
+msg.debug: "§e[Debug] {0}"
+msg.debug-on: "§aON"
+msg.debug-off: "§cOFF"
+msg.scute-dropped: "§eYou dropped an armadillo scute!"
+msg.fox-stand: "§eThe fox stood up!"
+msg.fox-sleep: "§eThe fox lay down to sleep! (no longer following)"
+msg.polar-attack: "§eThe polar bear attacks!"
+msg.camel-stand: "§eThe camel stood up!"
+msg.camel-sit: "§eThe camel lay down! (no longer following)"
+msg.egg-laid: "§eYou laid an egg!"
+msg.cant-mount-self: "§cYou cannot ride your own disguise!"
+msg.cant-tame: "§cYour disguise cannot be tamed!"
+msg.mob-killed: "§cYour disguise was killed! Disguise removed!"
+msg.error: "§cDisguise error: {0}"
+
+# ===== Ability cooldowns =====
+msg.cooldown: "§e{0} cooldown: {1}s"
+cooldown.shulker-bullet: Bullet
+cooldown.wither-skull: Skull
+cooldown.dragon-breath: Dragon breath
+cooldown.fireball: Fireball
+cooldown.teleport: Teleport
+cooldown.sonic: Sonic boom
+cooldown.potion: Potion
+cooldown.summon: Summon
+cooldown.wind: Wind charge
+cooldown.scute: Scute
+cooldown.spit: Spit
+cooldown.egg: Egg
+
+# ===== Commands =====
+cmd.only-player: "§cOnly players can use this command!"
+cmd.no-permission: "§cYou don't have permission to use the disguise feature!"
+cmd.no-reload-permission: "§cYou don't have permission to reload the plugin!"
+cmd.not-disguised: "§cYou are not disguised, use /dp first!"
+cmd.not-disguised-short: "§cYou are not disguised!"
+cmd.unknown: "§cUnknown subcommand! Usage: /dp [reload]"
+cmd.reload-done: "§aPlugin config reloaded!"
+
+# ===== Console logs =====
+log.enabled: DisguisePlugin v{0} enabled
+log.reloaded: Plugin config reloaded
+log.player-input-new: PlayerInputEvent detected (1.21.4+), registered new input listener
+log.player-input-old: PlayerInputEvent not detected (older server), registered compat input listener
+log.locatorbar: Attempted to disable locatorBar in all worlds
+log.no-dp-command: dp command is not registered in plugin.yml, plugin cannot enable.
+log.creeper-swell: "[Disguise] Failed to set Creeper maxSwell: {0}"
+log.vex-summon-fail: "[Disguise] Failed to summon Vexes: {0}"
+log.creeper-swell-reflect: "[Disguise] Creeper swelling reflection failed: {0}"

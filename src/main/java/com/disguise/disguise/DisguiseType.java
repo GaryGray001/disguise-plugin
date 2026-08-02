@@ -1,5 +1,6 @@
 package com.disguise.disguise;
 
+import com.disguise.lang.LanguageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 
@@ -48,7 +49,8 @@ public enum DisguiseType {
     }
 
     public String getDisplayName() {
-        return displayName;
+        // 多语言：查语言文件 mob.<枚举名小写>，未初始化或缺失时用构造参数（中文）兜底
+        return LanguageManager.getOrDefault("mob." + name().toLowerCase(), displayName);
     }
 
     /**

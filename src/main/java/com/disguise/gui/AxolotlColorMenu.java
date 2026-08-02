@@ -2,7 +2,7 @@ package com.disguise.gui;
 
 import com.disguise.disguise.DisguiseManager;
 import com.disguise.disguise.DisguiseType;
-import com.disguise.packet.PacketUtils;
+import com.disguise.lang.LanguageManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -19,20 +19,23 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class AxolotlColorMenu implements Listener {
 
-    private static final String TITLE_STR = "选择美西螈颜色";
+    // 标题用 Component：创建与匹配用同一对象（语言化后按当前语言动态匹配）
+    private static Component title() {
+        return Component.text(LanguageManager.get("menu.axolotl-color")).color(NamedTextColor.DARK_GRAY);
+    }
 
-    private static final Map<Axolotl.Variant, String> VARIANT_NAMES = new LinkedHashMap<>();
+    // 颜色显示名（语言文件 axolotl.*，查询时取当前语言）
+    private static String variantName(Axolotl.Variant variant) {
+        return LanguageManager.get("axolotl." + variant.name().toLowerCase(Locale.ROOT));
+    }
+
     private static final Map<Axolotl.Variant, Material> VARIANT_DYES = new LinkedHashMap<>();
     static {
-        VARIANT_NAMES.put(Axolotl.Variant.LUCY, "白化");
-        VARIANT_NAMES.put(Axolotl.Variant.WILD, "野生");
-        VARIANT_NAMES.put(Axolotl.Variant.GOLD, "金色");
-        VARIANT_NAMES.put(Axolotl.Variant.CYAN, "青色");
-        VARIANT_NAMES.put(Axolotl.Variant.BLUE, "蓝色");
         VARIANT_DYES.put(Axolotl.Variant.LUCY, Material.PINK_DYE);
         VARIANT_DYES.put(Axolotl.Variant.WILD, Material.BROWN_DYE);
         VARIANT_DYES.put(Axolotl.Variant.GOLD, Material.YELLOW_DYE);
@@ -57,17 +60,17 @@ public class AxolotlColorMenu implements Listener {
     }
 
     public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27,
-                Component.text(TITLE_STR).color(NamedTextColor.DARK_GRAY));
+        Inventory inv = Bukkit.createInventory(null, 27, title());
 
         // 5 种颜色居中排列（slot 11-15）
         int slot = 11;
-        for (Map.Entry<Axolotl.Variant, String> entry : VARIANT_NAMES.entrySet()) {
-            ItemStack item = new ItemStack(VARIANT_DYES.get(entry.getKey()));
+        for (Map.Entry<Axolotl.Variant, Material> entry : VARIANT_DYES.entrySet()) {
+            String name = variantName(entry.getKey());
+            ItemStack item = new ItemStack(entry.getValue());
             ItemMeta meta = item.getItemMeta();
-            meta.displayName(Component.text("§e" + entry.getValue() + "美西螈")
+            meta.displayName(Component.text(LanguageManager.get("icon.axolotl-color", name))
                     .decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(Component.text("§7点击变身为" + entry.getValue() + "美西螈")));
+            meta.lore(List.of(Component.text(LanguageManager.get("lore.axolotl-color", name))));
             item.setItemMeta(meta);
             inv.setItem(slot, item);
             slot++;
@@ -75,7 +78,7 @@ public class AxolotlColorMenu implements Listener {
 
         ItemStack backItem = new ItemStack(Material.ARROW);
         ItemMeta backMeta = backItem.getItemMeta();
-        backMeta.displayName(Component.text("§c← 返回主菜单"));
+        backMeta.displayName(Component.text(LanguageManager.get("button.back")));
         backItem.setItemMeta(backMeta);
         inv.setItem(22, backItem);
 
@@ -84,8 +87,7 @@ public class AxolotlColorMenu implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        String t = event.getView().getTitle();
-        if (t == null || !t.contains(TITLE_STR)) return;
+        if (!event.getView().title().equals(title())) return;
         event.setCancelled(true);
 
         if (!(event.getWhoClicked() instanceof Player player)) return;
