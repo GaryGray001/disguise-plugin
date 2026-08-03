@@ -82,7 +82,7 @@ public class DisguiseMenu implements Listener {
         ICON_MATERIALS.put(DisguiseType.COPPER_GOLEM, safeMaterial("COPPER_GOLEM_SPAWN_EGG"));
         ICON_MATERIALS.put(DisguiseType.ZOMBIE, Material.ZOMBIE_SPAWN_EGG);
         ICON_MATERIALS.put(DisguiseType.SKELETON, Material.SKELETON_SPAWN_EGG);
-        ICON_MATERIALS.put(DisguiseType.BOGGED, Material.BOGGED_SPAWN_EGG);
+        ICON_MATERIALS.put(DisguiseType.BOGGED, safeMaterial("BOGGED_SPAWN_EGG")); // 1.21.4+ 材质，低版本反射兜底
         ICON_MATERIALS.put(DisguiseType.PARCHED, safeMaterial("PARCHED_SPAWN_EGG"));
         ICON_MATERIALS.put(DisguiseType.HUSK, Material.HUSK_SPAWN_EGG);
         ICON_MATERIALS.put(DisguiseType.DROWNED, Material.DROWNED_SPAWN_EGG);

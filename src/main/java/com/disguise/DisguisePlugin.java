@@ -93,14 +93,32 @@ public class DisguisePlugin extends JavaPlugin {
 
     /** 自动关闭 locatorBar（MC 1.21.6+ 经验条显示玩家位置） */
     private void disableLocatorBar() {
+        // locatorBar 游戏规则是 1.21.6+ 才有的：低版本执行会刷 "Unknown gamerule" 错误，先跳过
+        if (!isServerAtLeast("1.21.6")) return;
         Bukkit.getScheduler().runTask(this, () -> {
-            for (org.bukkit.World w : Bukkit.getWorlds()) {
-                try {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "gamerule locatorBar false");
-                } catch (Exception ignored) {}
-            }
+            try {
+                // gamerule 是全局的，执行一次即可（不要按世界数量重复执行）
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "gamerule locatorBar false");
+            } catch (Exception ignored) {}
             getLogger().info(LanguageManager.get("log.locatorbar"));
         });
+    }
+
+    /** 服务器版本是否 >= 目标版本（如 "1.21.6"） */
+    private static boolean isServerAtLeast(String target) {
+        try {
+            String[] t = target.split("\\.");
+            String[] s = Bukkit.getBukkitVersion().split("-")[0].split("\\.");
+            for (int i = 0; i < t.length; i++) {
+                int ti = Integer.parseInt(t[i]);
+                int si = Integer.parseInt(s[i]);
+                if (si > ti) return true;
+                if (si < ti) return false;
+            }
+            return true;
+        } catch (Exception e) {
+            return true; // 版本解析失败时照常执行（1.21.6+ 服务器无害）
+        }
     }
 
     @Override

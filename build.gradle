@@ -20,6 +20,10 @@ repositories {
 }
 
 dependencies {
+    // 用 Paper API 编译（1.21.9），但代码只调用 Bukkit/Spigot 标准 API（无 Paper 专属方法），
+    // 因此产物兼容 Paper / Spigot / Purpur 及所有 Paper fork。
+    // 服务端版本：api-version 1.21 → 1.21.x 全部支持（1.21.0-1.21.3 已通过反射/safeMaterial
+    // 处理新生物与材质，低版本自动隐藏不支持的内容，实测版本 1.21.9）
     compileOnly 'io.papermc.paper:paper-api:1.21.9-R0.1-SNAPSHOT'
     // Vault 经济 API（软依赖：付费模式需要服务器安装 Vault 插件）
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7.1'

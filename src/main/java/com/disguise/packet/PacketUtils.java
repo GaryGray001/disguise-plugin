@@ -563,7 +563,8 @@ public class PacketUtils implements Listener {
 
     public static void disguiseAsCopperGolem(Player target) {
         // 铜傀儡是 1.21.9+ 生物：低版本服务器不会调用此方法（菜单已过滤）
-        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.COPPER_GOLEM;
+        // valueOf 而非枚举直引：1.21.0-1.21.8 上直引会在方法被误调时抛 NoSuchFieldError
+        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf("COPPER_GOLEM");
         Mob creature = (Mob) target.getWorld().spawn(target.getLocation(), type.getEntityClass());
         double originalMaxHp = creature.getMaxHealth(); // 原版铜傀儡血量（12）
         saveData(creature, target); applyDisguise(target, creature);
@@ -1205,6 +1206,15 @@ public class PacketUtils implements Listener {
         }
     }
 
+    // 沼骸反射检测（1.21.4+ 才有该类，低版本返回 false；instanceof 直引会在 1.21.0-1.21.3 抛 NoClassDefFoundError）
+    private static boolean isBogged(Mob mob) {
+        try {
+            return Class.forName("org.bukkit.entity.Bogged").isInstance(mob);
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
+    }
+
     // 焦骸反射检测（1.21.11+）
     private static boolean isParched(Mob mob) {
         try {
@@ -1298,7 +1308,7 @@ public class PacketUtils implements Listener {
                 || mob instanceof Bee || mob instanceof Phantom || mob instanceof Breeze
                 || mob instanceof Pillager || mob instanceof Vindicator || mob instanceof Ravager
                 || mob instanceof Hoglin || mob instanceof Zoglin
-                || mob instanceof Skeleton || mob instanceof Stray || mob instanceof Bogged
+                || mob instanceof Skeleton || mob instanceof Stray || isBogged(mob)
                 || isParched(mob) || mob instanceof WitherSkeleton) return 0.06f;
         if (mob instanceof Dolphin) return 0.15f; // 海豚水中飞快
         if (mob instanceof Fox || mob instanceof Spider || mob instanceof CaveSpider
