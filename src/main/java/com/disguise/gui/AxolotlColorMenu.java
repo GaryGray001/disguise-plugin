@@ -105,8 +105,9 @@ public class AxolotlColorMenu implements Listener {
                 if (babySelectMenu != null) {
                     babySelectMenu.open(player, DisguiseType.AXOLOTL, entry.getKey());
                 } else {
-                    disguiseManager.applyDisguise(player, DisguiseType.AXOLOTL, entry.getKey());
-                    player.closeInventory();
+                    if (disguiseManager.applyDisguise(player, DisguiseType.AXOLOTL, entry.getKey())) {
+                        player.closeInventory();
+                    }
                 }
                 return;
             }

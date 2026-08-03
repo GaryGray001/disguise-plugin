@@ -142,22 +142,22 @@ public class BabySelectMenu implements Listener {
     private void applyWithContext(Player player, DisguiseType type, DyeColor color, Axolotl.Variant variant, boolean baby) {
         String prefix = baby ? LanguageManager.get("size.1") : ""; // 小型
         String colorText = "";
+        boolean ok;
         if (color != null) {
-            disguiseManager.applyDisguise(player, DisguiseType.SHEEP, color);
+            ok = disguiseManager.applyDisguise(player, DisguiseType.SHEEP, color);
             colorText = colorName(color);
         } else if (variant != null) {
-            disguiseManager.applyDisguise(player, DisguiseType.AXOLOTL, variant);
+            ok = disguiseManager.applyDisguise(player, DisguiseType.AXOLOTL, variant);
             colorText = variantName(variant);
         } else {
-            disguiseManager.applyDisguise(player, type);
+            ok = disguiseManager.applyDisguise(player, type);
         }
+        if (!ok) return; // 付费失败（余额不足）：保持菜单打开
         if (baby) PacketUtils.setBaby(player, true);
         UUID uid = player.getUniqueId();
         pendingColor.remove(uid);
         pendingVariant.remove(uid);
-        if (PacketUtils.isDisguised(player)) {
-            player.sendMessage(LanguageManager.get("message.baby-disguised", prefix, colorText, type.getDisplayName()));
-        }
+        player.sendMessage(LanguageManager.get("message.baby-disguised", prefix, colorText, type.getDisplayName()));
         player.closeInventory();
     }
 }

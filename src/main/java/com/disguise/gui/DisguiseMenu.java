@@ -2,6 +2,7 @@ package com.disguise.gui;
 
 import com.disguise.disguise.DisguiseManager;
 import com.disguise.disguise.DisguiseType;
+import com.disguise.economy.EconomyManager;
 import com.disguise.lang.LanguageManager;
 import com.disguise.packet.PacketUtils;
 import net.kyori.adventure.text.Component;
@@ -344,9 +345,14 @@ public class DisguiseMenu implements Listener {
     }
 
     private ItemStack createAnimalIcon(DisguiseType type) {
+        List<String> lore = new ArrayList<>(LanguageManager.getList("lore." + key(type)));
+        // 付费模式：图标上显示变身价格（免费生物不显示）
+        if (EconomyManager.isPaid()) {
+            double price = EconomyManager.getPrice(type);
+            if (price > 0) lore.add(LanguageManager.get("lore.price", EconomyManager.format(price)));
+        }
         return createIconItem(ICON_MATERIALS.get(type),
-                LanguageManager.get("icon." + key(type)),
-                LanguageManager.getList("lore." + key(type)));
+                LanguageManager.get("icon." + key(type)), lore);
     }
 
     private ItemStack createIconItem(Material material, String name, List<String> lore) {
@@ -405,9 +411,11 @@ public class DisguiseMenu implements Listener {
                 player.sendMessage(LanguageManager.get("msg.shulker-air"));
                 return;
             }
-            disguiseManager.applyDisguise(player, type);
-            player.sendMessage(LanguageManager.get("message.disguised." + key(type)));
-            player.closeInventory();
+            // 付费失败（余额不足）时保持菜单打开，不发成功消息
+            if (disguiseManager.applyDisguise(player, type)) {
+                player.sendMessage(LanguageManager.get("message.disguised." + key(type)));
+                player.closeInventory();
+            }
             return;
         }
 

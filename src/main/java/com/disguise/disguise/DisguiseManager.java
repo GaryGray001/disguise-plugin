@@ -86,6 +86,8 @@ import com.disguise.disguise.types.MagmaCubeDisguise;
 import com.disguise.disguise.types.RabbitDisguise;
 import com.disguise.disguise.types.SalmonDisguise;
 import com.disguise.disguise.types.SlimeDisguise;
+import com.disguise.economy.EconomyManager;
+import com.disguise.packet.PacketUtils;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -108,7 +110,28 @@ public class DisguiseManager {
         this.plugin = plugin;
     }
 
-    public void applyDisguise(Player player, DisguiseType type) {
+    /** 付费检查 + 设置付费时限（成功变身时调用） */
+    private boolean checkPay(Player player, DisguiseType type) {
+        if (!EconomyManager.tryPay(player, type)) return false;
+        return true;
+    }
+
+    /** 付费模式下设置变身时限（付费成功后才计时，到时自动解除；时长 0 = 不限时） */
+    private void applyExpiry(Player player, DisguiseType type) {
+        if (EconomyManager.isPaid()) {
+            long duration = EconomyManager.getDurationMillis(type);
+            if (duration > 0) {
+                PacketUtils.setDisguiseExpiry(player.getUniqueId(), System.currentTimeMillis() + duration);
+            }
+        }
+    }
+
+    /**
+     * 应用变身
+     * @return true = 变身成功；false = 付费失败（余额不足/无 Vault），保持原状
+     */
+    public boolean applyDisguise(Player player, DisguiseType type) {
+        if (!checkPay(player, type)) return false;
         removeDisguise(player);
         Disguise d = switch (type) {
             case SHEEP -> new SheepDisguise(DyeColor.WHITE);
@@ -201,18 +224,24 @@ public class DisguiseManager {
         d.apply(player);
         active.put(player.getUniqueId(), d);
         startSync(player, d);
+        applyExpiry(player, type);
+        return true;
     }
 
-    public void applyDisguise(Player player, DisguiseType type, DyeColor color) {
+    public boolean applyDisguise(Player player, DisguiseType type, DyeColor color) {
+        if (!checkPay(player, DisguiseType.SHEEP)) return false;
         removeDisguise(player);
         SheepDisguise d = new SheepDisguise(color);
         d.apply(player);
         active.put(player.getUniqueId(), d);
         startSync(player, d);
+        applyExpiry(player, DisguiseType.SHEEP);
+        return true;
     }
 
     /** 体型选择变身（史莱姆/岩浆怪） */
-    public void applyDisguise(Player player, DisguiseType type, int size) {
+    public boolean applyDisguise(Player player, DisguiseType type, int size) {
+        if (!checkPay(player, type)) return false;
         removeDisguise(player);
         Disguise d = switch (type) {
             case SLIME -> new SlimeDisguise(size);
@@ -222,15 +251,20 @@ public class DisguiseManager {
         d.apply(player);
         active.put(player.getUniqueId(), d);
         startSync(player, d);
+        applyExpiry(player, type);
+        return true;
     }
 
     /** 颜色变体变身（美西螈） */
-    public void applyDisguise(Player player, DisguiseType type, org.bukkit.entity.Axolotl.Variant variant) {
+    public boolean applyDisguise(Player player, DisguiseType type, org.bukkit.entity.Axolotl.Variant variant) {
+        if (!checkPay(player, DisguiseType.AXOLOTL)) return false;
         removeDisguise(player);
         AxolotlDisguise d = new AxolotlDisguise(variant);
         d.apply(player);
         active.put(player.getUniqueId(), d);
         startSync(player, d);
+        applyExpiry(player, DisguiseType.AXOLOTL);
+        return true;
     }
 
     public void removeDisguise(Player player) {

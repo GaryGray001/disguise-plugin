@@ -3,7 +3,6 @@ package com.disguise.gui;
 import com.disguise.disguise.DisguiseManager;
 import com.disguise.disguise.DisguiseType;
 import com.disguise.lang.LanguageManager;
-import com.disguise.packet.PacketUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -98,11 +97,11 @@ public class SizeSelectMenu implements Listener {
                 int size = SIZES[i];
                 DisguiseType type = currentType.getOrDefault(player.getUniqueId(), DisguiseType.SLIME);
                 String sizeName = LanguageManager.get("size." + size);
-                disguiseManager.applyDisguise(player, type, size);
-                if (PacketUtils.isDisguised(player)) {
+                // 付费失败（余额不足）时保持菜单打开
+                if (disguiseManager.applyDisguise(player, type, size)) {
                     player.sendMessage(LanguageManager.get("message.size-disguised", sizeName, type.getDisplayName()));
+                    player.closeInventory();
                 }
-                player.closeInventory();
                 return;
             }
         }

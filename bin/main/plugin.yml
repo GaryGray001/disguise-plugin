@@ -4,6 +4,7 @@ main: com.disguise.DisguisePlugin
 api-version: '1.21'
 author: History-cat
 description: A disguise plugin letting players transform into 80+ mobs with a GUI menu, baby/size options, colors and mob-specific mechanics.
+softdepend: [Vault]
 
 commands:
   dp:
@@ -17,4 +18,7 @@ permissions:
     default: true
   disguise.reload:
     description: Allows reloading the plugin config
+    default: op
+  disguise.admin:
+    description: Allows using the disguise command in admin-only mode
     default: op

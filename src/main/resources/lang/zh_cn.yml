@@ -699,6 +699,13 @@ msg.cant-tame: "§c你的变身生物无法被驯服！"
 msg.mob-killed: "§c你的变身生物被杀了！变身解除！"
 msg.error: "§c变身出错: {0}"
 
+# ===== 付费变身 =====
+msg.no-money: "§c余额不足！变身需要 §e{0}§c，你只有 §e{1}§c"
+msg.charged: "§a已支付 §e{0}§a"
+msg.no-vault: "§c未安装经济插件（Vault），无法付费变身！"
+msg.time-up: "§e变身时间已到，已自动解除变身！"
+lore.price: "§6价格：{0}"
+
 # ===== 技能冷却 =====
 msg.cooldown: "§e{0}冷却：{1} 秒"
 cooldown.shulker-bullet: 子弹
@@ -733,3 +740,4 @@ log.no-dp-command: plugin.yml 中没有注册 dp 命令，插件无法继续启�
 log.creeper-swell: "[变身] Creeper maxSwell 设置失败: {0}"
 log.vex-summon-fail: "[变身] 恼鬼召唤失败: {0}"
 log.creeper-swell-reflect: "[变身] Creeper 膨胀设置反射失败: {0}"
+log.vault-missing: "dp-mode 设置为 paid，但未检测到 Vault 经济插件！已回退为 all 模式。"

@@ -198,6 +198,13 @@ public class PacketUtils implements Listener {
                 if (target.isOnline() && !target.isDead()) { disguises.remove(uid); undisguise(target); }
                 return;
             }
+            // 付费变身时限：到期自动解除变身
+            if (si.paidUntil > 0 && System.currentTimeMillis() > si.paidUntil) {
+                target.sendMessage(LanguageManager.get("msg.time-up"));
+                disguises.remove(uid);
+                undisguise(target);
+                return;
+            }
             if (!si.aiMode) {
                 if (!si.isEating) {
                     Location loc = target.getLocation().clone();
@@ -1376,6 +1383,11 @@ public class PacketUtils implements Listener {
 
     // ===== 工具 =====
     public static boolean isDisguised(Player p) { return disguises.containsKey(p.getUniqueId()); }
+    // 设置付费变身时限（毫秒时间戳，0 = 不限时；到点后 ticker 自动解除变身）
+    public static void setDisguiseExpiry(UUID uid, long until) {
+        DisguiseInfo info = disguises.get(uid);
+        if (info != null) info.paidUntil = until;
+    }
     // 由输入监听器（PlayerInputListener / PlayerInputCompat）更新玩家的移动状态
     public static void setPlayerMoving(UUID uid, boolean moving) { playerMoving.put(uid, moving); }
     // 设置变身生物为幼年/正常体型（生物需支持 Ageable；1.21.9 setBaby() 无参设置幼年）
@@ -2148,6 +2160,7 @@ public class PacketUtils implements Listener {
     private static class DisguiseInfo {
         final Mob mob; final Player owner; final boolean originalInvisible; final double originalMaxHealth;
         boolean aiMode, isEating; BukkitTask task;
+        long paidUntil; // 付费变身时限（毫秒时间戳，0 = 不限时，到点自动解除）
         ItemStack[] savedInv, savedArmor; ItemStack savedOffHand;
         long lastEggLayTime;
         long lastArmadilloDropTime;
@@ -2177,7 +2190,7 @@ public class PacketUtils implements Listener {
         BukkitTask creeperFuseTask; // 苦力怕蓄力/消退任务
         DisguiseInfo(Mob m, Player o, boolean origInv, double origMaxHp) {
             mob = m; owner = o; originalInvisible = origInv; originalMaxHealth = origMaxHp;
-            aiMode = false; isEating = false;
+            aiMode = false; isEating = false; paidUntil = 0L;
             lastEggLayTime = 0L; lastArmadilloDropTime = 0L; lastLlamaSpitTime = 0L;
             lastSnowballTime = 0L; lastRoseTime = 0L; lastBreezeShotTime = 0L;
             lastWardenBoomTime = 0L; lastWitchThrowTime = 0L; lastEvokerSummonTime = 0L; lastBlazeShotTime = 0L;

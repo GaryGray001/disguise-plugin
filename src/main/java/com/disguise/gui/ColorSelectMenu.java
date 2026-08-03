@@ -124,8 +124,9 @@ public class ColorSelectMenu implements Listener {
                 if (babySelectMenu != null) {
                     babySelectMenu.open(player, DisguiseType.SHEEP, selectedColor);
                 } else {
-                    disguiseManager.applyDisguise(player, DisguiseType.SHEEP, selectedColor);
-                    player.closeInventory();
+                    if (disguiseManager.applyDisguise(player, DisguiseType.SHEEP, selectedColor)) {
+                        player.closeInventory();
+                    }
                 }
             }
         } catch (Exception e) {

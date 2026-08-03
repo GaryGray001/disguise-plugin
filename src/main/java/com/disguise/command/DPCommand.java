@@ -1,6 +1,7 @@
 package com.disguise.command;
 
 import com.disguise.DisguisePlugin;
+import com.disguise.economy.EconomyManager;
 import com.disguise.gui.DisguiseMenu;
 import com.disguise.lang.LanguageManager;
 import com.disguise.packet.PacketUtils;
@@ -39,7 +40,9 @@ public class DPCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        if (!player.hasPermission("disguise.use")) {
+        // 按配置模式检查权限：admin 模式要求 disguise.admin（默认 OP），all/paid 要求 disguise.use
+        String required = EconomyManager.isAdminMode() ? "disguise.admin" : "disguise.use";
+        if (!player.hasPermission(required)) {
             player.sendMessage(LanguageManager.get("cmd.no-permission"));
             return true;
         }

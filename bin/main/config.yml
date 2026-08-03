@@ -1,10 +1,168 @@
-# 变身插件配置文件
+# ============================================================
+# DisguisePlugin Configuration
+# ============================================================
 
-# 语言设置：选择 lang 文件夹中的语言文件（如 zh_cn / en_us）
-# 也可以自己新建语言文件：复制任意语言文件改名（如 fr_fr.yml）后填在这里即可
+# ------------------------------------------------------------
+# Language
+# ------------------------------------------------------------
+# Select which language file from the "lang" folder to use.
+# Default files: zh_cn (Simplified Chinese) and en_us (English).
+#
+# To create your own language:
+#   1. Copy any existing language file inside the lang folder
+#   2. Rename it to your language code (e.g. fr_fr.yml)
+#   3. Set that name here (e.g. language: fr_fr)
+#   4. Translate the values inside the file
+#
+# If the selected language file is missing, the plugin falls
+# back to Simplified Chinese. Unknown keys also fall back to
+# Chinese, and finally to the raw key name.
+# ------------------------------------------------------------
 language: zh_cn
 
-# 是否关闭 locatorBar（MC 1.21.6+ 的经验条玩家位置显示）
-# true  = 关闭（显示经验条）
-# false = 开启（经验条位置显示其他玩家的方位）
+# ------------------------------------------------------------
+# Locator bar
+# ------------------------------------------------------------
+# Whether to disable the locatorBar (the XP bar that shows the
+# direction of nearby players, a feature added in MC 1.21.6).
+#
+#   true  = disabled (XP bar is shown as normal)
+#   false = enabled (XP bar shows the position of other players)
+# ------------------------------------------------------------
 disable-locator-bar: true
+
+# ------------------------------------------------------------
+# /dp command mode
+# ------------------------------------------------------------
+# Controls who can use the /dp command and the disguise menu.
+#
+#   admin = admins only
+#           Requires the "disguise.admin" permission (OP by default).
+#   all   = every player
+#           Requires the "disguise.use" permission (true by default).
+#   paid  = every player, but disguises cost money
+#           Requires the Vault economy plugin (softdepend).
+#           Prices and durations are configured in the "mobs" section below.
+#           If Vault is not installed, the plugin logs a warning and
+#           falls back to "all" mode automatically.
+#
+# Any invalid value is treated as "all".
+# ------------------------------------------------------------
+dp-mode: paid
+
+# ------------------------------------------------------------
+# Mob prices and disguise durations (used in paid mode)
+# ------------------------------------------------------------
+# One entry per mob, combining the disguise price and duration:
+#
+#   <mob-name>: { price: <cost>, duration: <seconds> }
+#
+#   price    - the amount of coins charged when a player disguises
+#              as this mob (currency provided by the Vault economy)
+#   duration - how long the disguise lasts in seconds before it is
+#              automatically removed. Set 0 for unlimited time.
+#
+# Example:
+#   sheep: { price: 100, duration: 1800 }
+#   → disguising as a Sheep costs 100 coins and lasts
+#     1800 seconds (30 minutes), then is removed automatically.
+#   sheep: { price: 50, duration: 0 }
+#   → costs 50 coins, lasts forever until the player undoes it.
+#
+# Mob names are the plugin's internal ids (lowercase enum names,
+# e.g. ender_dragon, skeleton_horse, zombie_villager, happy_ghast).
+# All 86 mobs are listed below with default values - adjust freely.
+# A price of 0 means disguising as that mob is free.
+# ------------------------------------------------------------
+mobs:
+  # Animals (100 coins, 30 min)
+  sheep: { price: 100, duration: 1800 }
+  pig: { price: 100, duration: 1800 }
+  cow: { price: 100, duration: 1800 }
+  chicken: { price: 100, duration: 1800 }
+  rabbit: { price: 100, duration: 1800 }
+  cat: { price: 100, duration: 1800 }
+  wolf: { price: 100, duration: 1800 }
+  fox: { price: 100, duration: 1800 }
+  goat: { price: 100, duration: 1800 }
+  llama: { price: 100, duration: 1800 }
+  ocelot: { price: 100, duration: 1800 }
+  panda: { price: 100, duration: 1800 }
+  turtle: { price: 100, duration: 1800 }
+  mooshroom: { price: 100, duration: 1800 }
+  sniffer: { price: 100, duration: 1800 }
+  armadillo: { price: 100, duration: 1800 }
+  frog: { price: 100, duration: 1800 }
+  axolotl: { price: 100, duration: 1800 }
+  tadpole: { price: 100, duration: 1800 }
+  squid: { price: 100, duration: 1800 }
+  glow_squid: { price: 100, duration: 1800 }
+  cod: { price: 100, duration: 1800 }
+  salmon: { price: 100, duration: 1800 }
+  pufferfish: { price: 100, duration: 1800 }
+  tropical_fish: { price: 100, duration: 1800 }
+  parrot: { price: 100, duration: 1800 }
+  # Mounts / fast mobs (200 coins, 30 min)
+  horse: { price: 200, duration: 1800 }
+  donkey: { price: 200, duration: 1800 }
+  mule: { price: 200, duration: 1800 }
+  camel: { price: 200, duration: 1800 }
+  skeleton_horse: { price: 200, duration: 1800 }
+  zombie_horse: { price: 200, duration: 1800 }
+  trader_llama: { price: 200, duration: 1800 }
+  polar_bear: { price: 200, duration: 1800 }
+  dolphin: { price: 200, duration: 1800 }
+  strider: { price: 200, duration: 1800 }
+  bat: { price: 200, duration: 1800 }
+  bee: { price: 200, duration: 1800 }
+  allay: { price: 200, duration: 1800 }
+  vex: { price: 200, duration: 1800 }
+  silverfish: { price: 200, duration: 1800 }
+  endermite: { price: 200, duration: 1800 }
+  spider: { price: 200, duration: 1800 }
+  cave_spider: { price: 200, duration: 1800 }
+  # Strong mobs (300 coins, 30 min)
+  iron_golem: { price: 300, duration: 1800 }
+  snow_golem: { price: 300, duration: 1800 }
+  copper_golem: { price: 300, duration: 1800 }
+  villager: { price: 300, duration: 1800 }
+  wandering_trader: { price: 300, duration: 1800 }
+  zombie: { price: 300, duration: 1800 }
+  skeleton: { price: 300, duration: 1800 }
+  husk: { price: 300, duration: 1800 }
+  drowned: { price: 300, duration: 1800 }
+  stray: { price: 300, duration: 1800 }
+  bogged: { price: 300, duration: 1800 }
+  parched: { price: 300, duration: 1800 }
+  zombie_villager: { price: 300, duration: 1800 }
+  zombified_camel: { price: 300, duration: 1800 }
+  zombified_piglin: { price: 300, duration: 1800 }
+  piglin: { price: 300, duration: 1800 }
+  piglin_brute: { price: 300, duration: 1800 }
+  wither_skeleton: { price: 300, duration: 1800 }
+  ravager: { price: 300, duration: 1800 }
+  witch: { price: 300, duration: 1800 }
+  evoker: { price: 300, duration: 1800 }
+  pillager: { price: 300, duration: 1800 }
+  vindicator: { price: 300, duration: 1800 }
+  blaze: { price: 300, duration: 1800 }
+  creeper: { price: 300, duration: 1800 }
+  enderman: { price: 300, duration: 1800 }
+  guardian: { price: 300, duration: 1800 }
+  elder_guardian: { price: 300, duration: 1800 }
+  ghast: { price: 300, duration: 1800 }
+  phantom: { price: 300, duration: 1800 }
+  hoglin: { price: 300, duration: 1800 }
+  zoglin: { price: 300, duration: 1800 }
+  slime: { price: 300, duration: 1800 }
+  magma_cube: { price: 300, duration: 1800 }
+  breeze: { price: 300, duration: 1800 }
+  nautilus: { price: 300, duration: 1800 }
+  zombified_nautilus: { price: 300, duration: 1800 }
+  # Elite mobs (500 coins, 30 min)
+  warden: { price: 500, duration: 1800 }
+  shulker: { price: 500, duration: 1800 }
+  # Ultimate bosses (1000 coins, 30 min)
+  ender_dragon: { price: 1000, duration: 1800 }
+  wither: { price: 1000, duration: 1800 }
+  happy_ghast: { price: 1000, duration: 1800 }

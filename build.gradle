@@ -16,10 +16,13 @@ version = '1.0.0'
 repositories {
     mavenCentral()
     maven { url 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.21.9-R0.1-SNAPSHOT'
+    // Vault 经济 API（软依赖：付费模式需要服务器安装 Vault 插件）
+    compileOnly 'com.github.MilkBowl:VaultAPI:1.7.1'
 }
 
 tasks.withType(JavaCompile).configureEach {

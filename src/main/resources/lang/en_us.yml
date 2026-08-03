@@ -699,6 +699,13 @@ msg.cant-tame: "§cYour disguise cannot be tamed!"
 msg.mob-killed: "§cYour disguise was killed! Disguise removed!"
 msg.error: "§cDisguise error: {0}"
 
+# ===== Paid disguise =====
+msg.no-money: "§cNot enough money! This disguise costs §e{0}§c, you have §e{1}§c"
+msg.charged: "§aPaid §e{0}§a"
+msg.no-vault: "§cEconomy plugin (Vault) not installed, cannot pay for disguises!"
+msg.time-up: "§eDisguise time expired, disguise removed!"
+lore.price: "§6Price: {0}"
+
 # ===== Ability cooldowns =====
 msg.cooldown: "§e{0} cooldown: {1}s"
 cooldown.shulker-bullet: Bullet
@@ -733,3 +740,4 @@ log.no-dp-command: dp command is not registered in plugin.yml, plugin cannot ena
 log.creeper-swell: "[Disguise] Failed to set Creeper maxSwell: {0}"
 log.vex-summon-fail: "[Disguise] Failed to summon Vexes: {0}"
 log.creeper-swell-reflect: "[Disguise] Creeper swelling reflection failed: {0}"
+log.vault-missing: "dp-mode is set to paid, but no Vault economy plugin detected! Falling back to all mode."

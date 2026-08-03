@@ -2,6 +2,7 @@ package com.disguise;
 
 import com.disguise.command.DPCommand;
 import com.disguise.disguise.DisguiseManager;
+import com.disguise.economy.EconomyManager;
 import com.disguise.gui.DisguiseMenu;
 import com.disguise.gui.ColorSelectMenu;
 import com.disguise.lang.LanguageManager;
@@ -26,6 +27,8 @@ public class DisguisePlugin extends JavaPlugin {
 
         // 语言系统最先初始化（后续所有消息/日志都可能依赖）
         LanguageManager.init(this);
+        // 付费/模式系统（dp-mode、prices、durations，Vault 软依赖）
+        EconomyManager.init(this);
         PacketUtils.init(this);
         this.manager = new DisguiseManager(this);
 
@@ -76,10 +79,11 @@ public class DisguisePlugin extends JavaPlugin {
         getLogger().info(LanguageManager.get("log.enabled", getDescription().getVersion()));
     }
 
-    /** /dp reload：重载 config + 语言，并重新应用 locatorBar 设置 */
+    /** /dp reload：重载 config + 语言 + 经济配置，并重新应用 locatorBar 设置 */
     public void reloadPlugin(Player sender) {
         reloadConfig();
         LanguageManager.reload();
+        EconomyManager.reload();
         if (getConfig().getBoolean("disable-locator-bar")) {
             disableLocatorBar();
         }
