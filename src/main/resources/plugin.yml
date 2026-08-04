@@ -1,16 +1,24 @@
 name: DisguisePlugin
 version: '${version}'
 main: com.disguise.DisguisePlugin
-api-version: '1.17'
-description: 变身插件 - 让玩家变身为各种生物
+api-version: '1.21'
+author: History-cat
+description: A disguise plugin letting players transform into 80+ mobs with a GUI menu, baby/size options, colors and mob-specific mechanics.
+softdepend: [Vault]
 
 commands:
-  bs:
-    description: 打开变身主菜单
-    usage: /bs
+  dp:
+    description: Open the disguise menu
+    usage: /dp [reload]
     permission: disguise.use
 
 permissions:
   disguise.use:
-    description: 允许使用变身功能
+    description: Allows using the disguise feature
     default: true
+  disguise.reload:
+    description: Allows reloading the plugin config
+    default: op
+  disguise.admin:
+    description: Allows using the disguise command in admin-only mode
+    default: op

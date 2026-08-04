@@ -3,6 +3,19 @@ package com.disguise.disguise;
 import com.disguise.disguise.types.ArmadilloDisguise;
 import com.disguise.disguise.types.CamelDisguise;
 import com.disguise.disguise.types.CatDisguise;
+import com.disguise.disguise.types.CodDisguise;
+import com.disguise.disguise.types.DolphinDisguise;
+import com.disguise.disguise.types.ElderGuardianDisguise;
+import com.disguise.disguise.types.EnderDragonDisguise;
+import com.disguise.disguise.types.EndermiteDisguise;
+import com.disguise.disguise.types.GlowSquidDisguise;
+import com.disguise.disguise.types.GuardianDisguise;
+import com.disguise.disguise.types.NautilusDisguise;
+import com.disguise.disguise.types.PufferfishDisguise;
+import com.disguise.disguise.types.SquidDisguise;
+import com.disguise.disguise.types.TadpoleDisguise;
+import com.disguise.disguise.types.TropicalFishDisguise;
+import com.disguise.disguise.types.ZombifiedNautilusDisguise;
 import com.disguise.disguise.types.ChickenDisguise;
 import com.disguise.disguise.types.CopperGolemDisguise;
 import com.disguise.disguise.types.IronGolemDisguise;
@@ -16,20 +29,25 @@ import com.disguise.disguise.types.LlamaDisguise;
 import com.disguise.disguise.types.MooshroomDisguise;
 import com.disguise.disguise.types.OcelotDisguise;
 import com.disguise.disguise.types.PandaDisguise;
+import com.disguise.disguise.types.ParrotDisguise;
 import com.disguise.disguise.types.PigDisguise;
 import com.disguise.disguise.types.PolarBearDisguise;
 import com.disguise.disguise.types.SheepDisguise;
+import com.disguise.disguise.types.ShulkerDisguise;
 import com.disguise.disguise.types.SnifferDisguise;
 import com.disguise.disguise.types.SnowGolemDisguise;
 import com.disguise.disguise.types.TraderLlamaDisguise;
 import com.disguise.disguise.types.TurtleDisguise;
+import com.disguise.disguise.types.VexDisguise;
 import com.disguise.disguise.types.VillagerDisguise;
 import com.disguise.disguise.types.WanderingTraderDisguise;
+import com.disguise.disguise.types.WitherDisguise;
 import com.disguise.disguise.types.WolfDisguise;
 import com.disguise.disguise.types.ZombieDisguise;
 import com.disguise.disguise.types.SkeletonDisguise;
 import com.disguise.disguise.types.BoggedDisguise;
 import com.disguise.disguise.types.ParchedDisguise;
+import com.disguise.disguise.types.HoglinDisguise;
 import com.disguise.disguise.types.HuskDisguise;
 import com.disguise.disguise.types.DrownedDisguise;
 import com.disguise.disguise.types.StrayDisguise;
@@ -42,6 +60,34 @@ import com.disguise.disguise.types.CaveSpiderDisguise;
 import com.disguise.disguise.types.BreezeDisguise;
 import com.disguise.disguise.types.CreeperDisguise;
 import com.disguise.disguise.types.SilverfishDisguise;
+import com.disguise.disguise.types.WardenDisguise;
+import com.disguise.disguise.types.WitchDisguise;
+import com.disguise.disguise.types.EvokerDisguise;
+import com.disguise.disguise.types.PillagerDisguise;
+import com.disguise.disguise.types.VindicatorDisguise;
+import com.disguise.disguise.types.RavagerDisguise;
+import com.disguise.disguise.types.BlazeDisguise;
+import com.disguise.disguise.types.PiglinDisguise;
+import com.disguise.disguise.types.PiglinBruteDisguise;
+import com.disguise.disguise.types.StriderDisguise;
+import com.disguise.disguise.types.ZoglinDisguise;
+import com.disguise.disguise.types.ZombifiedPiglinDisguise;
+import com.disguise.disguise.types.WitherSkeletonDisguise;
+import com.disguise.disguise.types.AllayDisguise;
+import com.disguise.disguise.types.AxolotlDisguise;
+import com.disguise.disguise.types.BatDisguise;
+import com.disguise.disguise.types.BeeDisguise;
+import com.disguise.disguise.types.GhastDisguise;
+import com.disguise.disguise.types.HappyGhastDisguise;
+import com.disguise.disguise.types.PhantomDisguise;
+import com.disguise.disguise.types.EndermanDisguise;
+import com.disguise.disguise.types.FrogDisguise;
+import com.disguise.disguise.types.MagmaCubeDisguise;
+import com.disguise.disguise.types.RabbitDisguise;
+import com.disguise.disguise.types.SalmonDisguise;
+import com.disguise.disguise.types.SlimeDisguise;
+import com.disguise.economy.EconomyManager;
+import com.disguise.packet.PacketUtils;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -64,7 +110,28 @@ public class DisguiseManager {
         this.plugin = plugin;
     }
 
-    public void applyDisguise(Player player, DisguiseType type) {
+    /** 付费检查 + 设置付费时限（成功变身时调用） */
+    private boolean checkPay(Player player, DisguiseType type) {
+        if (!EconomyManager.tryPay(player, type)) return false;
+        return true;
+    }
+
+    /** 付费模式下设置变身时限（付费成功后才计时，到时自动解除；时长 0 = 不限时） */
+    private void applyExpiry(Player player, DisguiseType type) {
+        if (EconomyManager.isPaid()) {
+            long duration = EconomyManager.getDurationMillis(type);
+            if (duration > 0) {
+                PacketUtils.setDisguiseExpiry(player.getUniqueId(), System.currentTimeMillis() + duration);
+            }
+        }
+    }
+
+    /**
+     * 应用变身
+     * @return true = 变身成功；false = 付费失败（余额不足/无 Vault），保持原状
+     */
+    public boolean applyDisguise(Player player, DisguiseType type) {
+        if (!checkPay(player, type)) return false;
         removeDisguise(player);
         Disguise d = switch (type) {
             case SHEEP -> new SheepDisguise(DyeColor.WHITE);
@@ -109,18 +176,95 @@ public class DisguiseManager {
             case BREEZE -> new BreezeDisguise();
             case CREEPER -> new CreeperDisguise();
             case SILVERFISH -> new SilverfishDisguise();
+            case WARDEN -> new WardenDisguise();
+            case WITCH -> new WitchDisguise();
+            case EVOKER -> new EvokerDisguise();
+            case PILLAGER -> new PillagerDisguise();
+            case VINDICATOR -> new VindicatorDisguise();
+            case RAVAGER -> new RavagerDisguise();
+            case BLAZE -> new BlazeDisguise();
+            case PIGLIN -> new PiglinDisguise();
+            case PIGLIN_BRUTE -> new PiglinBruteDisguise();
+            case STRIDER -> new StriderDisguise();
+            case ZOGLIN -> new ZoglinDisguise();
+            case ZOMBIFIED_PIGLIN -> new ZombifiedPiglinDisguise();
+            case WITHER_SKELETON -> new WitherSkeletonDisguise();
+            case ENDERMAN -> new EndermanDisguise();
+            case SLIME -> new SlimeDisguise();
+            case MAGMA_CUBE -> new MagmaCubeDisguise();
+            case FROG -> new FrogDisguise();
+            case RABBIT -> new RabbitDisguise();
+            case AXOLOTL -> new AxolotlDisguise();
+            case COD -> new CodDisguise();
+            case SALMON -> new SalmonDisguise();
+            case PUFFERFISH -> new PufferfishDisguise();
+            case SQUID -> new SquidDisguise();
+            case GLOW_SQUID -> new GlowSquidDisguise();
+            case TROPICAL_FISH -> new TropicalFishDisguise();
+            case DOLPHIN -> new DolphinDisguise();
+            case TADPOLE -> new TadpoleDisguise();
+            case NAUTILUS -> new NautilusDisguise();
+            case ZOMBIFIED_NAUTILUS -> new ZombifiedNautilusDisguise();
+            case GUARDIAN -> new GuardianDisguise();
+            case ELDER_GUARDIAN -> new ElderGuardianDisguise();
+            case HOGLIN -> new HoglinDisguise();
+            case VEX -> new VexDisguise();
+            case ENDERMITE -> new EndermiteDisguise();
+            case ENDER_DRAGON -> new EnderDragonDisguise();
+            case WITHER -> new WitherDisguise();
+            case SHULKER -> new ShulkerDisguise();
+            case BAT -> new BatDisguise();
+            case BEE -> new BeeDisguise();
+            case ALLAY -> new AllayDisguise();
+            case GHAST -> new GhastDisguise();
+            case HAPPY_GHAST -> new HappyGhastDisguise();
+            case PHANTOM -> new PhantomDisguise();
+            case PARROT -> new ParrotDisguise();
         };
         d.apply(player);
         active.put(player.getUniqueId(), d);
         startSync(player, d);
+        applyExpiry(player, type);
+        return true;
     }
 
-    public void applyDisguise(Player player, DisguiseType type, DyeColor color) {
+    public boolean applyDisguise(Player player, DisguiseType type, DyeColor color) {
+        if (!checkPay(player, DisguiseType.SHEEP)) return false;
         removeDisguise(player);
         SheepDisguise d = new SheepDisguise(color);
         d.apply(player);
         active.put(player.getUniqueId(), d);
         startSync(player, d);
+        applyExpiry(player, DisguiseType.SHEEP);
+        return true;
+    }
+
+    /** 体型选择变身（史莱姆/岩浆怪） */
+    public boolean applyDisguise(Player player, DisguiseType type, int size) {
+        if (!checkPay(player, type)) return false;
+        removeDisguise(player);
+        Disguise d = switch (type) {
+            case SLIME -> new SlimeDisguise(size);
+            case MAGMA_CUBE -> new MagmaCubeDisguise(size);
+            default -> throw new IllegalArgumentException("该生物不支持体型选择");
+        };
+        d.apply(player);
+        active.put(player.getUniqueId(), d);
+        startSync(player, d);
+        applyExpiry(player, type);
+        return true;
+    }
+
+    /** 颜色变体变身（美西螈） */
+    public boolean applyDisguise(Player player, DisguiseType type, org.bukkit.entity.Axolotl.Variant variant) {
+        if (!checkPay(player, DisguiseType.AXOLOTL)) return false;
+        removeDisguise(player);
+        AxolotlDisguise d = new AxolotlDisguise(variant);
+        d.apply(player);
+        active.put(player.getUniqueId(), d);
+        startSync(player, d);
+        applyExpiry(player, DisguiseType.AXOLOTL);
+        return true;
     }
 
     public void removeDisguise(Player player) {

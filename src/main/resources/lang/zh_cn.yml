@@ -1,0 +1,743 @@
+# ==================== 简体中文（默认语言） ====================
+# 复制本文件改名（如 fr_fr.yml）并修改 config.yml 的 language 即可创建新语言
+# 提示：{0} {1} 等是占位符，会被游戏内实际内容替换，请保留
+
+# ===== 生物名称 =====
+mob.sheep: 羊
+mob.pig: 猪
+mob.cow: 牛
+mob.chicken: 鸡
+mob.camel: 骆驼
+mob.horse: 马
+mob.donkey: 驴
+mob.mule: 骡子
+mob.cat: 猫
+mob.wolf: 狼
+mob.armadillo: 犰狳
+mob.fox: 狐狸
+mob.goat: 山羊
+mob.llama: 羊驼
+mob.ocelot: 豹猫
+mob.panda: 熊猫
+mob.polar_bear: 北极熊
+mob.turtle: 海龟
+mob.mooshroom: 哞菇
+mob.sniffer: 探嗅兽
+mob.iron_golem: 铁傀儡
+mob.snow_golem: 雪傀儡
+mob.trader_llama: 行商羊驼
+mob.villager: 村民
+mob.wandering_trader: 流浪商人
+mob.copper_golem: 铜傀儡
+mob.zombie: 僵尸
+mob.skeleton: 骷髅
+mob.bogged: 沼骸
+mob.parched: 焦骸
+mob.husk: 尸壳
+mob.drowned: 溺尸
+mob.stray: 流浪者
+mob.skeleton_horse: 骷髅马
+mob.zombified_camel: 骆驼尸壳
+mob.zombie_horse: 僵尸马
+mob.zombie_villager: 僵尸村民
+mob.spider: 蜘蛛
+mob.cave_spider: 洞穴蜘蛛
+mob.breeze: 旋风人
+mob.creeper: 苦力怕
+mob.silverfish: 蠹虫
+mob.warden: 坚守者
+mob.witch: 女巫
+mob.evoker: 唤魔者
+mob.pillager: 掠夺者
+mob.vindicator: 卫道士
+mob.ravager: 劫掠兽
+mob.blaze: 烈焰人
+mob.piglin: 猪灵
+mob.piglin_brute: 猪灵蛮兵
+mob.strider: 炽足兽
+mob.zoglin: 僵尸猪灵兽
+mob.zombified_piglin: 僵尸猪灵
+mob.wither_skeleton: 凋零骷髅
+mob.enderman: 末影人
+mob.slime: 史莱姆
+mob.magma_cube: 岩浆怪
+mob.frog: 青蛙
+mob.rabbit: 兔子
+mob.axolotl: 美西螈
+mob.bat: 蝙蝠
+mob.bee: 蜜蜂
+mob.allay: 悦灵
+mob.ghast: 恶魂
+mob.happy_ghast: 快乐恶魂
+mob.phantom: 幻翼
+mob.parrot: 鹦鹉
+mob.cod: 鳕鱼
+mob.salmon: 鲑鱼
+mob.pufferfish: 河豚
+mob.squid: 鱿鱼
+mob.glow_squid: 发光鱿鱼
+mob.tropical_fish: 热带鱼
+mob.dolphin: 海豚
+mob.tadpole: 蝌蚪
+mob.nautilus: 鹦鹉螺
+mob.zombified_nautilus: 僵尸鹦鹉螺
+mob.guardian: 守卫者
+mob.elder_guardian: 远古守卫者
+mob.hoglin: 疣猪兽
+mob.vex: 恼鬼
+mob.endermite: 末影螨
+mob.ender_dragon: 末影龙
+mob.wither: 凋零
+mob.shulker: 潜影贝
+
+# ===== 颜色（羊） =====
+color.white: 白色
+color.orange: 橙色
+color.magenta: 品红色
+color.light_blue: 淡蓝色
+color.yellow: 黄色
+color.lime: 黄绿色
+color.pink: 粉色
+color.gray: 灰色
+color.light_gray: 淡灰色
+color.cyan: 青色
+color.purple: 紫色
+color.blue: 蓝色
+color.brown: 棕色
+color.green: 绿色
+color.red: 红色
+color.black: 黑色
+
+# ===== 颜色（美西螈变体） =====
+axolotl.lucy: 白化
+axolotl.wild: 野生
+axolotl.gold: 金色
+axolotl.cyan: 青色
+axolotl.blue: 蓝色
+
+# ===== 体型 =====
+size.1: 小型
+size.2: 中型
+size.3: 大型
+size.4: 巨型
+
+# ===== 菜单标题 =====
+menu.main: "✧ 变身主菜单 ✧"
+menu.baby: 体型选择
+menu.slime-size: 选择史莱姆体型
+menu.magma-size: 选择岩浆怪体型
+menu.sheep-color: 选择羊的颜色
+menu.axolotl-color: 选择美西螈颜色
+
+# ===== 通用按钮 / 提示 =====
+button.back: "§c← 返回主菜单"
+button.normal: "§e正常体型"
+button.normal-lore: "§7点击变身为正常体型"
+button.baby: "§e小型体型"
+button.baby-lore: "§7点击变身为小型体型"
+button.page-prev: "§e◀ 上一页"
+button.page-prev-lore: "§7点击翻到上一页"
+button.page-next: "§e下一页 ▶"
+button.page-next-lore: "§7点击翻到下一页"
+button.undo-on: "§c❌ 取消变身"
+button.undo-on-lore1: "§7点击恢复原形"
+button.undo-on-lore2: "§a▸ 当前已变身"
+button.undo-off: "§8❌ 取消变身"
+button.undo-off-lore1: "§7你还未变身"
+button.undo-off-lore2: "§8选择一个生物开始变身"
+tip.name: "§e💡 提示"
+tip.lore1: "§7点击生物图标选择变身"
+tip.lore2: "§7第 {0} / {1} 页"
+tip.lore3: "§7按 Ctrl 即可切换模式"
+lore.click-size: "§7点击变身为{0}"
+icon.color-sheep: "{0}羊"
+lore.color-sheep: "§7点击变身为 {0}羊"
+icon.axolotl-color: "§e{0}美西螈"
+lore.axolotl-color: "§7点击变身为{0}美西螈"
+
+# ===== 图标名（emoji + 名称） =====
+icon.sheep: "§e🐑 羊"
+icon.pig: "§e🐷 猪"
+icon.cow: "§e🐮 牛"
+icon.chicken: "§e🐔 鸡"
+icon.camel: "§e🐫 骆驼"
+icon.horse: "§e🐴 马"
+icon.donkey: "§e🐴 驴"
+icon.mule: "§e🐴 骡子"
+icon.cat: "§e🐱 猫"
+icon.wolf: "§e🐺 狼"
+icon.armadillo: "§e🦔 犰狳"
+icon.fox: "§e🦊 狐狸"
+icon.goat: "§e🐐 山羊"
+icon.llama: "§e🦙 羊驼"
+icon.ocelot: "§e🐆 豹猫"
+icon.panda: "§e🐼 熊猫"
+icon.polar_bear: "§e🐻 北极熊"
+icon.turtle: "§e🐢 海龟"
+icon.mooshroom: "§e🍄 哞菇"
+icon.sniffer: "§e🦕 探嗅兽"
+icon.iron_golem: "§e🤖 铁傀儡"
+icon.snow_golem: "§e⛄ 雪傀儡"
+icon.trader_llama: "§e🦙 行商羊驼"
+icon.villager: "§e🧑 村民"
+icon.wandering_trader: "§e🧑 流浪商人"
+icon.copper_golem: "§e🤖 铜傀儡"
+icon.zombie: "§e🧟 僵尸"
+icon.skeleton: "§e💀 骷髅"
+icon.bogged: "§e🌿 沼骸"
+icon.parched: "§e🔥 焦骸"
+icon.husk: "§e🏜️ 尸壳"
+icon.drowned: "§e🌊 溺尸"
+icon.stray: "§e❄️ 流浪者"
+icon.skeleton_horse: "§e🐴 骷髅马"
+icon.zombified_camel: "§e🐫 骆驼尸壳"
+icon.zombie_horse: "§e🐴 僵尸马"
+icon.zombie_villager: "§e🧟 僵尸村民"
+icon.spider: "§e🕷️ 蜘蛛"
+icon.cave_spider: "§e🕷️ 洞穴蜘蛛"
+icon.breeze: "§e🌀 旋风人"
+icon.creeper: "§e💥 苦力怕"
+icon.silverfish: "§e🪳 蠹虫"
+icon.warden: "§e🕳️ 坚守者"
+icon.witch: "§e🧙 女巫"
+icon.evoker: "§e🧙 唤魔者"
+icon.pillager: "§e🏹 掠夺者"
+icon.vindicator: "§e🪓 卫道士"
+icon.ravager: "§e🐗 劫掠兽"
+icon.blaze: "§e🔥 烈焰人"
+icon.piglin: "§e🐷 猪灵"
+icon.piglin_brute: "§e🗡️ 猪灵蛮兵"
+icon.strider: "§e🕷️ 炽足兽"
+icon.zoglin: "§e🐗 僵尸猪灵兽"
+icon.zombified_piglin: "§e🐷 僵尸猪灵"
+icon.wither_skeleton: "§e💀 凋零骷髅"
+icon.enderman: "§e👾 末影人"
+icon.slime: "§e🟢 史莱姆"
+icon.magma_cube: "§e🟠 岩浆怪"
+icon.frog: "§e🐸 青蛙"
+icon.rabbit: "§e🐰 兔子"
+icon.axolotl: "§e🦎 美西螈"
+icon.bat: "§e🦇 蝙蝠"
+icon.bee: "§e🐝 蜜蜂"
+icon.allay: "§e🧚 悦灵"
+icon.ghast: "§e👻 恶魂"
+icon.happy_ghast: "§e😊 快乐恶魂"
+icon.phantom: "§e👾 幻翼"
+icon.parrot: "§e🦜 鹦鹉"
+icon.cod: "§e🐟 鳕鱼"
+icon.salmon: "§e🐟 鲑鱼"
+icon.pufferfish: "§e🐡 河豚"
+icon.squid: "§e🦑 鱿鱼"
+icon.glow_squid: "§e🦑 发光鱿鱼"
+icon.tropical_fish: "§e🐠 热带鱼"
+icon.dolphin: "§e🐬 海豚"
+icon.tadpole: "§e🐸 蝌蚪"
+icon.nautilus: "§e🐚 鹦鹉螺"
+icon.zombified_nautilus: "§e🐚 僵尸鹦鹉螺"
+icon.guardian: "§e👁️ 守卫者"
+icon.elder_guardian: "§e👁️ 远古守卫者"
+icon.hoglin: "§e🐗 疣猪兽"
+icon.vex: "§e👻 恼鬼"
+icon.endermite: "§e🪳 末影螨"
+icon.ender_dragon: "§e🐲 末影龙"
+icon.wither: "§e☠️ 凋零"
+icon.shulker: "§e🦐 潜影贝"
+
+# ===== 图标说明（lore） =====
+lore.sheep:
+  - "§7点击选择颜色后变身为羊"
+  - "§8→ 有16种颜色可选"
+  - "§7按 F 键即可吃草"
+lore.pig:
+  - "§7点击变身为猪"
+  - "§8→ 两个模式可用"
+lore.cow:
+  - "§7点击变身为牛"
+  - "§8→ 其他玩家可挤奶"
+lore.chicken:
+  - "§7点击变身为鸡"
+  - "§7按 F 键下蛋"
+  - "§8→ 可喂种子繁殖"
+lore.camel:
+  - "§7点击变身为骆驼"
+  - "§7按 F 键趴下/站起"
+  - "§7可被其他玩家乘骑"
+  - "§8→ 乘骑者无法控制方向"
+lore.horse:
+  - "§7点击变身为马"
+  - "§7可被其他玩家乘骑"
+  - "§8→ 乘骑者无法控制方向"
+lore.donkey:
+  - "§7点击变身为驴"
+  - "§7可被其他玩家乘骑"
+  - "§8→ 乘骑者无法控制方向"
+lore.mule:
+  - "§7点击变身为骡子"
+  - "§7可被其他玩家乘骑"
+  - "§8→ 乘骑者无法控制方向"
+lore.cat:
+  - "§7点击变身为猫"
+  - "§8→ 无法被驯服"
+  - "§8→ 免疫摔落伤害"
+lore.wolf:
+  - "§7点击变身为狼"
+  - "§8→ 无法被驯服"
+lore.armadillo:
+  - "§7点击变身为犰狳"
+  - "§7按 F 键掉壳"
+lore.fox:
+  - "§7点击变身为狐狸"
+  - "§7按 F 键卧下睡觉"
+  - "§8→ 卧下时不跟随"
+lore.goat:
+  - "§7点击变身为山羊"
+lore.llama:
+  - "§7点击变身为羊驼"
+  - "§7按 F 键吐口水"
+lore.ocelot:
+  - "§7点击变身为豹猫"
+  - "§8→ 免疫摔落伤害"
+lore.panda:
+  - "§7点击变身为熊猫"
+lore.polar_bear:
+  - "§7点击变身为北极熊"
+  - "§7按 F 键攻击动画"
+lore.turtle:
+  - "§7点击变身为海龟"
+lore.mooshroom:
+  - "§7点击变身为哞菇"
+  - "§8→ 可挤奶"
+lore.sniffer:
+  - "§7点击变身为探嗅兽"
+lore.iron_golem:
+  - "§7点击变身为铁傀儡"
+  - "§7按住 F 键举花"
+  - "§8→ 免疫摔落伤害"
+  - "§8→ 免疫击退"
+lore.snow_golem:
+  - "§7点击变身为雪傀儡"
+  - "§7按 F 键发射雪球"
+  - "§8→ 免疫摔落伤害"
+lore.trader_llama:
+  - "§7点击变身为行商羊驼"
+lore.villager:
+  - "§7点击变身为村民"
+lore.wandering_trader:
+  - "§7点击变身为流浪商人"
+lore.copper_golem:
+  - "§7点击变身为铜傀儡"
+  - "§8→ 免疫摔落伤害"
+lore.zombie:
+  - "§7点击变身为僵尸"
+lore.skeleton:
+  - "§7点击变身为骷髅"
+lore.bogged:
+  - "§7点击变身为沼骸"
+lore.parched:
+  - "§7点击变身为焦骸"
+lore.husk:
+  - "§7点击变身为尸壳"
+lore.drowned:
+  - "§7点击变身为溺尸"
+lore.stray:
+  - "§7点击变身为流浪者"
+lore.skeleton_horse:
+  - "§7点击变身为骷髅马"
+lore.zombified_camel:
+  - "§7点击变身为骆驼尸壳"
+lore.zombie_horse:
+  - "§7点击变身为僵尸马"
+lore.zombie_villager:
+  - "§7点击变身为僵尸村民"
+lore.spider:
+  - "§7点击变身为蜘蛛"
+lore.cave_spider:
+  - "§7点击变身为洞穴蜘蛛"
+lore.breeze:
+  - "§7点击变身为旋风人"
+  - "§7按 F 键发射旋风弹"
+lore.creeper:
+  - "§7点击变身为苦力怕"
+  - "§7按住 Shift 蓄力自爆"
+  - "§8→ 长按 1.5 秒爆炸"
+lore.silverfish:
+  - "§7点击变身为蠹虫"
+lore.warden:
+  - "§7点击变身为坚守者"
+  - "§7按 F 键声波攻击"
+lore.witch:
+  - "§7点击变身为女巫"
+  - "§7按 F 键扔随机毒药"
+  - "§8→ 免疫负面药水"
+lore.evoker:
+  - "§7点击变身为唤魔者"
+  - "§7按 F 键召唤恼鬼"
+lore.pillager:
+  - "§7点击变身为掠夺者"
+lore.vindicator:
+  - "§7点击变身为卫道士"
+lore.ravager:
+  - "§7点击变身为劫掠兽"
+lore.blaze:
+  - "§7点击变身为烈焰人"
+  - "§7按 F 键连发 3 火球"
+  - "§8→ 可走路可飞行"
+lore.piglin:
+  - "§7点击变身为猪灵"
+lore.piglin_brute:
+  - "§7点击变身为猪灵蛮兵"
+lore.strider:
+  - "§7点击变身为炽足兽"
+lore.zoglin:
+  - "§7点击变身为僵尸猪灵兽"
+lore.zombified_piglin:
+  - "§7点击变身为僵尸猪灵"
+lore.wither_skeleton:
+  - "§7点击变身为凋零骷髅"
+lore.enderman:
+  - "§7点击变身为末影人"
+  - "§7按 F 键随机传送"
+lore.slime:
+  - "§7点击变身为史莱姆"
+  - "§7行走时自动蹦跳"
+lore.magma_cube:
+  - "§7点击变身为岩浆怪"
+  - "§7行走时自动蹦跳"
+  - "§8→ 蹦跳带岩浆粒子"
+lore.frog:
+  - "§7点击变身为青蛙"
+lore.rabbit:
+  - "§7点击变身为兔子"
+  - "§7行走时自动蹦跳"
+lore.axolotl:
+  - "§7点击选择颜色后变身为美西螈"
+  - "§8→ 有 5 种颜色可选"
+  - "§8→ 水陆两栖"
+lore.cod:
+  - "§7点击变身为鳕鱼"
+  - "§8→ 离水会跳"
+lore.salmon:
+  - "§7点击变身为鲑鱼"
+  - "§8→ 离水会跳"
+lore.pufferfish:
+  - "§7点击变身为河豚"
+  - "§7按住 F 键膨胀"
+  - "§8→ 离水会跳"
+lore.squid:
+  - "§7点击变身为鱿鱼"
+lore.glow_squid:
+  - "§7点击变身为发光鱿鱼"
+lore.tropical_fish:
+  - "§7点击变身为热带鱼"
+  - "§8→ 离水会跳"
+lore.dolphin:
+  - "§7点击变身为海豚"
+  - "§8→ 离水会跳"
+lore.tadpole:
+  - "§7点击变身为蝌蚪"
+  - "§8→ 离水会跳"
+lore.nautilus:
+  - "§7点击变身为鹦鹉螺"
+lore.zombified_nautilus:
+  - "§7点击变身为僵尸鹦鹉螺"
+lore.guardian:
+  - "§7点击变身为守卫者"
+  - "§8→ 离水会跳"
+lore.elder_guardian:
+  - "§7点击变身为远古守卫者"
+  - "§8→ 离水会跳"
+lore.hoglin:
+  - "§7点击变身为疣猪兽"
+lore.vex:
+  - "§7点击变身为恼鬼"
+  - "§7可自由飞行"
+  - "§8→ 永不消失"
+lore.shulker:
+  - "§7点击变身为潜影贝"
+  - "§7WASD 随机瞬移"
+  - "§7F 键发射子弹"
+  - "§7Shift 开壳/关壳"
+  - "§8→ 固定原地"
+lore.endermite:
+  - "§7点击变身为末影螨"
+  - "§8→ 永不消失"
+lore.wither:
+  - "§7点击变身为凋零"
+  - "§7按 F 键发射凋零头颅"
+  - "§7可自由飞行"
+  - "§8→ 终极 Boss"
+lore.ender_dragon:
+  - "§7点击变身为末影龙"
+  - "§7按 F 键发射龙息弹"
+  - "§7可自由飞行"
+  - "§8→ 终极 Boss"
+lore.bat:
+  - "§7点击变身为蝙蝠"
+  - "§7可自由飞行"
+lore.bee:
+  - "§7点击变身为蜜蜂"
+  - "§7可自由飞行"
+lore.allay:
+  - "§7点击变身为悦灵"
+  - "§7可自由飞行"
+lore.ghast:
+  - "§7点击变身为恶魂"
+  - "§7按 F 键发射火球"
+  - "§7可自由飞行"
+lore.happy_ghast:
+  - "§7点击变身为快乐恶魂"
+  - "§7可自由飞行"
+lore.phantom:
+  - "§7点击变身为幻翼"
+  - "§7可自由飞行"
+lore.parrot:
+  - "§7点击变身为鹦鹉"
+  - "§7可自由飞行"
+  - "§8→ 无法被驯服"
+
+# ===== 变身成功聊天消息 =====
+message.disguised.sheep: "§a你已变身为羊！"
+message.disguised.pig: "§a你已变身为猪！"
+message.disguised.cow: "§a你已变身为牛！"
+message.disguised.chicken: "§a你已变身为鸡！按 F 键可下蛋！"
+message.disguised.camel: "§a你已变身为骆驼！可被其他玩家乘骑！"
+message.disguised.horse: "§a你已变身为马！可被其他玩家乘骑！"
+message.disguised.donkey: "§a你已变身为驴！可被其他玩家乘骑！"
+message.disguised.mule: "§a你已变身为骡子！可被其他玩家乘骑！"
+message.disguised.cat: "§a你已变身为猫！"
+message.disguised.wolf: "§a你已变身为狼！"
+message.disguised.armadillo: "§a你已变身为犰狳！"
+message.disguised.fox: "§a你已变身为狐狸！"
+message.disguised.goat: "§a你已变身为山羊！"
+message.disguised.llama: "§a你已变身为羊驼！"
+message.disguised.ocelot: "§a你已变身为豹猫！"
+message.disguised.panda: "§a你已变身为熊猫！"
+message.disguised.polar_bear: "§a你已变身为北极熊！"
+message.disguised.turtle: "§a你已变身为海龟！"
+message.disguised.mooshroom: "§a你已变身为哞菇！"
+message.disguised.sniffer: "§a你已变身为探嗅兽！"
+message.disguised.iron_golem: "§a你已变身为铁傀儡！"
+message.disguised.snow_golem: "§a你已变身为雪傀儡！"
+message.disguised.trader_llama: "§a你已变身为行商羊驼！"
+message.disguised.villager: "§a你已变身为村民！"
+message.disguised.wandering_trader: "§a你已变身为流浪商人！"
+message.disguised.copper_golem: "§a你已变身为铜傀儡！"
+message.disguised.zombie: "§a你已变身为僵尸！"
+message.disguised.skeleton: "§a你已变身为骷髅！"
+message.disguised.bogged: "§a你已变身为沼骸！"
+message.disguised.parched: "§a你已变身为焦骸！"
+message.disguised.husk: "§a你已变身为尸壳！"
+message.disguised.drowned: "§a你已变身为溺尸！"
+message.disguised.stray: "§a你已变身为流浪者！"
+message.disguised.skeleton_horse: "§a你已变身为骷髅马！"
+message.disguised.zombified_camel: "§a你已变身为骆驼尸壳！"
+message.disguised.zombie_horse: "§a你已变身为僵尸马！"
+message.disguised.zombie_villager: "§a你已变身为僵尸村民！"
+message.disguised.spider: "§a你已变身为蜘蛛！"
+message.disguised.cave_spider: "§a你已变身为洞穴蜘蛛！"
+message.disguised.breeze: "§a你已变身为旋风人！"
+message.disguised.creeper: "§a你已变身为苦力怕！"
+message.disguised.silverfish: "§a你已变身为蠹虫！"
+message.disguised.warden: "§a你已变身为坚守者！"
+message.disguised.witch: "§a你已变身为女巫！"
+message.disguised.evoker: "§a你已变身为唤魔者！"
+message.disguised.pillager: "§a你已变身为掠夺者！"
+message.disguised.vindicator: "§a你已变身为卫道士！"
+message.disguised.ravager: "§a你已变身为劫掠兽！"
+message.disguised.blaze: "§a你已变身为烈焰人！"
+message.disguised.piglin: "§a你已变身为猪灵！"
+message.disguised.piglin_brute: "§a你已变身为猪灵蛮兵！"
+message.disguised.strider: "§a你已变身为炽足兽！"
+message.disguised.zoglin: "§a你已变身为僵尸猪灵兽！"
+message.disguised.zombified_piglin: "§a你已变身为僵尸猪灵！"
+message.disguised.wither_skeleton: "§a你已变身为凋零骷髅！"
+message.disguised.enderman: "§a你已变身为末影人！"
+message.disguised.slime: "§a你已变身为史莱姆！"
+message.disguised.magma_cube: "§a你已变身为岩浆怪！"
+message.disguised.frog: "§a你已变身为青蛙！"
+message.disguised.rabbit: "§a你已变身为兔子！行走时自动蹦跳！"
+message.disguised.axolotl: "§a你已变身为美西螈！"
+message.disguised.bat: "§a你已变身为蝙蝠！可以自由飞行！"
+message.disguised.bee: "§a你已变身为蜜蜂！可以自由飞行！"
+message.disguised.allay: "§a你已变身为悦灵！可以自由飞行！"
+message.disguised.ghast: "§a你已变身为恶魂！可以自由飞行！"
+message.disguised.happy_ghast: "§a你已变身为快乐恶魂！可以自由飞行！"
+message.disguised.phantom: "§a你已变身为幻翼！可以自由飞行！"
+message.disguised.parrot: "§a你已变身为鹦鹉！可以自由飞行！"
+message.disguised.cod: "§a你已变身为鳕鱼！水下呼吸！"
+message.disguised.salmon: "§a你已变身为鲑鱼！水下呼吸！"
+message.disguised.pufferfish: "§a你已变身为河豚！"
+message.disguised.squid: "§a你已变身为鱿鱼！"
+message.disguised.glow_squid: "§a你已变身为发光鱿鱼！"
+message.disguised.tropical_fish: "§a你已变身为热带鱼！"
+message.disguised.dolphin: "§a你已变身为海豚！"
+message.disguised.tadpole: "§a你已变身为蝌蚪！"
+message.disguised.nautilus: "§a你已变身为鹦鹉螺！"
+message.disguised.zombified_nautilus: "§a你已变身为僵尸鹦鹉螺！"
+message.disguised.guardian: "§a你已变身为守卫者！"
+message.disguised.elder_guardian: "§a你已变身为远古守卫者！"
+message.disguised.hoglin: "§a你已变身为疣猪兽！"
+message.disguised.vex: "§a你已变身为恼鬼！永不消失！"
+message.disguised.shulker: "§a你已变身为潜影贝！固定原地，WASD 瞬移！"
+message.disguised.endermite: "§a你已变身为末影螨！永不消失！"
+message.disguised.wither: "§a你已变身为凋零！终极 Boss！"
+message.disguised.ender_dragon: "§a你已变身为末影龙！终极 Boss！"
+message.undisguised: "§a你已恢复原形！"
+message.not-disguised: "§e你还没有变身呢，选个生物试试吧！"
+message.baby-disguised: "§a你已变身为§e{0}{1}{2}§a！"
+message.size-disguised: "§a你已变身为§e{0}{1}§a！"
+
+# ===== 变身成功 actionbar =====
+actionbar.chicken: "§e🐔 变身鸡就绪！"
+actionbar.camel: "§e🐫 变身骆驼！可被其他玩家乘骑"
+actionbar.horse: "§e🐴 变身马！可被其他玩家乘骑"
+actionbar.donkey: "§e🐴 变身驴！可被其他玩家乘骑"
+actionbar.mule: "§e🐴 变身骡子！可被其他玩家乘骑"
+actionbar.cat: "§e🐱 变身猫！无法被驯服"
+actionbar.wolf: "§e🐺 变身狼！无法被驯服"
+actionbar.armadillo: "§e🦔 变身犰狳！"
+actionbar.fox: "§e🦊 变身狐狸！"
+actionbar.goat: "§e🐐 变身山羊！"
+actionbar.llama: "§e🦙 变身羊驼！"
+actionbar.ocelot: "§e🐆 变身豹猫！"
+actionbar.panda: "§e🐼 变身熊猫！"
+actionbar.polar_bear: "§e🐻 变身北极熊！"
+actionbar.turtle: "§e🐢 变身海龟！"
+actionbar.mooshroom: "§e🍄 变身哞菇！"
+actionbar.sniffer: "§e🦕 变身探嗅兽！"
+actionbar.iron_golem: "§e🤖 变身铁傀儡！"
+actionbar.snow_golem: "§e⛄ 变身雪傀儡！"
+actionbar.trader_llama: "§e🦙 变身行商羊驼！"
+actionbar.villager: "§e🧑 变身村民！"
+actionbar.wandering_trader: "§e🧑 变身流浪商人！"
+actionbar.copper_golem: "§e🤖 变身铜傀儡！"
+actionbar.zombie: "§e🧟 变身僵尸！"
+actionbar.skeleton: "§e💀 变身骷髅！"
+actionbar.bogged: "§e🌿 变身沼骸！"
+actionbar.parched: "§e🔥 变身焦骸！"
+actionbar.husk: "§e🏜️ 变身尸壳！"
+actionbar.drowned: "§e🌊 变身溺尸！"
+actionbar.stray: "§e❄️ 变身流浪者！"
+actionbar.skeleton_horse: "§e🐴 变身骷髅马！"
+actionbar.zombified_camel: "§e🐫 变身骆驼尸壳！"
+actionbar.zombie_horse: "§e🐴 变身僵尸马！"
+actionbar.zombie_villager: "§e🧟 变身僵尸村民！"
+actionbar.spider: "§e🕷️ 变身蜘蛛！"
+actionbar.cave_spider: "§e🕷️ 变身洞穴蜘蛛！"
+actionbar.breeze: "§e🌀 变身旋风人！"
+actionbar.creeper: "§e💥 变身苦力怕！"
+actionbar.silverfish: "§e🪳 变身蠹虫！"
+actionbar.warden: "§e🕳️ 变身坚守者！"
+actionbar.witch: "§e🧙 变身女巫！"
+actionbar.evoker: "§e🧙 变身唤魔者！"
+actionbar.pillager: "§e🏹 变身掠夺者！"
+actionbar.vindicator: "§e🪓 变身卫道士！"
+actionbar.ravager: "§e🐗 变身劫掠兽！"
+actionbar.blaze: "§e🔥 变身烈焰人！可走路可飞行"
+actionbar.piglin: "§e🐷 变身猪灵！"
+actionbar.piglin_brute: "§e🗡️ 变身猪灵蛮兵！"
+actionbar.strider: "§e🕷️ 变身炽足兽！"
+actionbar.zoglin: "§e🐗 变身僵尸猪灵兽！"
+actionbar.zombified_piglin: "§e🐷 变身僵尸猪灵！"
+actionbar.wither_skeleton: "§e💀 变身凋零骷髅！"
+actionbar.enderman: "§e👾 变身末影人！"
+actionbar.slime: "§e🟢 变身史莱姆！行走时自动蹦跳"
+actionbar.magma_cube: "§e🟠 变身岩浆怪！行走时自动蹦跳"
+actionbar.frog: "§e🐸 变身青蛙！"
+actionbar.rabbit: "§e🐰 变身兔子！行走时自动蹦跳"
+actionbar.axolotl: "§e🦎 变身美西螈！水陆两栖"
+actionbar.cod: "§e🐟 变身鳕鱼！水下呼吸"
+actionbar.salmon: "§e🐟 变身鲑鱼！水下呼吸"
+actionbar.pufferfish: "§e🐡 变身河豚！离水会跳"
+actionbar.squid: "§e🦑 变身鱿鱼！"
+actionbar.glow_squid: "§e🦑 变身发光鱿鱼！"
+actionbar.tropical_fish: "§e🐠 变身热带鱼！离水会跳"
+actionbar.dolphin: "§e🐬 变身海豚！离水会跳"
+actionbar.tadpole: "§e🐸 变身蝌蚪！离水会跳"
+actionbar.nautilus: "§e🐚 变身鹦鹉螺！"
+actionbar.zombified_nautilus: "§e🐚 变身僵尸鹦鹉螺！"
+actionbar.guardian: "§e👁️ 变身守卫者！离水会跳"
+actionbar.elder_guardian: "§e👁️ 变身远古守卫者！离水会跳"
+actionbar.bat: "§e🦇 变身蝙蝠！可自由飞行"
+actionbar.bee: "§e🐝 变身蜜蜂！可自由飞行"
+actionbar.allay: "§e🧚 变身悦灵！可自由飞行"
+actionbar.phantom: "§e👾 变身幻翼！可自由飞行"
+actionbar.parrot: "§e🦜 变身鹦鹉！可自由飞行"
+actionbar.hoglin: "§e🐗 变身疣猪兽！"
+actionbar.vex: "§e👻 变身恼鬼！永不消失"
+actionbar.endermite: "§e🪳 变身末影螨！永不消失"
+actionbar.ender_dragon: "§e🐲 变身末影龙！可自由飞行"
+actionbar.wither: "§e☠️ 变身凋零！可自由飞行"
+actionbar.shulker: "§e🦐 变身潜影贝！固定原地，WASD 瞬移"
+actionbar.ghast: "§e👻 变身恶魂！可自由飞行"
+actionbar.happy_ghast: "§e😊 变身快乐恶魂！可自由飞行"
+
+# ===== 聊天 / 状态消息 =====
+msg.shulker-air: "§c潜影贝不能在空中变身！请先落地！"
+msg.shulker-no-teleport: "§c这里没有可瞬移的位置！"
+msg.shulker-need-open: "§c需要开壳才能发射子弹！（按住 Shift 开壳）"
+msg.shulker-open: "§e🦐 开壳！攻击姿态"
+msg.shulker-close: "§7关壳！防御姿态（减伤 50%）"
+msg.creeper-fusing: "§e💥 蓄力自爆中...（按住 Shift 1.5 秒）"
+msg.creeper-fade: "§7自爆消退"
+msg.mode-ai: "§e[变身] 切换为 §aAI 自主模式"
+msg.mode-player: "§e[变身] 切换为 §b玩家控制模式"
+msg.cant-eat: "§c这个不能吃！"
+msg.speed: "§e当前移动速度：{0}"
+msg.debug: "§e[Debug] {0}"
+msg.debug-on: "§a开启"
+msg.debug-off: "§c关闭"
+msg.scute-dropped: "§e你掉了一块犰狳壳！"
+msg.fox-stand: "§e狐狸站起来了！"
+msg.fox-sleep: "§e狐狸卧下睡觉了！(不再跟随)"
+msg.polar-attack: "§e北极熊发动攻击！"
+msg.camel-stand: "§e骆驼站起来了！"
+msg.camel-sit: "§e骆驼趴下了！(不再跟随)"
+msg.egg-laid: "§e你下了一个蛋！"
+msg.cant-mount-self: "§c你不能乘骑自己变身的生物！"
+msg.cant-tame: "§c你的变身生物无法被驯服！"
+msg.mob-killed: "§c你的变身生物被杀了！变身解除！"
+msg.error: "§c变身出错: {0}"
+
+# ===== 付费变身 =====
+msg.no-money: "§c余额不足！变身需要 §e{0}§c，你只有 §e{1}§c"
+msg.charged: "§a已支付 §e{0}§a"
+msg.no-vault: "§c未安装经济插件（Vault），无法付费变身！"
+msg.time-up: "§e变身时间已到，已自动解除变身！"
+lore.price: "§6价格：{0}"
+
+# ===== 技能冷却 =====
+msg.cooldown: "§e{0}冷却：{1} 秒"
+cooldown.shulker-bullet: 子弹
+cooldown.wither-skull: 头颅
+cooldown.dragon-breath: 龙息
+cooldown.fireball: 火球
+cooldown.teleport: 传送
+cooldown.sonic: 声波
+cooldown.potion: 毒药
+cooldown.summon: 召唤
+cooldown.wind: 旋风弹
+cooldown.scute: 掉壳
+cooldown.spit: 吐口水
+cooldown.egg: 下蛋
+
+# ===== 命令 =====
+cmd.only-player: "§c只有玩家才能使用此命令！"
+cmd.no-permission: "§c你没有权限使用变身功能！"
+cmd.no-reload-permission: "§c你没有权限重载插件！"
+cmd.not-disguised: "§c你没有变身，请先 /dp 变身！"
+cmd.not-disguised-short: "§c你没有变身！"
+cmd.unknown: "§c未知子命令！用法：/dp [reload]"
+cmd.reload-done: "§a插件配置已重载！"
+
+# ===== 控制台日志 =====
+log.enabled: 变身插件 v{0} 已启用
+log.reloaded: 插件配置已重载
+log.player-input-new: 检测到 PlayerInputEvent（1.21.4+），已注册新版输入监听器
+log.player-input-old: 未检测到 PlayerInputEvent（旧版服务器），已注册兼容输入监听器
+log.locatorbar: 已尝试关闭所有世界的 locatorBar
+log.no-dp-command: plugin.yml 中没有注册 dp 命令，插件无法继续启用。
+log.creeper-swell: "[变身] Creeper maxSwell 设置失败: {0}"
+log.vex-summon-fail: "[变身] 恼鬼召唤失败: {0}"
+log.creeper-swell-reflect: "[变身] Creeper 膨胀设置反射失败: {0}"
+log.vault-missing: "dp-mode 设置为 paid，但未检测到 Vault 经济插件！已回退为 all 模式。"

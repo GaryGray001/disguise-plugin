@@ -1,56 +1,74 @@
 package com.disguise;
 
-import com.disguise.command.BSCommand;
+import com.disguise.command.DPCommand;
 import com.disguise.disguise.DisguiseManager;
+import com.disguise.economy.EconomyManager;
 import com.disguise.gui.DisguiseMenu;
 import com.disguise.gui.ColorSelectMenu;
+import com.disguise.lang.LanguageManager;
 import com.disguise.packet.PacketUtils;
-import com.disguise.possession.PossessionTestManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class DisguisePlugin extends JavaPlugin {
 
     private DisguiseManager manager;
-    private PossessionTestManager possessionTestManager;
 
     @Override
     public void onEnable() {
         // 配置文件
         saveDefaultConfig();
         getConfig().addDefault("disable-locator-bar", true);
+        getConfig().addDefault("language", "zh_cn");
         getConfig().options().copyDefaults(true);
         saveConfig();
 
+        // 语言系统最先初始化（后续所有消息/日志都可能依赖）
+        LanguageManager.init(this);
+        // 付费/模式系统（dp-mode、prices、durations，Vault 软依赖）
+        EconomyManager.init(this);
         PacketUtils.init(this);
         this.manager = new DisguiseManager(this);
-        this.possessionTestManager = new PossessionTestManager(this);
 
         ColorSelectMenu csm = new ColorSelectMenu(manager);
-        DisguiseMenu dm = new DisguiseMenu(csm, manager);
+        com.disguise.gui.SizeSelectMenu ssm = new com.disguise.gui.SizeSelectMenu(manager);
+        com.disguise.gui.AxolotlColorMenu acm = new com.disguise.gui.AxolotlColorMenu(manager);
+        com.disguise.gui.BabySelectMenu bsm = new com.disguise.gui.BabySelectMenu(manager);
+        DisguiseMenu dm = new DisguiseMenu(csm, ssm, acm, bsm, manager);
         csm.setParentMenu(dm);
+        ssm.setParentMenu(dm);
+        acm.setParentMenu(dm);
+        bsm.setParentMenu(dm);
+        // 羊/美西螈选完颜色后再选体型
+        csm.setBabySelectMenu(bsm);
+        acm.setBabySelectMenu(bsm);
 
-        PluginCommand bsCommand = getCommand("bs");
-        if (bsCommand == null) {
-            getLogger().severe("plugin.yml 中没有注册 bs 命令，插件无法继续启用。");
+        PluginCommand dpCommand = getCommand("dp");
+        if (dpCommand == null) {
+            getLogger().severe(LanguageManager.get("log.no-dp-command"));
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        bsCommand.setExecutor(new BSCommand(dm, possessionTestManager));
+        DPCommand dp = new DPCommand(this, dm);
+        dpCommand.setExecutor(dp);
+        dpCommand.setTabCompleter(dp);
         getServer().getPluginManager().registerEvents(dm, this);
         getServer().getPluginManager().registerEvents(csm, this);
+        getServer().getPluginManager().registerEvents(ssm, this);
+        getServer().getPluginManager().registerEvents(acm, this);
+        getServer().getPluginManager().registerEvents(bsm, this);
         getServer().getPluginManager().registerEvents(PacketUtils.getListener(), this);
-        getServer().getPluginManager().registerEvents(possessionTestManager, this);
 
         // 输入监听器：PlayerInputEvent 是 1.21.4+ 的 API，低版本用兼容监听器（Ctrl 切模式用 PlayerToggleSprintEvent）
         try {
             Class.forName("org.bukkit.event.player.PlayerInputEvent");
             getServer().getPluginManager().registerEvents(new com.disguise.packet.PlayerInputListener(this), this);
-            getLogger().info("检测到 PlayerInputEvent（1.21.4+），已注册新版输入监听器");
+            getLogger().info(LanguageManager.get("log.player-input-new"));
         } catch (ClassNotFoundException e) {
             getServer().getPluginManager().registerEvents(new com.disguise.packet.PlayerInputCompat(), this);
-            getLogger().info("未检测到 PlayerInputEvent（旧版服务器），已注册兼容输入监听器");
+            getLogger().info(LanguageManager.get("log.player-input-old"));
         }
 
         // 自动关闭 locatorBar（MC 1.21.6+ 的经验条玩家位置显示）
@@ -58,24 +76,53 @@ public class DisguisePlugin extends JavaPlugin {
             disableLocatorBar();
         }
 
-        getLogger().info("变身插件 v" + getDescription().getVersion() + " 已启用");
+        getLogger().info(LanguageManager.get("log.enabled", getDescription().getVersion()));
+    }
+
+    /** /dp reload：重载 config + 语言 + 经济配置，并重新应用 locatorBar 设置 */
+    public void reloadPlugin(Player sender) {
+        reloadConfig();
+        LanguageManager.reload();
+        EconomyManager.reload();
+        if (getConfig().getBoolean("disable-locator-bar")) {
+            disableLocatorBar();
+        }
+        sender.sendMessage(LanguageManager.get("cmd.reload-done"));
+        getLogger().info(LanguageManager.get("log.reloaded"));
     }
 
     /** 自动关闭 locatorBar（MC 1.21.6+ 经验条显示玩家位置） */
     private void disableLocatorBar() {
+        // locatorBar 游戏规则是 1.21.6+ 才有的：低版本执行会刷 "Unknown gamerule" 错误，先跳过
+        if (!isServerAtLeast("1.21.6")) return;
         Bukkit.getScheduler().runTask(this, () -> {
-            for (org.bukkit.World w : Bukkit.getWorlds()) {
-                try {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "gamerule locatorBar false");
-                } catch (Exception ignored) {}
-            }
-            getLogger().info("已尝试关闭所有世界的 locatorBar");
+            try {
+                // gamerule 是全局的，执行一次即可（不要按世界数量重复执行）
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "gamerule locatorBar false");
+            } catch (Exception ignored) {}
+            getLogger().info(LanguageManager.get("log.locatorbar"));
         });
+    }
+
+    /** 服务器版本是否 >= 目标版本（如 "1.21.6"） */
+    private static boolean isServerAtLeast(String target) {
+        try {
+            String[] t = target.split("\\.");
+            String[] s = Bukkit.getBukkitVersion().split("-")[0].split("\\.");
+            for (int i = 0; i < t.length; i++) {
+                int ti = Integer.parseInt(t[i]);
+                int si = Integer.parseInt(s[i]);
+                if (si > ti) return true;
+                if (si < ti) return false;
+            }
+            return true;
+        } catch (Exception e) {
+            return true; // 版本解析失败时照常执行（1.21.6+ 服务器无害）
+        }
     }
 
     @Override
     public void onDisable() {
-        if (possessionTestManager != null) possessionTestManager.cleanup();
         if (manager != null) manager.cleanup();
     }
 }
